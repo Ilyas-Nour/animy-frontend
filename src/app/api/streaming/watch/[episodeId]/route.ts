@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const CONSUMET_API = process.env.CONSUMET_API_URL || 'https://api-consumet-org-iota-flax.vercel.app'
+// Use a working Consumet API instance with Zoro provider
+const CONSUMET_API = process.env.CONSUMET_API_URL || 'https://consumet-api-clone.vercel.app'
 
 export async function GET(
     request: NextRequest,
@@ -8,12 +9,11 @@ export async function GET(
 ) {
     const { episodeId } = params
 
-    if (!episodeId) {
-        return NextResponse.json({ error: 'Episode ID is required' }, { status: 400 })
-    }
-
     try {
-        const response = await fetch(`${CONSUMET_API}/anime/gogoanime/watch/${episodeId}`)
+        // Use Zoro provider for streaming links
+        const response = await fetch(`${CONSUMET_API}/anime/zoro/watch?episodeId=${encodeURIComponent(episodeId)}`, {
+            headers: { 'Accept': 'application/json' },
+        })
 
         if (!response.ok) {
             throw new Error(`Consumet API error: ${response.status}`)
