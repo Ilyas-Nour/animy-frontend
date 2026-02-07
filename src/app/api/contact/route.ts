@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import axios from 'axios';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only if API key exists (prevents build errors)
+const resend = process.env.RESEND_API_KEY
+    ? new Resend(process.env.RESEND_API_KEY)
+    : null;
 
 export async function POST(req: Request) {
     try {
@@ -23,14 +26,17 @@ export async function POST(req: Request) {
             await axios.post(apiUrl, body);
         } catch (err: any) {
             console.error('Backend Sync Error:', err.message);
-            return NextResponse.json(
-                { message: 'Failed to save message to system.' },
-                { status: 500 }
-            );
+            // Continue even if backend sync fails - email is priority
+        }
+
+        // Check if Resend is configured
+        if (!resend) {
+            console.warn('Resend API key not configured');
+            return NextResponse.json({ message: 'Message received but email service not configured' });
         }
 
         const data = await resend.emails.send({
-            from: 'Contact Form <onboarding@resend.dev>', // Use verified domain in prod or this for testing
+            from: 'Contact Form <onboarding@resend.dev>',
             to: 'eliasnourelislam@gmail.com',
             subject: `New Contact Form Submission: ${subject || 'No Subject'}`,
             html: `
@@ -58,5 +64,3 @@ export async function POST(req: Request) {
         );
     }
 }
-
-
