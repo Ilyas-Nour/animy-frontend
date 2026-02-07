@@ -67,7 +67,7 @@ const NeonInput = ({ children, focused }: { children: React.ReactNode, focused?:
 )
 
 export function EditProfileForm() {
-    const { user, updateUser } = useAuth()
+    const { user, updateUser, refreshProfile } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
     const [bannerPreview, setBannerPreview] = useState<string | null>(null)
@@ -223,13 +223,9 @@ export function EditProfileForm() {
             const res = await api.patch('/users/profile', values)
             console.log('[EditProfileForm] Patch response:', res.data)
 
-            // 4. Refresh User Data in Context
-            if (updateUser) {
-                // Ensure we handle both direct data and intercetp-wrapped data
-                const userData = res.data.data || res.data;
-                console.log('[EditProfileForm] Updating user context with:', userData)
-                updateUser(userData)
-            }
+
+            // 4. Refresh User Data in Context (fetches fresh data including Supabase URLs)
+            await refreshProfile()
 
             toast.success("Identity Forged", {
                 description: "Profile updated successfully.",
