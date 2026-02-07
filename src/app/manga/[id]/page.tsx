@@ -4,10 +4,17 @@ import MangaDetailsClient from '@/components/manga/MangaDetailsClient'
 
 export const revalidate = 3600 // ISR: 1 hour
 
+// Use absolute URL for server-side fetching
+function getBaseUrl() {
+    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+    if (process.env.NEXT_PUBLIC_FRONTEND_URL) return process.env.NEXT_PUBLIC_FRONTEND_URL
+    return 'http://localhost:3000'
+}
+
 async function getManga(id: string) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
     try {
-        const res = await fetch(`${apiUrl}/manga/${id}`, {
+        const baseUrl = getBaseUrl()
+        const res = await fetch(`${baseUrl}/api/manga/${id}`, {
             next: { revalidate: 3600 }
         })
         if (!res.ok) return null
@@ -19,9 +26,9 @@ async function getManga(id: string) {
 }
 
 async function getCharacters(id: string) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
     try {
-        const res = await fetch(`${apiUrl}/manga/${id}/characters`, {
+        const baseUrl = getBaseUrl()
+        const res = await fetch(`${baseUrl}/api/manga/${id}/characters`, {
             next: { revalidate: 3600 }
         })
         if (!res.ok) return []

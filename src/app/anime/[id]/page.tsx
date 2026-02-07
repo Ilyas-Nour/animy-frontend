@@ -4,10 +4,17 @@ import { notFound } from 'next/navigation'
 
 export const revalidate = 3600 // ISR: Revalidate every 1 hour
 
+// Use absolute URL for server-side fetching
+function getBaseUrl() {
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  if (process.env.NEXT_PUBLIC_FRONTEND_URL) return process.env.NEXT_PUBLIC_FRONTEND_URL
+  return 'http://localhost:3000'
+}
+
 async function getAnime(id: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
   try {
-    const res = await fetch(`${apiUrl}/anime/${id}`, {
+    const baseUrl = getBaseUrl()
+    const res = await fetch(`${baseUrl}/api/anime/${id}`, {
       next: { revalidate: 3600 }
     })
 
@@ -24,9 +31,9 @@ async function getAnime(id: string) {
 }
 
 async function getCharacters(id: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
   try {
-    const res = await fetch(`${apiUrl}/anime/${id}/characters`, {
+    const baseUrl = getBaseUrl()
+    const res = await fetch(`${baseUrl}/api/anime/${id}/characters`, {
       next: { revalidate: 3600 }
     })
     if (!res.ok) return { data: [] }
