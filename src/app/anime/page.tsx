@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import api from '@/lib/api'
 import { Anime, Pagination as PaginationType } from '@/types/anime'
 import { AnimeGrid } from '@/components/anime/AnimeGrid'
 import { AnimeSearch } from '@/components/anime/AnimeSearch'
@@ -27,32 +26,29 @@ function AnimeContent() {
     const fetchAnime = async () => {
       try {
         setLoading(true)
-        const params: any = {
-          page: currentPage,
-          limit: 24,
-        }
 
-        if (query) params.query = query
+        // Build query params
+        const params = new URLSearchParams()
+        params.set('page', currentPage.toString())
+        params.set('limit', '24')
+        if (query) params.set('q', query)
 
         // Add filter params
-        const filterParams = [
-          'type',
-          'status',
-          'rating',
-          'order_by',
-          'sort',
-        ]
+        const filterParams = ['type', 'status', 'rating', 'order_by', 'sort']
         filterParams.forEach((param) => {
           const value = searchParams.get(param)
-          if (value) params[param] = value
+          if (value) params.set(param, value)
         })
 
-        const response = await api.get('/anime/search', { params })
-        setAnime(response.data.data.data)
-        setPagination(response.data.data.pagination)
+        const response = await fetch(`/api/anime/search?${params.toString()}`)
+        const json = await response.json()
+
+        setAnime(json.data?.data || [])
+        setPagination(json.data?.pagination || null)
         setError(null)
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to load anime')
+        console.error(err)
+        setError('Failed to load anime')
       } finally {
         setLoading(false)
       }

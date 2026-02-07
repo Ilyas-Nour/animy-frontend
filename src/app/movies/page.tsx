@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Film } from 'lucide-react'
-import api from '@/lib/api'
 import { Anime, Pagination as PaginationType } from '@/types/anime'
 import { AnimeGrid } from '@/components/anime/AnimeGrid'
 import { AnimeSearch } from '@/components/anime/AnimeSearch'
@@ -27,24 +26,25 @@ function MoviesContent() {
     const fetchMovies = async () => {
       try {
         setLoading(true)
-        const params: any = {
-          page: currentPage,
+
+        let url: string
+        if (query) {
+          // Search with type=movie
+          url = `/api/anime/search?page=${currentPage}&limit=24&type=movie&q=${encodeURIComponent(query)}`
+        } else {
+          // Movies endpoint
+          url = `/api/anime/movies?page=${currentPage}&limit=24`
         }
 
-        if (query) {
-          params.query = query
-          params.type = 'movie'
-          const response = await api.get('/anime/search', { params })
-          setMovies(response.data.data.data)
-          setPagination(response.data.data.pagination)
-        } else {
-          const response = await api.get('/anime/movies', { params })
-          setMovies(response.data.data.data)
-          setPagination(response.data.data.pagination)
-        }
+        const response = await fetch(url)
+        const json = await response.json()
+
+        setMovies(json.data?.data || [])
+        setPagination(json.data?.pagination || null)
         setError(null)
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to load movies')
+        console.error(err)
+        setError('Failed to load movies')
       } finally {
         setLoading(false)
       }

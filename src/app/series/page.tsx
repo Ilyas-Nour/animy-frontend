@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Tv } from 'lucide-react'
-import api from '@/lib/api'
 import { Anime, Pagination as PaginationType } from '@/types/anime'
 import { AnimeGrid } from '@/components/anime/AnimeGrid'
 import { AnimeSearch } from '@/components/anime/AnimeSearch'
@@ -27,24 +26,25 @@ function SeriesContent() {
     const fetchSeries = async () => {
       try {
         setLoading(true)
-        const params: any = {
-          page: currentPage,
+
+        let url: string
+        if (query) {
+          // Search with type=tv
+          url = `/api/anime/search?page=${currentPage}&limit=24&type=tv&q=${encodeURIComponent(query)}`
+        } else {
+          // Series endpoint
+          url = `/api/anime/series?page=${currentPage}&limit=24`
         }
 
-        if (query) {
-          params.query = query
-          params.type = 'tv'
-          const response = await api.get('/anime/search', { params })
-          setSeries(response.data.data.data)
-          setPagination(response.data.data.pagination)
-        } else {
-          const response = await api.get('/anime/series', { params })
-          setSeries(response.data.data.data)
-          setPagination(response.data.data.pagination)
-        }
+        const response = await fetch(url)
+        const json = await response.json()
+
+        setSeries(json.data?.data || [])
+        setPagination(json.data?.pagination || null)
         setError(null)
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to load series')
+        console.error(err)
+        setError('Failed to load series')
       } finally {
         setLoading(false)
       }

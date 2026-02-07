@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import api from '@/lib/api'
 import { Manga, MangaSearchResponse } from '@/types/manga'
 import { MangaGrid } from '@/components/manga/MangaGrid'
 import { MangaSearch } from '@/components/manga/MangaSearch'
@@ -27,61 +26,29 @@ function MangaContent() {
         const fetchManga = async () => {
             try {
                 setLoading(true)
-                const params: any = {
-                    page: currentPage,
-                    limit: 24,
-                }
 
-                if (query) params.query = query
+                // Build query params
+                const params = new URLSearchParams()
+                params.set('page', currentPage.toString())
+                params.set('limit', '24')
+                if (query) params.set('q', query)
 
                 // Add filter params
-                const filterParams = [
-                    'type',
-                    'status',
-                    'rating',
-                    'order_by',
-                    'sort',
-                ]
+                const filterParams = ['type', 'status', 'rating', 'order_by', 'sort']
                 filterParams.forEach((param) => {
                     const value = searchParams.get(param)
-                    if (value) params[param] = value
+                    if (value) params.set(param, value)
                 })
 
-                // Use search endpoint if query exists, else use top endpoint (or just search with empty query if API supports it)
-                // Jikan /manga endpoint supports filtering. My backend /manga/search calls jikan /manga
-                const endpoint = '/manga/search'
+                const response = await fetch(`/api/manga/search?${params.toString()}`)
+                const json = await response.json()
 
-                const response = await api.get(endpoint, { params })
-
-                // Check if response has data property and drill down correctly
-                // API Interceptor wraps response in 'data' object
-                // Service returns { data: [], pagination: {} }
-                const responseData = response.data.data
-
-                if (responseData && Array.isArray(responseData.data)) {
-                    setManga(responseData.data)
-                    setPagination(responseData.pagination)
-                } else {
-                    // Fallback if structure is different (e.g. direct array or other wrapper)
-                    setManga([])
-                }
-
+                setManga(json.data?.data || [])
+                setPagination(json.data?.pagination || null)
                 setError(null)
             } catch (err: any) {
                 console.error(err)
-                console.error(err)
-                let errorMessage = 'Failed to load manga'
-                if (err.response?.data) {
-                    const { message } = err.response.data
-                    if (typeof message === 'string') {
-                        errorMessage = message
-                    } else if (Array.isArray(message)) {
-                        errorMessage = message.join(', ')
-                    } else if (typeof message === 'object') {
-                        errorMessage = JSON.stringify(message)
-                    }
-                }
-                setError(errorMessage)
+                setError('Failed to load manga')
             } finally {
                 setLoading(false)
             }

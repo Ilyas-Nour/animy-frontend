@@ -6,7 +6,6 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Calendar, Snowflake, Flower, Sun, Leaf } from 'lucide-react'
-import api from '@/lib/api'
 import { Anime, Pagination as PaginationType } from '@/types/anime'
 import { AnimeGrid } from '@/components/anime/AnimeGrid'
 import { Pagination } from '@/components/common/Pagination'
@@ -30,7 +29,6 @@ const seasonColors = {
   fall: 'from-orange-400 to-red-400',
 }
 
-// Generate years dynamically from current year down to 2000
 const getCurrentYear = () => new Date().getFullYear()
 const generateYears = () => {
   const currentYear = getCurrentYear()
@@ -68,19 +66,18 @@ function SeasonsContent() {
         setLoading(true)
         setError(null)
 
-        const response = await api.get(`/seasons/${selectedYear}/${selectedSeason}`, {
-          params: { page: currentPage },
-        })
+        const response = await fetch(`/api/seasons/${selectedYear}/${selectedSeason}?page=${currentPage}&limit=24`)
+        const json = await response.json()
 
-        setAnime(response.data.data.data)
-        setPagination(response.data.data.pagination)
+        setAnime(json.data?.data || [])
+        setPagination(json.data?.pagination || null)
         setSeasonInfo({
-          season: response.data.data.season || selectedSeason,
-          year: response.data.data.year || selectedYear,
+          season: selectedSeason,
+          year: selectedYear,
         })
       } catch (err: any) {
         console.error('Error fetching season anime:', err)
-        setError(err.response?.data?.message || 'Failed to load season anime')
+        setError('Failed to load season anime')
       } finally {
         setLoading(false)
       }
@@ -129,24 +126,15 @@ function SeasonsContent() {
     <div className="container py-12 space-y-8">
       {/* Header */}
       <div className="space-y-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <BrandTitle icon={<Calendar className="h-10 w-10 text-primary" />}>
             Seasonal Anime
           </BrandTitle>
-          <p className="text-muted-foreground mt-2">
-            Browse anime by season and year
-          </p>
+          <p className="text-muted-foreground mt-2">Browse anime by season and year</p>
         </motion.div>
 
-        {/* Quick Links for Current Year */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+        {/* Quick Links */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Quick Access - {getCurrentYear()}</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -154,16 +142,10 @@ function SeasonsContent() {
                 const Icon = seasonIcons[link.season as keyof typeof seasonIcons]
                 const isActive = selectedSeason === link.season && selectedYear === link.year
                 return (
-                  <Link
-                    key={`${link.season}-${link.year}`}
-                    href={`/seasons?year=${link.year}&season=${link.season}`}
-                  >
+                  <Link key={`${link.season}-${link.year}`} href={`/seasons?year=${link.year}&season=${link.season}`}>
                     <Button
                       variant={isActive ? 'default' : 'outline'}
-                      className={`w-full gap-2 ${isActive
-                        ? `bg-gradient-to-r ${seasonColors[link.season as keyof typeof seasonColors]} text-white`
-                        : ''
-                        }`}
+                      className={`w-full gap-2 ${isActive ? `bg-gradient-to-r ${seasonColors[link.season as keyof typeof seasonColors]} text-white` : ''}`}
                     >
                       <Icon className="h-4 w-4" />
                       {link.label}
@@ -177,15 +159,9 @@ function SeasonsContent() {
       </div>
 
       {/* Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="space-y-4"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-4">
         <h3 className="text-lg font-semibold">Select Season & Year</h3>
         <div className="flex flex-col md:flex-row gap-4">
-          {/* Season Selector */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-1">
             {seasons.map((season) => {
               const Icon = season.icon
@@ -195,10 +171,7 @@ function SeasonsContent() {
                   key={season.value}
                   variant={isActive ? 'default' : 'outline'}
                   onClick={() => handleSeasonChange(season.value)}
-                  className={`gap-2 ${isActive
-                    ? `bg-gradient-to-r ${seasonColors[season.value as keyof typeof seasonColors]} text-white`
-                    : ''
-                    }`}
+                  className={`gap-2 ${isActive ? `bg-gradient-to-r ${seasonColors[season.value as keyof typeof seasonColors]} text-white` : ''}`}
                 >
                   <Icon className="h-4 w-4" />
                   {season.label}
@@ -206,38 +179,21 @@ function SeasonsContent() {
               )
             })}
           </div>
-
-          {/* Year Selector */}
-          <select
-            value={selectedYear}
-            onChange={handleYearChange}
-            className="px-4 py-2 rounded-md border bg-background min-w-[150px]"
-          >
+          <select value={selectedYear} onChange={handleYearChange} className="px-4 py-2 rounded-md border bg-background min-w-[150px]">
             {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
+              <option key={year} value={year}>{year}</option>
             ))}
           </select>
         </div>
       </motion.div>
 
-      {/* Current Selection Info */}
+      {/* Season Info */}
       {seasonInfo && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-card border rounded-lg p-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card border rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold capitalize">
-                {seasonInfo.season} {seasonInfo.year}
-              </h2>
-              <p className="text-muted-foreground mt-1">
-                {pagination ? `${pagination.items.total || 0} anime found` : 'Loading...'}
-              </p>
+              <h2 className="text-2xl font-bold capitalize">{seasonInfo.season} {seasonInfo.year}</h2>
+              <p className="text-muted-foreground mt-1">{pagination ? `${pagination.items?.total || anime.length} anime found` : 'Loading...'}</p>
             </div>
             <div className={`h-16 w-16 rounded-full bg-gradient-to-r ${seasonColors[seasonInfo.season as keyof typeof seasonColors]} flex items-center justify-center`}>
               {(() => {
@@ -258,19 +214,13 @@ function SeasonsContent() {
         <Card className="p-12 text-center">
           <Calendar className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-xl font-semibold mb-2">No anime found</h3>
-          <p className="text-muted-foreground">
-            No anime available for {selectedSeason} {selectedYear}
-          </p>
+          <p className="text-muted-foreground">No anime available for {selectedSeason} {selectedYear}</p>
         </Card>
       ) : (
         <>
           <AnimeGrid anime={anime} />
           {pagination && pagination.last_visible_page > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={pagination.last_visible_page}
-              onPageChange={handlePageChange}
-            />
+            <Pagination currentPage={currentPage} totalPages={pagination.last_visible_page} onPageChange={handlePageChange} />
           )}
         </>
       )}
