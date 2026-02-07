@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import api from '@/lib/api'
 import { Anime } from '@/types/anime'
 import { Manga } from '@/types/manga'
 import { AnimeGrid } from '@/components/anime/AnimeGrid'
@@ -42,13 +41,14 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // 1. Fetch Top Anime (Hero + Top Section)
+    // 1. Fetch Top Anime (Hero + Top Section) via local API route
     const fetchTopAnime = async () => {
       try {
         setHeroLoading(true)
         setTopAnimeLoading(true)
-        const res = await api.get('/anime/top', { params: { filter: 'airing' } })
-        const data = res.data?.data?.data || []
+        const res = await fetch('/api/anime/top?filter=airing&limit=15')
+        const json = await res.json()
+        const data = json.data?.data || []
         setTopAnime(data.slice(0, 10))
         setHeroAnime(data.slice(0, 5))
         setTrendingHighlight(data.slice(5, 15))
@@ -60,12 +60,13 @@ export default function HomePage() {
       }
     }
 
-    // 2. Fetch Current Season (Seasonal Section)
+    // 2. Fetch Current Season (Seasonal Section) via local API route
     const fetchSeasonal = async () => {
       try {
         setSeasonLoading(true)
-        const res = await api.get('/seasons/current')
-        const data = res.data?.data?.data || []
+        const res = await fetch('/api/seasons/current')
+        const json = await res.json()
+        const data = json.data?.data || []
         setCurrentSeason(data.slice(0, 10))
       } catch (err) {
         console.error('Seasonal fetch error:', err)
@@ -74,12 +75,13 @@ export default function HomePage() {
       }
     }
 
-    // 3. Fetch Top Manga
+    // 3. Fetch Top Manga via local API route
     const fetchTopManga = async () => {
       try {
         setTopMangaLoading(true)
-        const res = await api.get('/manga/search', { params: { order_by: 'popularity', sort: 'desc', limit: 10 } })
-        const data = res.data?.data?.data || []
+        const res = await fetch('/api/manga/search?order_by=popularity&sort=desc&limit=10')
+        const json = await res.json()
+        const data = json.data?.data || []
         setTopManga(data.slice(0, 10))
       } catch (err) {
         console.error('Top Manga fetch error:', err)
@@ -88,12 +90,13 @@ export default function HomePage() {
       }
     }
 
-    // 4. Fetch Publishing Manga
+    // 4. Fetch Publishing Manga via local API route
     const fetchPubManga = async () => {
       try {
         setPubMangaLoading(true)
-        const res = await api.get('/manga/search', { params: { status: 'publishing', type: 'manga', order_by: 'popularity', sort: 'desc', limit: 10 } })
-        const data = res.data?.data?.data || []
+        const res = await fetch('/api/manga/search?status=publishing&type=manga&order_by=popularity&sort=desc&limit=10')
+        const json = await res.json()
+        const data = json.data?.data || []
         setPublishingManga(data.slice(0, 10))
       } catch (err) {
         console.error('Publishing Manga fetch error:', err)
