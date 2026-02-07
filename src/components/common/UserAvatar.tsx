@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { cn, getAvatarUrl } from '@/lib/utils'
 
@@ -16,6 +16,7 @@ interface UserAvatarProps {
 }
 
 const UserAvatar = ({ user, className, size = 'md' }: UserAvatarProps) => {
+    const [imageError, setImageError] = useState(false)
     const avatarUrl = getAvatarUrl(user.avatar || undefined)
     const displayName = user.username || `${user.firstName || ''} ${user.lastName || ''}`.trim() || '?'
     const initial = displayName.charAt(0).toUpperCase()
@@ -48,28 +49,30 @@ const UserAvatar = ({ user, className, size = 'md' }: UserAvatarProps) => {
         return colors[hash % colors.length]
     }, [displayName])
 
-    if (avatarUrl) {
+    // Show fallback if no avatar URL or if image failed to load
+    if (!avatarUrl || imageError) {
         return (
-            <div className={cn("relative rounded-full overflow-hidden shrink-0 border border-border/50", sizeClasses[size], className)}>
-                <Image
-                    src={avatarUrl}
-                    alt={displayName}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
+            <div className={cn(
+                "flex items-center justify-center rounded-full font-black text-white shrink-0 shadow-inner border border-white/10 select-none uppercase tracking-tighter",
+                sizeClasses[size],
+                backgroundColor,
+                className
+            )}>
+                {initial}
             </div>
         )
     }
 
     return (
-        <div className={cn(
-            "flex items-center justify-center rounded-full font-black text-white shrink-0 shadow-inner border border-white/10 select-none uppercase tracking-tighter",
-            sizeClasses[size],
-            backgroundColor,
-            className
-        )}>
-            {initial}
+        <div className={cn("relative rounded-full overflow-hidden shrink-0 border border-border/50", sizeClasses[size], className)}>
+            <Image
+                src={avatarUrl}
+                alt={displayName}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                onError={() => setImageError(true)}
+            />
         </div>
     )
 }

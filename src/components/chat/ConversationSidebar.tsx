@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { cn, getAvatarUrl } from '@/lib/utils'
 import Image from 'next/image'
+import UserAvatar from '@/components/common/UserAvatar'
 
 interface Friend {
     id: string
@@ -252,21 +253,11 @@ export default function ConversationSidebar({
 
                                     <div className="flex items-start gap-3 relative z-10">
                                         <div className="relative shrink-0">
-                                            <div className="w-12 h-12 rounded-full overflow-hidden bg-muted ring-2 ring-transparent group-hover:ring-border transition-all">
-                                                {conversation.friend.avatar ? (
-                                                    <Image
-                                                        src={getAvatarUrl(conversation.friend.avatar)!}
-                                                        alt={conversation.friend.username}
-                                                        fill
-                                                        className="object-cover rounded-full"
-                                                        sizes="48px"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center font-bold bg-gradient-to-br from-purple-900 to-indigo-900 text-purple-200 rounded-full">
-                                                        {conversation.friend.username?.[0]?.toUpperCase()}
-                                                    </div>
-                                                )}
-                                            </div>
+                                            <UserAvatar
+                                                user={conversation.friend}
+                                                size="lg"
+                                                className="ring-2 ring-transparent group-hover:ring-border transition-all"
+                                            />
                                             {onlineUsers.has(conversation.friend.id) && (
                                                 <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full" />
                                             )}
