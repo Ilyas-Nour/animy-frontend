@@ -4,17 +4,11 @@ import { notFound } from 'next/navigation'
 
 export const revalidate = 3600 // ISR: Revalidate every 1 hour
 
-// Use absolute URL for server-side fetching
-function getBaseUrl() {
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  if (process.env.NEXT_PUBLIC_FRONTEND_URL) return process.env.NEXT_PUBLIC_FRONTEND_URL
-  return 'http://localhost:3000'
-}
+const JIKAN_API = 'https://api.jikan.moe/v4'
 
 async function getAnime(id: string) {
   try {
-    const baseUrl = getBaseUrl()
-    const res = await fetch(`${baseUrl}/api/anime/${id}`, {
+    const res = await fetch(`${JIKAN_API}/anime/${id}/full`, {
       next: { revalidate: 3600 }
     })
 
@@ -23,7 +17,8 @@ async function getAnime(id: string) {
       throw new Error('Failed to fetch anime')
     }
 
-    return res.json()
+    const json = await res.json()
+    return { data: json.data }
   } catch (error) {
     console.error('Fetch error:', error)
     return null
@@ -32,12 +27,12 @@ async function getAnime(id: string) {
 
 async function getCharacters(id: string) {
   try {
-    const baseUrl = getBaseUrl()
-    const res = await fetch(`${baseUrl}/api/anime/${id}/characters`, {
+    const res = await fetch(`${JIKAN_API}/anime/${id}/characters`, {
       next: { revalidate: 3600 }
     })
     if (!res.ok) return { data: [] }
-    return res.json()
+    const json = await res.json()
+    return { data: json.data || [] }
   } catch (error) {
     return { data: [] }
   }
