@@ -4,11 +4,13 @@ import { notFound } from 'next/navigation'
 
 export const revalidate = 3600 // ISR: Revalidate every 1 hour
 
-const JIKAN_API = 'https://api.jikan.moe/v4'
+// Use backend API URL (default to localhost:3001/api/v1 if not set)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
 
 async function getAnime(id: string) {
   try {
-    const res = await fetch(`${JIKAN_API}/anime/${id}/full`, {
+    // Fetch from our backend to leverage caching and centralized logic
+    const res = await fetch(`${API_URL}/anime/${id}`, {
       next: { revalidate: 3600 }
     })
 
@@ -18,6 +20,8 @@ async function getAnime(id: string) {
     }
 
     const json = await res.json()
+    // Backend returns wrapped response { success: true, data: AnimeObject }
+    // We return { data: AnimeObject } to match expected structure
     return { data: json.data }
   } catch (error) {
     console.error('Fetch error:', error)
@@ -27,7 +31,7 @@ async function getAnime(id: string) {
 
 async function getCharacters(id: string) {
   try {
-    const res = await fetch(`${JIKAN_API}/anime/${id}/characters`, {
+    const res = await fetch(`${API_URL}/anime/${id}/characters`, {
       next: { revalidate: 3600 }
     })
     if (!res.ok) return { data: [] }

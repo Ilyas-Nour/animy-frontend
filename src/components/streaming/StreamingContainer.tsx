@@ -5,6 +5,7 @@ import { StreamingPlayer } from './StreamingPlayer'
 import { EpisodeGrid } from './EpisodeGrid'
 import { Loader2, AlertCircle, Wifi } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import api from '@/lib/api'
 
 interface StreamingContainerProps {
     animeTitle: string
@@ -41,15 +42,13 @@ export function StreamingContainer({
 
             console.log(`Searching for "${animeTitle}"`)
 
-            // Step 1: Search for anime via our API route (no CORS issues)
-            const searchRes = await fetch(`/api/streaming/search?query=${encodeURIComponent(animeTitle)}`)
+            // Step 1: Search for anime via our API route (using api client for correct base URL)
+            const searchRes = await api.get(`/streaming/search?query=${encodeURIComponent(animeTitle)}`)
 
-            if (!searchRes.ok) {
-                throw new Error('Failed to search anime')
-            }
-
-            const searchData = await searchRes.json()
-            const results = searchData.results || []
+            // Interceptor wraps response in data property, so we need searchRes.data.data.results
+            // But searchRes.data is the body, searchRes.data.data is the payload
+            const searchPayload = searchRes.data.data || searchRes.data
+            const results = searchPayload.results || []
 
             if (results.length === 0) {
                 throw new Error(`"${animeTitle}" not found. Try a different title.`)
@@ -59,13 +58,8 @@ export function StreamingContainer({
             console.log(`Found anime ID: ${animeId}`)
 
             // Step 2: Get anime info with episodes via our API route
-            const infoRes = await fetch(`/api/streaming/info/${animeId}`)
-
-            if (!infoRes.ok) {
-                throw new Error('Failed to load anime info')
-            }
-
-            const animeInfo = await infoRes.json()
+            const infoRes = await api.get(`/streaming/info/${animeId}`)
+            const animeInfo = infoRes.data.data || infoRes.data
 
             if (!animeInfo.episodes || animeInfo.episodes.length === 0) {
                 throw new Error('No episodes found for this anime')
