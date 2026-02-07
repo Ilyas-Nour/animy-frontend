@@ -7,9 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ChevronLeft, Cookie, Check } from 'lucide-react'
-import { Switch } from '@/components/ui/switch' // Wait, I need to check if Switch exists. Assuming not, I'll use a toggle sim or just info. 
-// List Components: badge.tsx, button.tsx, card.tsx, dialog.tsx, dropdown-menu.tsx, input.tsx, label.tsx, progress.tsx, scroll-area.tsx, select.tsx, skeleton.tsx, table.tsx, tabs.tsx, textarea.tsx
-// Switch does NOT exist. I will simulate it.
+import { Switch } from '@/components/ui/switch'
 
 export default function CookiesPage() {
     const [preferences, setPreferences] = useState({

@@ -12,7 +12,6 @@ import { fetchRedditPosts } from '@/actions/news'
 import { useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 import { ShareNewsModal } from './ShareNewsModal'
-import { useSearchParams } from 'next/navigation'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,8 +34,15 @@ interface NewsItem {
 export function NewsFeed() {
     const [news, setNews] = useState<NewsItem[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const searchParams = useSearchParams()
-    const targetPostId = searchParams.get('postId')
+    const [targetPostId, setTargetPostId] = useState<string | null>(null)
+
+    useEffect(() => {
+        // Get postId from URL on client side
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search)
+            setTargetPostId(params.get('postId'))
+        }
+    }, [])
 
     useEffect(() => {
         const fetchNews = async () => {
