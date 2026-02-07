@@ -10,16 +10,23 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || ''
     const status = searchParams.get('status') || ''
     const rating = searchParams.get('rating') || ''
-    const order_by = searchParams.get('order_by') || 'score'
+    
+    // Only apply score sorting when NOT searching - let search use relevance
+    const order_by = searchParams.get('order_by') || (q ? '' : 'score')
     const sort = searchParams.get('sort') || 'desc'
 
     try {
         // Build the URL with proper filtering
-        let url = `${JIKAN_API}/anime?page=${page}&limit=${limit}&order_by=${order_by}&sort=${sort}&sfw=true`
-
+        let url = `${JIKAN_API}/anime?page=${page}&limit=${limit}&sfw=true`
+        
+        // Add sorting only if specified or browsing (not searching)
+        if (order_by) {
+            url += `&order_by=${order_by}&sort=${sort}`
+        }
+        
         // Add search query if provided
         if (q) url += `&q=${encodeURIComponent(q)}`
-
+        
         // Add optional filters
         if (type) url += `&type=${type}`
         if (status) url += `&status=${status}`
