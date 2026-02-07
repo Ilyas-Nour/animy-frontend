@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import api from '@/lib/api'
+import { getAvatarUrl } from '@/lib/utils'
 
 interface UserLeaderboard {
     id: string
@@ -83,7 +84,7 @@ export function SocialHomeSection() {
                                             {/* Avatar */}
                                             <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-background shadow-md">
                                                 <Image
-                                                    src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
+                                                    src={getAvatarUrl(user.avatar) || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
                                                     alt={user.username}
                                                     fill
                                                     className="object-cover"
@@ -104,7 +105,7 @@ export function SocialHomeSection() {
                                             {/* Banner Background Effect on Hover */}
                                             {user.bannerUrl && (
                                                 <div className="absolute inset-0 z-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500">
-                                                    <Image src={user.bannerUrl} alt="banner" fill className="object-cover grayscale" />
+                                                    <Image src={getAvatarUrl(user.bannerUrl)!} alt="banner" fill className="object-cover grayscale" />
                                                 </div>
                                             )}
                                         </Card>
