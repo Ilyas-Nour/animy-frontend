@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Testing...</div>
+    <div id="logs" style="margin-top: 20px; font-family: monospace; white-space: pre-wrap;"></div>
+
+    <script>
+        const logsDiv = document.getElementById('logs');
+        const statusDiv = document.getElementById('status');
+        
+        function log(message) {
+            console.log(message);
+            logsDiv.textContent += message + '\n';
+        }
+
+        // Get token from localStorage
+        const token = localStorage.getItem('token');
+        log('Token from localStorage: ' + (token ? 'present' : 'MISSING'));
+
+        if (!token) {
+            statusDiv.textContent = '❌ No token found. Please log in first.';
+            statusDiv.style.color = 'red';
+        } else {
+            log('Attempting to connect to ws://localhost:3001');
+            
+            const socket = io('http://localhost:3001', {
+                path: '/socket.io',
+                auth: { token },
+                transports: ['websocket', 'polling'],
+            });
+
+            socket.on('connect', () => {
+                log('✅ Connected! Socket ID: ' + socket.id);
+                statusDiv.textContent = '✅ WebSocket Connected Successfully!';
+                statusDiv.style.color = 'green';
+            });
+
+            socket.on('connect_error', (error) => {
+                log('❌ Connection Error: ' + error.message);
+                log('Full error: ' + JSON.stringify(error, null, 2));
+                statusDiv.textContent = '❌ Connection Failed: ' + error.message;
+                statusDiv.style.color = 'red';
+            });
+
+            socket.on('disconnect', (reason) => {
+                log('Disconnected. Reason: ' + reason);
+                statusDiv.textContent = '⚠️ Disconnected: ' + reason;
+                statusDiv.style.color = 'orange';
+            });
+
+            socket.on('user:online', (data) => {
+                log('User online event: ' + JSON.stringify(data));
+            });
+        }
+    </script>
+</body>
+</html>

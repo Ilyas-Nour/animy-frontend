@@ -1,0 +1,40 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="128" fill="#050505"/>
+  
+  <!-- Glow effect -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0" />
+    </radialGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#818cf8" />
+      <stop offset="100%" style="stop-color:#6366f1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Glow circle -->
+  <circle cx="256" cy="256" r="200" fill="url(#glow)"/>
+  
+  <!-- Stylized "A" with anime eye design -->
+  <g transform="translate(256, 256)">
+    <!-- Left stroke of A -->
+    <path d="M -80 80 L -20 -100 L 0 -100 L -60 80 Z" fill="url(#iconGradient)"/>
+    
+    <!-- Right stroke of A -->
+    <path d="M 80 80 L 20 -100 L 0 -100 L 60 80 Z" fill="url(#iconGradient)"/>
+    
+    <!-- Horizontal bar with eye -->
+    <path d="M -50 0 L 50 0 L 45 20 L -45 20 Z" fill="url(#iconGradient)"/>
+    
+    <!-- Anime eye in the middle -->
+    <ellipse cx="0" cy="10" rx="25" ry="15" fill="#050505"/>
+    <ellipse cx="0" cy="10" rx="12" ry="10" fill="#818cf8"/>
+    <circle cx="3" cy="7" r="4" fill="#ffffff"/>
+    
+    <!-- Sharp accent lines -->
+    <path d="M -70 -80 L -60 -90 L -50 -80" stroke="#6366f1" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M 70 -80 L 60 -90 L 50 -80" stroke="#6366f1" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
