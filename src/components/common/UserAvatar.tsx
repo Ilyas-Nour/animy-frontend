@@ -63,18 +63,25 @@ const UserAvatar = ({ user, className, size = 'md' }: UserAvatarProps) => {
         )
     }
 
+
+    // Use standard img tag for reliable loading of external URLs without Next.js config issues
     return (
-        <div className={cn("relative rounded-full overflow-hidden shrink-0 border border-border/50", sizeClasses[size], className)}>
-            <Image
-                src={avatarUrl}
-                alt={displayName}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                onError={() => setImageError(true)}
-            />
+        <div className={cn("relative shrink-0 overflow-hidden rounded-full bg-muted", sizeClasses[size], className)}>
+            {!imageError && avatarUrl ? (
+                <img
+                    src={avatarUrl}
+                    alt={user?.firstName || "User"}
+                    className="h-full w-full object-cover"
+                    onError={() => setImageError(true)}
+                />
+            ) : (
+                <div className="flex h-full w-full items-center justify-center bg-primary/10 font-bold text-primary">
+                    {initial}
+                </div>
+            )}
         </div>
     )
 }
+
 
 export default UserAvatar
