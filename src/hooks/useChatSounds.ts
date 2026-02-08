@@ -31,9 +31,9 @@ export const useChatSounds = () => {
             notifAudio.current = new Audio('/sounds/notif1.mp3')
             sentAudio.current = new Audio('/sounds/sent1.mp3')
 
-            // Set initial volumes
-            if (notifAudio.current) notifAudio.current.volume = NOTIF_BASE_VOLUME * globalVolume
-            if (sentAudio.current) sentAudio.current.volume = SENT_BASE_VOLUME * globalVolume
+            // Set initial volumes - Handled by the dedicated volume effect
+            // if (notifAudio.current) notifAudio.current.volume = NOTIF_BASE_VOLUME * globalVolume
+            // if (sentAudio.current) sentAudio.current.volume = SENT_BASE_VOLUME * globalVolume
 
             const unlock = () => {
                 if (isUnlocked.current) return

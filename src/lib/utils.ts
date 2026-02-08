@@ -52,7 +52,7 @@ export const delay = (ms: number): Promise<void> => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export const getAvatarUrl = (url?: string) => {
+export const getAvatarUrl = (url?: string | null) => {
   if (!url) return undefined
   if (url.startsWith('http') || url.startsWith('data:')) return url
 

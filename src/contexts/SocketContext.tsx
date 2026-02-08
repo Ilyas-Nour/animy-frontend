@@ -60,7 +60,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     // Centralize Chat Sounds
     const { isMuted, toggleMute, playNotif, playSent, globalVolume, setVolume } = useChatSounds()
 
-    const refreshUnreadCount = async () => {
+
+
+    const refreshUnreadCount = React.useCallback(async () => {
         if (!token) return
         try {
             const res = await api.get('/chat/unread-count')
@@ -69,7 +71,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error('Failed to fetch unread count', error)
         }
-    }
+    }, [token])
 
     useEffect(() => {
         if (!token || !user) {
@@ -140,7 +142,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         return () => {
             newSocket.disconnect()
         }
-    }, [token, user, playNotif]) // Removed activeFriendId dependency to prevent socket reconnections
+    }, [token, user, playNotif, refreshUnreadCount]) // Removed activeFriendId dependency to prevent socket reconnections, added refreshUnreadCount
 
     // Polling fallback
     useEffect(() => {
@@ -149,7 +151,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             refreshUnreadCount()
         }, 5000)
         return () => clearInterval(interval)
-    }, [token, user])
+    }, [token, user, refreshUnreadCount])
 
     return (
         <SocketContext.Provider value={{
