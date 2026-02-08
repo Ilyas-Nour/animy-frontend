@@ -40,6 +40,12 @@ function AnimeContent() {
           if (value) params.set(param, value)
         })
 
+        // Default Sort if not specified (Fix for "No Anime Found" on initial load)
+        if (!params.has('order_by') && !params.has('q')) {
+          params.set('order_by', 'popularity')
+          params.set('sort', 'asc') // Rank 1 is best (popularity)
+        }
+
         const response = await fetch(`/api/anime/search?${params.toString()}`)
         const json = await response.json()
 
