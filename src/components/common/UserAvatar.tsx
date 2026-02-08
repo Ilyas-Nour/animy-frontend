@@ -72,6 +72,7 @@ const UserAvatar = ({ user, className, size = 'md' }: UserAvatarProps) => {
                     src={avatarUrl}
                     alt={user?.firstName || "User"}
                     className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
                     onError={() => setImageError(true)}
                 />
             ) : (
