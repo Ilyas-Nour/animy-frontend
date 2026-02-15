@@ -186,7 +186,7 @@ export function ShareNewsModal({ open, onOpenChange, newsItem }: ShareNewsModalP
                                         </div>
 
                                         {/* Scanline Effect */}
-                                        <div className="absolute inset-0 bg-indigo-500/[0.02] translate-y-full group-hover:translate-y-[-100%] transition-transform duration-[1500ms] pointer-events-none" />
+                                        <div className="absolute inset-0 bg-indigo-500/[0.02] translate-y-full group-hover:translate-y-[-100%] transition-transform duration-1000 pointer-events-none" />
                                     </motion.button>
                                 ))
                             ) : (
