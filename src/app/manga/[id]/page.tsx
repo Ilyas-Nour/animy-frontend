@@ -4,7 +4,7 @@ import MangaDetailsClient from '@/components/manga/MangaDetailsClient'
 
 export const revalidate = 3600 // ISR: 1 hour
 
-const JIKAN_API = 'https://api.jikan.moe/v4'
+const JIKAN_API = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api/v1'
 
 async function getManga(id: string) {
     try {

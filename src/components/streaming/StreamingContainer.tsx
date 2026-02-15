@@ -45,8 +45,9 @@ export function StreamingContainer({
             // Step 1: Search for anime via our API route (using api client for correct base URL)
             const searchRes = await api.get(`/streaming/search?query=${encodeURIComponent(animeTitle)}`)
 
-            // Interceptor wraps response in data property, so we need searchRes.data.data.results
-            // But searchRes.data is the body, searchRes.data.data is the payload
+            // Backend returns { success: true, data: { provider: '...', results: [] } }
+            // Axios returns { data: { success: true, data: { ... } } }
+            // So we need searchRes.data.data
             const searchPayload = searchRes.data.data || searchRes.data
             const results = searchPayload.results || []
 

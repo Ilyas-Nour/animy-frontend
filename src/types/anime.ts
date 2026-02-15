@@ -1,13 +1,15 @@
 export interface Anime {
+  id: number
+  anilistId?: number
   mal_id: number
-  url: string
+  url?: string
   images: {
     jpg: {
       image_url: string
       small_image_url: string
       large_image_url: string
     }
-    webp: {
+    webp?: {
       image_url: string
       small_image_url: string
       large_image_url: string
@@ -16,23 +18,23 @@ export interface Anime {
   trailer?: {
     youtube_id: string
     url: string
-    embed_url: string
+    embed_url?: string
   }
   title: string
   title_english?: string
   title_japanese?: string
-  type: string
-  source: string
+  type?: string
+  source?: string
   episodes?: number
-  status: string
-  airing: boolean
-  aired: {
-    from: string
-    to: string
-    string: string
+  status?: string
+  airing?: boolean
+  aired?: {
+    from?: string
+    to?: string
+    string?: string
   }
-  duration: string
-  rating: string
+  duration?: string
+  rating?: string
   score?: number
   scored_by?: number
   rank?: number
@@ -43,23 +45,25 @@ export interface Anime {
   background?: string
   season?: string
   year?: number
-  genres: Genre[]
-  studios: Studio[]
+  genres?: Genre[]
+  studios?: Studio[]
   streaming?: StreamingLink[]
 }
 
 export interface Genre {
+  id?: number
   mal_id: number
-  type: string
+  type?: string
   name: string
-  url: string
+  url?: string
 }
 
 export interface Studio {
+  id?: number
   mal_id: number
-  type: string
+  type?: string
   name: string
-  url: string
+  url?: string
 }
 
 export interface StreamingLink {

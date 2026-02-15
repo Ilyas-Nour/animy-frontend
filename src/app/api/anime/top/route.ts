@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const JIKAN_API = 'https://api.jikan.moe/v4'
+// Proxy to Backend API
+const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const filter = searchParams.get('filter') || 'airing'
-    const limit = searchParams.get('limit') || '25'
+    const type = searchParams.get('type') || ''
 
     try {
-        const response = await fetch(`${JIKAN_API}/top/anime?filter=${filter}&limit=${limit}`, {
+        // Backend handles filter and type in /anime/top
+        const response = await fetch(`${BACKEND_API}/anime/top?filter=${filter}&type=${type}`, {
             headers: {
                 'Accept': 'application/json',
             },
@@ -16,7 +18,7 @@ export async function GET(request: NextRequest) {
         })
 
         if (!response.ok) {
-            throw new Error(`Jikan API error: ${response.status}`)
+            throw new Error(`Backend API error: ${response.status}`)
         }
 
         const data = await response.json()

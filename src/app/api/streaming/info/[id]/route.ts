@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Use a working Consumet API instance with Zoro provider
-const CONSUMET_API = process.env.CONSUMET_API_URL || 'https://consumet-api-clone.vercel.app'
+// Use our Backend
+const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
 
 export async function GET(
     request: NextRequest,
@@ -10,19 +10,22 @@ export async function GET(
     const { id } = params
 
     try {
-        // Use Zoro provider for anime info
-        const response = await fetch(`${CONSUMET_API}/anime/zoro/info?id=${encodeURIComponent(id)}`, {
+        // Call backend streaming info endpoint
+        // ID might need encoding if it contains slashes (though usually handled by params)
+        // For AnimePahe IDs or similar, they are usually safe strings
+        const response = await fetch(`${BACKEND_API}/streaming/anime/${encodeURIComponent(id)}`, {
             headers: { 'Accept': 'application/json' },
+            next: { revalidate: 0 }
         })
 
         if (!response.ok) {
-            throw new Error(`Consumet API error: ${response.status}`)
+            throw new Error(`Backend streaming info error: ${response.status}`)
         }
 
         const data = await response.json()
-        return NextResponse.json(data)
+        return NextResponse.json({ data }) // Wrap in data object
     } catch (error: any) {
         console.error('Info error:', error)
-        return NextResponse.json({ error: error.message || 'Failed to get info' }, { status: 500 })
+        return NextResponse.json({ error: error.message || 'Failed to load info' }, { status: 500 })
     }
 }

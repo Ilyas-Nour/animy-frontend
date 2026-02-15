@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Use a working Consumet API instance with Zoro provider
-const CONSUMET_API = process.env.CONSUMET_API_URL || 'https://consumet-api-clone.vercel.app'
+// Use our Backend
+const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
@@ -12,17 +12,18 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // Use Zoro provider (more reliable than Gogoanime)
-        const response = await fetch(`${CONSUMET_API}/anime/zoro/${encodeURIComponent(query)}`, {
+        // Call backend streaming search (defaults to AnimePahe)
+        const response = await fetch(`${BACKEND_API}/streaming/search?query=${encodeURIComponent(query)}`, {
             headers: { 'Accept': 'application/json' },
+            next: { revalidate: 0 }
         })
 
         if (!response.ok) {
-            throw new Error(`Consumet API error: ${response.status}`)
+            throw new Error(`Backend streaming error: ${response.status}`)
         }
 
         const data = await response.json()
-        return NextResponse.json(data)
+        return NextResponse.json({ data }) // Wrap in data object as expected by StreamingContainer
     } catch (error: any) {
         console.error('Search error:', error)
         return NextResponse.json({ error: error.message || 'Search failed' }, { status: 500 })

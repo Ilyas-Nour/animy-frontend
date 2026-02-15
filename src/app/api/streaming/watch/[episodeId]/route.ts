@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Use a working Consumet API instance with Zoro provider
-const CONSUMET_API = process.env.CONSUMET_API_URL || 'https://consumet-api-clone.vercel.app'
+// Proxy to Backend API
+const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
 
 export async function GET(
     request: NextRequest,
@@ -10,13 +10,15 @@ export async function GET(
     const { episodeId } = params
 
     try {
-        // Use Zoro provider for streaming links
-        const response = await fetch(`${CONSUMET_API}/anime/zoro/watch?episodeId=${encodeURIComponent(episodeId)}`, {
+        // Call backend streaming endpoint
+        // encoding episodeId is crucial as it might contain slashes/special chars
+        const response = await fetch(`${BACKEND_API}/streaming/episode/${encodeURIComponent(episodeId)}`, {
             headers: { 'Accept': 'application/json' },
+            next: { revalidate: 0 }
         })
 
         if (!response.ok) {
-            throw new Error(`Consumet API error: ${response.status}`)
+            throw new Error(`Backend streaming error: ${response.status}`)
         }
 
         const data = await response.json()

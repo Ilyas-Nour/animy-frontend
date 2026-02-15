@@ -1,44 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const JIKAN_API = 'https://api.jikan.moe/v4'
+// Proxy to Backend API
+const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const page = searchParams.get('page') || '1'
     const limit = searchParams.get('limit') || '24'
     const q = searchParams.get('q') || ''
-    const type = searchParams.get('type') || ''
-    const status = searchParams.get('status') || ''
-    const rating = searchParams.get('rating') || ''
-    
-    // Only apply score sorting when NOT searching - let search use relevance
-    const order_by = searchParams.get('order_by') || (q ? '' : 'score')
-    const sort = searchParams.get('sort') || 'desc'
 
     try {
-        // Build the URL with proper filtering
-        let url = `${JIKAN_API}/anime?page=${page}&limit=${limit}&sfw=true`
-        
-        // Add sorting only if specified or browsing (not searching)
-        if (order_by) {
-            url += `&order_by=${order_by}&sort=${sort}`
-        }
-        
-        // Add search query if provided
-        if (q) url += `&q=${encodeURIComponent(q)}`
-        
-        // Add optional filters
-        if (type) url += `&type=${type}`
-        if (status) url += `&status=${status}`
-        if (rating) url += `&rating=${rating}`
-
-        const response = await fetch(url, {
+        const response = await fetch(`${BACKEND_API}/anime/search?query=${encodeURIComponent(q)}&page=${page}&limit=${limit}`, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 3600 }
+            next: { revalidate: 0 } // No cache for search
         })
 
         if (!response.ok) {
-            throw new Error(`Jikan API error: ${response.status}`)
+            throw new Error(`Backend API error: ${response.status}`)
         }
 
         const data = await response.json()

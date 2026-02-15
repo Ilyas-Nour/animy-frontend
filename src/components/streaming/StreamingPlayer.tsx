@@ -38,12 +38,20 @@ export function StreamingPlayer({ episodeId, poster }: StreamingPlayerProps) {
 
             const data = await res.json()
 
-            if (!data.sources || data.sources.length === 0) {
+            if (!data.data?.sources && !data.sources) {
+                // Try both wrapped and unwrapped to be safe
+                throw new Error('No video sources structure found')
+            }
+
+            // Handle wrapped response from TransformInterceptor
+            const sourcesData = data.data?.sources ? data.data : data
+
+            if (!sourcesData.sources || sourcesData.sources.length === 0) {
                 throw new Error('No video sources available')
             }
 
-            console.log(`Found ${data.sources.length} sources`)
-            setSources(data)
+            console.log(`Found ${sourcesData.sources.length} sources`)
+            setSources(sourcesData)
 
         } catch (err: any) {
             console.error('Error fetching sources:', err)
