@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const JIKAN_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
+const BACKEND_API = 'https://animy-backend.onrender.com/api/v1'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     try {
         // Series are anime with type=tv
-        const url = `${JIKAN_API}/anime?type=tv&page=${page}&limit=${limit}&order_by=popularity&sort=desc`
+        const url = `${BACKEND_API}/anime?type=tv&page=${page}&limit=${limit}&order_by=popularity&sort=desc`
 
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },

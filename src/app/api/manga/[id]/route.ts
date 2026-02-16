@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const JIKAN_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
+const BACKEND_API = 'https://animy-backend.onrender.com/api/v1'
 
 export async function GET(
     request: NextRequest,
@@ -9,7 +9,7 @@ export async function GET(
     const { id } = params
 
     try {
-        const response = await fetch(`${JIKAN_API}/manga/${id}/full`, {
+        const response = await fetch(`${BACKEND_API}/manga/${id}/full`, {
             headers: { 'Accept': 'application/json' },
             next: { revalidate: 3600 }
         })
