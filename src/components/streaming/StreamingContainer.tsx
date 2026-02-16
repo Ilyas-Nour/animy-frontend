@@ -59,7 +59,7 @@ export function StreamingContainer({
             console.log(`Found anime ID: ${animeId}`)
 
             // Step 2: Get anime info with episodes via our API route
-            const infoRes = await api.get(`/streaming/anime/${animeId}`)
+            const infoRes = await api.get(`/streaming/anime/${encodeURIComponent(animeId)}`)
             const animeInfo = infoRes.data.data || infoRes.data
 
             if (!animeInfo.episodes || animeInfo.episodes.length === 0) {

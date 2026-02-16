@@ -72,6 +72,11 @@ const nextConfig = {
         hostname: 'hklnupqivjxztomdmwsm.supabase.co',
         pathname: '/storage/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.animepahe.si',
+        pathname: '/**',
+      },
     ],
   },
   async headers() {

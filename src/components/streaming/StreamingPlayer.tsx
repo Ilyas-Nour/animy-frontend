@@ -30,7 +30,7 @@ export function StreamingPlayer({ episodeId, poster }: StreamingPlayerProps) {
             console.log(`Fetching streaming links for episode: ${episodeId}`)
 
             // Get streaming links via our API route (no CORS issues)
-            const res = await fetch(`/api/streaming/watch/${episodeId}`)
+            const res = await fetch(`/api/streaming/watch/${encodeURIComponent(episodeId)}`)
 
             if (!res.ok) {
                 throw new Error('Failed to load video sources')
