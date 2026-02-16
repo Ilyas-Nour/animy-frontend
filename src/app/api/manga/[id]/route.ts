@@ -22,7 +22,7 @@ export async function GET(
         }
 
         const data = await response.json()
-        return NextResponse.json({ data: data.data })
+        return NextResponse.json(data.data)
     } catch (error: any) {
         console.error('Manga detail error:', error)
         return NextResponse.json({ error: error.message }, { status: 500 })

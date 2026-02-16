@@ -23,10 +23,7 @@ export async function GET(
         }
 
         const data = await response.json()
-        // Backend returns mapped object directly, frontend expects { data: ... } wrapper in some places, 
-        // but looking at page.tsx it seems to expect { data: { ... } } or just data.
-        // Let's wrap it in data: data to be safe and consistent with other routes
-        return NextResponse.json({ data })
+        return NextResponse.json({ data: data.data })
     } catch (error: any) {
         console.error('Anime detail error:', error)
         return NextResponse.json({ error: error.message }, { status: 500 })

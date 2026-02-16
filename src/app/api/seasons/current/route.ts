@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         }
 
         const data = await response.json()
-        return NextResponse.json({ data })
+        return NextResponse.json(data.data)
     } catch (error: any) {
         console.error('Current season fetch error:', error)
         return NextResponse.json({ error: error.message, data: { data: [] } }, { status: 500 })

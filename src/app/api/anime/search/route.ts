@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
         }
 
         const data = await response.json()
-        return NextResponse.json({ data })
+        return NextResponse.json(data.data)
     } catch (error: any) {
         console.error('Anime search error:', error)
         return NextResponse.json({ error: error.message, data: { data: [], pagination: {} } }, { status: 500 })

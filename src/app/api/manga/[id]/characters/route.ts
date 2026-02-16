@@ -19,7 +19,7 @@ export async function GET(
         }
 
         const data = await response.json()
-        return NextResponse.json({ data: data.data || [] })
+        return NextResponse.json(data.data)
     } catch (error: any) {
         console.error('Manga characters error:', error)
         return NextResponse.json({ data: [] })
