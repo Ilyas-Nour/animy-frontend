@@ -131,6 +131,7 @@ export function StreamingContainer({
                 <StreamingPlayer
                     episodeId={selectedEpisode.id}
                     poster={animePoster}
+                    provider={animeData.provider}
                 />
             )}
 

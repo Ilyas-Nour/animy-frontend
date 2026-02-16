@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/button'
 interface StreamingPlayerProps {
     episodeId: string
     poster?: string
+    provider?: string
 }
 
-export function StreamingPlayer({ episodeId, poster }: StreamingPlayerProps) {
+export function StreamingPlayer({ episodeId, poster, provider }: StreamingPlayerProps) {
     const [sources, setSources] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -20,17 +21,18 @@ export function StreamingPlayer({ episodeId, poster }: StreamingPlayerProps) {
 
     useEffect(() => {
         fetchSources()
-    }, [episodeId])
+    }, [episodeId, provider])
 
     const fetchSources = async () => {
         try {
             setLoading(true)
             setError(null)
 
-            console.log(`Fetching streaming links for episode: ${episodeId}`)
+            console.log(`Fetching streaming links for episode: ${episodeId} (Provider: ${provider})`)
 
             // Get streaming links via our API route (no CORS issues)
-            const res = await fetch(`/api/streaming/watch/${encodeURIComponent(episodeId)}`)
+            const queryParams = provider ? `?provider=${encodeURIComponent(provider)}` : ''
+            const res = await fetch(`/api/streaming/watch/${encodeURIComponent(episodeId)}${queryParams}`)
 
             if (!res.ok) {
                 throw new Error('Failed to load video sources')

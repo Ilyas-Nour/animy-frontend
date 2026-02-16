@@ -8,11 +8,15 @@ export async function GET(
     { params }: { params: { episodeId: string } }
 ) {
     const { episodeId } = params
+    const provider = request.nextUrl.searchParams.get('provider')
 
     try {
         // Call backend streaming endpoint
         // encoding episodeId is crucial as it might contain slashes/special chars
-        const response = await fetch(`${BACKEND_API}/streaming/episode/${encodeURIComponent(episodeId)}`, {
+        const queryParams = provider ? `?provider=${encodeURIComponent(provider)}` : ''
+        const url = `${BACKEND_API}/streaming/episode/${encodeURIComponent(episodeId)}${queryParams}`
+
+        const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },
             next: { revalidate: 0 }
         })
