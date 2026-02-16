@@ -26,7 +26,8 @@ async function getCharacters(id: string) {
         })
         if (!res.ok) return []
         const json = await res.json()
-        return json.data || []
+        // Backend returns { success: true, data: { data: [...] } }
+        return json.data?.data || []
     } catch (error) {
         return []
     }

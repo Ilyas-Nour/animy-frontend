@@ -48,9 +48,11 @@ function AnimeContent() {
 
         const response = await fetch(`/api/anime/search?${params.toString()}`)
         const json = await response.json()
+        const data = Array.isArray(json.data) ? json.data : json.data?.data || []
+        const pagination = json.pagination || json.data?.pagination || null
 
-        setAnime(json.data?.data || [])
-        setPagination(json.data?.pagination || null)
+        setAnime(data)
+        setPagination(pagination)
         setError(null)
       } catch (err: any) {
         console.error(err)

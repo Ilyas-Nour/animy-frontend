@@ -38,9 +38,11 @@ function MoviesContent() {
 
         const response = await fetch(url)
         const json = await response.json()
+        const data = Array.isArray(json.data) ? json.data : json.data?.data || []
+        const pagination = json.pagination || json.data?.pagination || null
 
-        setMovies(json.data?.data || [])
-        setPagination(json.data?.pagination || null)
+        setMovies(data)
+        setPagination(pagination)
         setError(null)
       } catch (err: any) {
         console.error(err)
