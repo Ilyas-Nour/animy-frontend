@@ -41,14 +41,19 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // 1. Fetch Top Anime (Hero + Top Section) via local API route
+    // 1. Fetch Top Anime
     const fetchTopAnime = async () => {
       try {
         setHeroLoading(true)
         setTopAnimeLoading(true)
         const res = await fetch('/api/anime/top?filter=airing&limit=15')
         const json = await res.json()
-        const data = json.data?.data || []
+
+        let data = []
+        if (Array.isArray(json.data?.data)) data = json.data.data
+        else if (Array.isArray(json.data)) data = json.data
+        else if (Array.isArray(json)) data = json
+
         setTopAnime(data.slice(0, 10))
         setHeroAnime(data.slice(0, 5))
         setTrendingHighlight(data.slice(5, 15))
@@ -60,13 +65,18 @@ export default function HomePage() {
       }
     }
 
-    // 2. Fetch Current Season (Seasonal Section) via local API route
+    // 2. Fetch Current Season
     const fetchSeasonal = async () => {
       try {
         setSeasonLoading(true)
         const res = await fetch('/api/seasons/current')
         const json = await res.json()
-        const data = json.data?.data || []
+
+        let data = []
+        if (Array.isArray(json.data?.data)) data = json.data.data
+        else if (Array.isArray(json.data)) data = json.data
+        else if (Array.isArray(json)) data = json
+
         setCurrentSeason(data.slice(0, 10))
       } catch (err) {
         console.error('Seasonal fetch error:', err)
@@ -75,13 +85,18 @@ export default function HomePage() {
       }
     }
 
-    // 3. Fetch Top Manga via local API route
+    // 3. Fetch Top Manga
     const fetchTopManga = async () => {
       try {
         setTopMangaLoading(true)
         const res = await fetch('/api/manga/search?order_by=popularity&sort=desc&limit=10')
         const json = await res.json()
-        const data = json.data?.data || []
+
+        let data = []
+        if (Array.isArray(json.data?.data)) data = json.data.data
+        else if (Array.isArray(json.data)) data = json.data
+        else if (Array.isArray(json)) data = json
+
         setTopManga(data.slice(0, 10))
       } catch (err) {
         console.error('Top Manga fetch error:', err)
@@ -90,13 +105,18 @@ export default function HomePage() {
       }
     }
 
-    // 4. Fetch Publishing Manga via local API route
+    // 4. Fetch Publishing Manga
     const fetchPubManga = async () => {
       try {
         setPubMangaLoading(true)
         const res = await fetch('/api/manga/search?status=publishing&type=manga&order_by=popularity&sort=desc&limit=10')
         const json = await res.json()
-        const data = json.data?.data || []
+
+        let data = []
+        if (Array.isArray(json.data?.data)) data = json.data.data
+        else if (Array.isArray(json.data)) data = json.data
+        else if (Array.isArray(json)) data = json
+
         setPublishingManga(data.slice(0, 10))
       } catch (err) {
         console.error('Publishing Manga fetch error:', err)
