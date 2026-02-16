@@ -345,7 +345,7 @@ export function AnimeDetailsClient({ anime, characters }: AnimeDetailsClientProp
                                 </div>
                                 <div className="flex justify-between border-b border-white/5 pb-2">
                                     <span className="text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" /> Status</span>
-                                    <span className="font-medium">{getAnimeStatus(anime.status)}</span>
+                                    <span className="font-medium">{getAnimeStatus(anime.status || 'Unknown')}</span>
                                 </div>
                                 {anime.studios && anime.studios.length > 0 && (
                                     <div className="space-y-1">
