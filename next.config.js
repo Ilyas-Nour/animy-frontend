@@ -13,6 +13,16 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 's4.anilist.co',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.kitsu.io',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'images.alphacoders.com',
         pathname: '/**',
       },
