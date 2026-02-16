@@ -26,7 +26,7 @@ export const AnimeCard = memo(function AnimeCard({ anime, index = 0 }: AnimeCard
         <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer h-full border-white/5 bg-card/40 backdrop-blur-sm">
           <div className="relative aspect-[2/3] overflow-hidden bg-muted/20">
             <Image
-              src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
+              src={anime.images.webp?.large_image_url || anime.images.jpg.large_image_url}
               alt={anime.title}
               fill
               className="object-cover group-hover:scale-110 transition-transform duration-500 will-change-transform"
