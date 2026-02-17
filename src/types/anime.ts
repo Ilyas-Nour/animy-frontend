@@ -48,6 +48,79 @@ export interface Anime {
   genres?: Genre[]
   studios?: Studio[]
   streaming?: StreamingLink[]
+  recommendations?: Recommendation[]
+  relations?: Relation[]
+  staff?: Staff[]
+  characters?: CharacterEdge[]
+}
+
+export interface Recommendation {
+  mediaRecommendation: {
+    id: number
+    title: {
+      romaji: string
+      english?: string
+    }
+    coverImage: {
+      large: string
+    }
+    isAdult?: boolean
+  }
+}
+
+export interface Relation {
+  relationType: string
+  node: {
+    id: number
+    idMal?: number
+    status: string
+    type: string
+    format: string
+    title: {
+      romaji: string
+      english?: string
+    }
+    coverImage: {
+      large: string
+    }
+  }
+}
+
+export interface Staff {
+  role: string
+  node: {
+    id: number
+    name: {
+      full: string
+    }
+    image: {
+      large: string
+    }
+  }
+}
+
+export interface VoiceActor {
+  id: number
+  name: {
+    full: string
+  }
+  image: {
+    large: string
+  }
+}
+
+export interface CharacterEdge {
+  role: string
+  node: {
+    id: number
+    name: {
+      full: string
+    }
+    image: {
+      large: string
+    }
+  }
+  voiceActors: VoiceActor[]
 }
 
 export interface Genre {

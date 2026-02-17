@@ -32,7 +32,7 @@ export const getSeasonYear = (): { season: string; year: number } => {
   return { season, year }
 }
 
-export const getAnimeScore = (score: number | null): string => {
+export const getAnimeScore = (score: number | null | undefined): string => {
   if (!score) return 'N/A'
   return score.toFixed(2)
 }

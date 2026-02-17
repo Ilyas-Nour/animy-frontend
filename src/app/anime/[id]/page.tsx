@@ -70,10 +70,14 @@ export default async function AnimeDetailPage({ params }: { params: { id: string
 
   const charactersData = await getCharacters(params.id)
 
+  const anime = {
+    ...animeData.data,
+    characters: charactersData.data || []
+  }
+
   return (
     <AnimeDetailsClient
-      anime={animeData.data}
-      characters={charactersData.data || []}
+      anime={anime}
     />
   )
 }
