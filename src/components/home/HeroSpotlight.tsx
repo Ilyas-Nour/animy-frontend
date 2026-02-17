@@ -65,11 +65,11 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 transition={{ delay: 0.2 }}
                                 className="flex flex-wrap gap-3"
                             >
-                                <Badge className="bg-primary/20 text-primary border-primary/30 backdrop-blur-xl px-3 py-1 text-sm font-black uppercase tracking-widest">
+                                <Badge className="bg-primary/20 text-primary border-primary/30 backdrop-blur-xl px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-sm font-black uppercase tracking-widest">
                                     Trending #{current + 1}
                                 </Badge>
                                 {active.genres?.slice(0, 2).map(g => (
-                                    <Badge key={g.mal_id} variant="outline" className="backdrop-blur-md border-foreground/20 text-foreground font-bold">
+                                    <Badge key={g.mal_id} variant="outline" className="backdrop-blur-md border-foreground/20 text-foreground font-bold text-[10px] md:text-sm">
                                         {g.name}
                                     </Badge>
                                 ))}
@@ -81,30 +81,30 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 transition={{ delay: 0.3 }}
                                 className="space-y-4"
                             >
-                                <h1 className={`font-black leading-[0.9] tracking-tighter text-foreground drop-shadow-sm dark:drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] line-clamp-2 md:line-clamp-3 ${active.title.length > 30 ? 'text-3xl sm:text-4xl md:text-6xl lg:text-7xl' : 'text-4xl sm:text-5xl md:text-8xl'}`}>
+                                <h1 className={`font-black leading-[0.9] tracking-tighter text-foreground drop-shadow-sm dark:drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] line-clamp-2 md:line-clamp-3 ${active.title.length > 30 ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl' : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-8xl'}`}>
                                     {active.title}
                                 </h1>
 
-                                <div className="flex items-center gap-6 text-foreground/90">
+                                <div className="flex items-center gap-4 md:gap-6 text-foreground/90">
                                     {active.score && (
-                                        <div className="flex items-center gap-2 bg-yellow-500/10 dark:bg-yellow-500/20 backdrop-blur-2xl px-4 py-2 rounded-2xl border border-yellow-500/30">
-                                            <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                                            <span className="text-xl font-black">{active.score.toFixed(1)}</span>
+                                        <div className="flex items-center gap-1.5 md:gap-2 bg-yellow-500/10 dark:bg-yellow-500/20 backdrop-blur-2xl px-3 py-1.5 md:px-4 md:py-2 rounded-xl md:rounded-2xl border border-yellow-500/30">
+                                            <Star className="h-4 w-4 md:h-5 md:w-5 text-yellow-500 fill-yellow-500" />
+                                            <span className="text-lg md:text-xl font-black">{active.score.toFixed(1)}</span>
                                         </div>
                                     )}
                                     <div className="flex flex-col">
-                                        <span className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">Format</span>
-                                        <span className="font-bold">{active.type}</span>
+                                        <span className="text-muted-foreground text-[8px] md:text-[10px] font-black uppercase tracking-widest">Format</span>
+                                        <span className="text-xs md:text-base font-bold">{active.type}</span>
                                     </div>
-                                    <div className="h-8 w-px bg-border hidden sm:block" />
+                                    <div className="h-6 md:h-8 w-px bg-border hidden sm:block" />
                                     <div className="flex flex-col">
-                                        <span className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">Year</span>
-                                        <span className="font-bold">{active.year || 'Unknown'}</span>
+                                        <span className="text-muted-foreground text-[8px] md:text-[10px] font-black uppercase tracking-widest">Year</span>
+                                        <span className="text-xs md:text-base font-bold">{active.year || 'Unknown'}</span>
                                     </div>
-                                    <div className="h-8 w-px bg-border hidden sm:block" />
+                                    <div className="h-6 md:h-8 w-px bg-border hidden sm:block" />
                                     <div className="flex flex-col">
-                                        <span className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">Status</span>
-                                        <span className="font-bold">{active.status}</span>
+                                        <span className="text-muted-foreground text-[8px] md:text-[10px] font-black uppercase tracking-widest">Status</span>
+                                        <span className="text-xs md:text-base font-bold">{active.status}</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -113,7 +113,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.4 }}
-                                className="text-base md:text-lg xl:text-xl text-muted-foreground line-clamp-3 max-w-2xl leading-relaxed font-medium"
+                                className="text-sm sm:text-base lg:text-lg xl:text-xl text-muted-foreground line-clamp-3 max-w-2xl leading-relaxed font-medium"
                             >
                                 {active.synopsis}
                             </motion.p>
@@ -125,15 +125,15 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 className="flex flex-wrap gap-4 pt-6"
                             >
                                 <Link href={`/anime/${active.mal_id}`}>
-                                    <Button size="lg" className="relative h-12 md:h-14 lg:h-16 px-6 md:px-8 lg:px-12 text-xs md:text-sm lg:text-lg xl:text-xl font-black gap-2 md:gap-3 bg-gradient-to-r from-primary via-purple-500 to-indigo-600 text-primary-foreground shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_35px_rgba(139,92,246,0.5)] rounded-xl md:rounded-2xl lg:rounded-3xl border-0 overflow-hidden group/btn transition-all duration-300 hover:scale-105 active:scale-95">
+                                    <Button size="lg" className="relative h-11 sm:h-12 md:h-12 lg:h-14 xl:h-16 px-5 sm:px-6 md:px-7 lg:px-9 xl:px-12 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-xl font-black gap-2 md:gap-3 bg-gradient-to-r from-primary via-purple-500 to-indigo-600 text-primary-foreground shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_35px_rgba(139,92,246,0.5)] rounded-xl md:rounded-2xl lg:rounded-3xl border-0 overflow-hidden group/btn transition-all duration-300 hover:scale-105 active:scale-95">
                                         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:250%_250%] animate-shimmer group-hover/btn:opacity-100 opacity-0 transition-opacity" />
-                                        <Play className="relative h-4 w-4 md:h-5 lg:h-6 md:w-5 lg:w-6 fill-current group-hover/btn:translate-x-1 transition-transform" />
+                                        <Play className="relative h-3.5 w-3.5 md:h-4 lg:h-5 xl:h-6 md:w-4 lg:w-5 xl:w-6 fill-current group-hover/btn:translate-x-1 transition-transform" />
                                         <span className="relative">Start Your Journey</span>
                                     </Button>
                                 </Link>
                                 <Link href={`/anime/${active.mal_id}`}>
-                                    <Button size="lg" variant="outline" className="h-12 md:h-14 lg:h-16 px-6 md:px-8 lg:px-12 text-xs md:text-sm lg:text-lg xl:text-xl font-black gap-2 md:gap-3 border-white/20 bg-white/5 backdrop-blur-2xl text-foreground hover:bg-white/10 hover:border-white/40 rounded-xl md:rounded-2xl lg:rounded-3xl shadow-xl transition-all duration-300 hover:scale-105 group/intel">
-                                        <Info className="h-4 w-4 md:h-5 lg:h-6 md:w-5 lg:w-6 text-primary group-hover/intel:scale-110 transition-transform" />
+                                    <Button size="lg" variant="outline" className="h-11 sm:h-12 md:h-12 lg:h-14 xl:h-16 px-5 sm:px-6 md:px-7 lg:px-9 xl:px-12 text-[10px] sm:text-xs md:text-sm lg:text-base xl:text-xl font-black gap-2 md:gap-3 border-white/20 bg-white/5 backdrop-blur-2xl text-foreground hover:bg-white/10 hover:border-white/40 rounded-xl md:rounded-2xl lg:rounded-3xl shadow-xl transition-all duration-300 hover:scale-105 group/intel">
+                                        <Info className="h-3.5 w-3.5 md:h-4 lg:h-5 xl:h-6 md:w-4 lg:w-5 xl:w-6 text-primary group-hover/intel:scale-110 transition-transform" />
                                         Intel Details
                                     </Button>
                                 </Link>
