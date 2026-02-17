@@ -125,15 +125,15 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 className="flex flex-wrap gap-4 pt-6"
                             >
                                 <Link href={`/anime/${active.mal_id}`}>
-                                    <Button size="lg" className="relative h-14 md:h-16 px-8 md:px-12 text-sm md:text-xl font-black gap-2 md:gap-3 bg-gradient-to-r from-primary via-purple-500 to-indigo-600 text-primary-foreground shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)] rounded-2xl md:rounded-3xl border-0 overflow-hidden group/btn transition-all duration-300 hover:scale-105 active:scale-95">
+                                    <Button size="lg" className="relative h-12 md:h-14 lg:h-16 px-6 md:px-8 lg:px-12 text-xs md:text-sm lg:text-lg xl:text-xl font-black gap-2 md:gap-3 bg-gradient-to-r from-primary via-purple-500 to-indigo-600 text-primary-foreground shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_35px_rgba(139,92,246,0.5)] rounded-xl md:rounded-2xl lg:rounded-3xl border-0 overflow-hidden group/btn transition-all duration-300 hover:scale-105 active:scale-95">
                                         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:250%_250%] animate-shimmer group-hover/btn:opacity-100 opacity-0 transition-opacity" />
-                                        <Play className="relative h-4 w-4 md:h-6 md:w-6 fill-current group-hover/btn:translate-x-1 transition-transform" />
+                                        <Play className="relative h-4 w-4 md:h-5 lg:h-6 md:w-5 lg:w-6 fill-current group-hover/btn:translate-x-1 transition-transform" />
                                         <span className="relative">Start Your Journey</span>
                                     </Button>
                                 </Link>
                                 <Link href={`/anime/${active.mal_id}`}>
-                                    <Button size="lg" variant="outline" className="h-14 md:h-16 px-8 md:px-12 text-sm md:text-xl font-black gap-2 md:gap-3 border-white/20 bg-white/5 backdrop-blur-2xl text-foreground hover:bg-white/10 hover:border-white/40 rounded-2xl md:rounded-3xl shadow-xl transition-all duration-300 hover:scale-105 group/intel">
-                                        <Info className="h-4 w-4 md:h-6 md:w-6 text-primary group-hover/intel:scale-110 transition-transform" />
+                                    <Button size="lg" variant="outline" className="h-12 md:h-14 lg:h-16 px-6 md:px-8 lg:px-12 text-xs md:text-sm lg:text-lg xl:text-xl font-black gap-2 md:gap-3 border-white/20 bg-white/5 backdrop-blur-2xl text-foreground hover:bg-white/10 hover:border-white/40 rounded-xl md:rounded-2xl lg:rounded-3xl shadow-xl transition-all duration-300 hover:scale-105 group/intel">
+                                        <Info className="h-4 w-4 md:h-5 lg:h-6 md:w-5 lg:w-6 text-primary group-hover/intel:scale-110 transition-transform" />
                                         Intel Details
                                     </Button>
                                 </Link>
