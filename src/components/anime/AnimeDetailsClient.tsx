@@ -450,7 +450,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                     Relations
                                 </h2>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                    {(anime.relations as Relation[]).map((relation) => (
+                                    {Array.isArray(anime.relations) && anime.relations.filter(r => r && r.node).map((relation) => (
                                         <RelationCard key={relation.node.id} relation={relation} />
                                     ))}
                                 </div>
@@ -464,7 +464,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                 Characters
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {Array.isArray(anime.characters) && anime.characters.slice(0, 12).map((edge: CharacterEdge, index: number) => (
+                                {Array.isArray(anime.characters) && anime.characters.filter(edge => edge && edge.node).slice(0, 12).map((edge: CharacterEdge, index: number) => (
                                     <CharacterVoiceCard
                                         key={edge.node.id || index}
                                         edge={edge}
@@ -523,8 +523,8 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                     Key Staff
                                 </h2>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                                    {(anime.staff as Staff[]).map((staffMember, index) => (
-                                        <StaffCard key={index} staff={staffMember} />
+                                    {Array.isArray(anime.staff) && anime.staff.filter(s => s && s.node).map((staffMember, index) => (
+                                        <StaffCard key={staffMember.node.id || index} staff={staffMember} />
                                     ))}
                                 </div>
                             </section>
@@ -538,7 +538,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                     Recommended for You
                                 </h2>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6">
-                                    {(anime.recommendations as Recommendation[]).map((rec) => (
+                                    {Array.isArray(anime.recommendations) && anime.recommendations.filter(rec => rec && rec.mediaRecommendation).map((rec) => (
                                         <motion.div
                                             key={rec.mediaRecommendation.id}
                                             whileHover={{ y: -8 }}
