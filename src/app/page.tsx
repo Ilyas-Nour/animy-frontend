@@ -26,7 +26,7 @@ export default function HomePage() {
   const [hasMounted, setHasMounted] = useState(false)
   const [topAnime, setTopAnime] = useState<Anime[]>([])
   const [trendingHighlight, setTrendingHighlight] = useState<Anime[]>([])
-  const [currentSeason, setCurrentSeason] = useState<Anime[]>([])
+  const [upcomingAnime, setUpcomingAnime] = useState<Anime[]>([])
   const [heroAnime, setHeroAnime] = useState<Anime[]>([])
   const [topManga, setTopManga] = useState<Manga[]>([])
   const [publishingManga, setPublishingManga] = useState<Manga[]>([])
@@ -35,7 +35,7 @@ export default function HomePage() {
   // Fine-grained loading states
   const [heroLoading, setHeroLoading] = useState(true)
   const [topAnimeLoading, setTopAnimeLoading] = useState(true)
-  const [seasonLoading, setSeasonLoading] = useState(true)
+  const [upcomingLoading, setUpcomingLoading] = useState(true)
   const [topMangaLoading, setTopMangaLoading] = useState(true)
   const [pubMangaLoading, setPubMangaLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -70,10 +70,10 @@ export default function HomePage() {
           return top // Return for sequencing
         }
 
-        // 2. Fetch Seasonal (Sequenced)
-        const fetchSeasonal = async (baseAnime: Anime[]) => {
-          setSeasonLoading(true)
-          const res = await fetch('/api/seasons/current?limit=30')
+        // 2. Fetch Upcoming (Sequenced)
+        const fetchUpcoming = async (baseAnime: Anime[]) => {
+          setUpcomingLoading(true)
+          const res = await fetch('/api/anime/upcoming?limit=30')
           const json = await res.json()
 
           let data = []
@@ -83,8 +83,8 @@ export default function HomePage() {
 
           const topIds = new Set(baseAnime.map(a => a.mal_id))
           const filtered = data.filter((a: Anime) => !topIds.has(a.mal_id))
-          setCurrentSeason(filtered.slice(0, 10))
-          setSeasonLoading(false)
+          setUpcomingAnime(filtered.slice(0, 10))
+          setUpcomingLoading(false)
         }
 
         // 3. Fetch Top Manga
@@ -123,7 +123,7 @@ export default function HomePage() {
 
         // Run sequences
         const loadedTopAnime = await fetchTopAnime()
-        await fetchSeasonal(loadedTopAnime)
+        await fetchUpcoming(loadedTopAnime)
 
         const loadedTopManga = await fetchTopManga()
         await fetchPubManga(loadedTopManga)
@@ -172,9 +172,9 @@ export default function HomePage() {
         <div className="hidden md:block space-y-24">
           <AnimeHomeSection
             topAnime={topAnime}
-            currentSeason={currentSeason}
+            upcomingAnime={upcomingAnime}
             topLoading={topAnimeLoading}
-            seasonLoading={seasonLoading}
+            upcomingLoading={upcomingLoading}
           />
           <MangaHomeSection
             topManga={topManga}
@@ -196,9 +196,9 @@ export default function HomePage() {
               >
                 <AnimeHomeSection
                   topAnime={topAnime}
-                  currentSeason={currentSeason}
+                  upcomingAnime={upcomingAnime}
                   topLoading={topAnimeLoading}
-                  seasonLoading={seasonLoading}
+                  upcomingLoading={upcomingLoading}
                 />
               </motion.div>
             )}

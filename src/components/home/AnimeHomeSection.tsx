@@ -5,12 +5,12 @@ import { Anime } from '@/types/anime'
 
 interface AnimeHomeSectionProps {
     topAnime: Anime[]
-    currentSeason: Anime[]
+    upcomingAnime: Anime[]
     topLoading?: boolean
-    seasonLoading?: boolean
+    upcomingLoading?: boolean
 }
 
-export function AnimeHomeSection({ topAnime, currentSeason, topLoading, seasonLoading }: AnimeHomeSectionProps) {
+export function AnimeHomeSection({ topAnime, upcomingAnime, topLoading, upcomingLoading }: AnimeHomeSectionProps) {
     return (
         <div className="space-y-16">
             {/* Top Airing Anime */}
@@ -35,25 +35,25 @@ export function AnimeHomeSection({ topAnime, currentSeason, topLoading, seasonLo
                 )}
             </section>
 
-            {/* Current Season */}
+            {/* Upcoming Next Season */}
             <section className="space-y-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div className="space-y-2">
                         <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">
-                            Seasonal <span className="text-pink-500 italic">Awakening</span>
+                            Upcoming <span className="text-pink-500 italic">Next Season</span>
                         </h2>
-                        <p className="text-muted-foreground font-medium">New legends being written in the current season</p>
+                        <p className="text-muted-foreground font-medium">Anticipated legends arriving in the coming months</p>
                     </div>
-                    <Link href="/seasons">
+                    <Link href="/anime/upcoming">
                         <Button variant="outline" className="h-12 px-8 rounded-xl font-bold border-border bg-foreground/[0.03] hover:bg-foreground/[0.05] transition-all">
-                            Current Season
+                            View Upcoming
                         </Button>
                     </Link>
                 </div>
-                {seasonLoading ? (
+                {upcomingLoading ? (
                     <AnimeGridSkeleton count={6} />
                 ) : (
-                    <AnimeGrid anime={currentSeason} />
+                    <AnimeGrid anime={upcomingAnime} />
                 )}
             </section>
         </div>
