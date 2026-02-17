@@ -7,11 +7,13 @@ import { Button } from '@/components/ui/button'
 
 interface StreamingPlayerProps {
     episodeId: string
+    episodeNumber?: number | string
     poster?: string
     provider?: string
+    malId?: number
 }
 
-export function StreamingPlayer({ episodeId, poster, provider }: StreamingPlayerProps) {
+export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, malId }: StreamingPlayerProps) {
     const [sources, setSources] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -31,7 +33,10 @@ export function StreamingPlayer({ episodeId, poster, provider }: StreamingPlayer
             console.log(`Fetching streaming links for episode: ${episodeId} (Provider: ${provider})`)
 
             // Get streaming links via our API route (no CORS issues)
-            const queryParams = provider ? `?provider=${encodeURIComponent(provider)}` : ''
+            let queryParams = `?provider=${encodeURIComponent(provider || 'hianime')}`
+            if (malId) queryParams += `&malId=${malId}`
+            if (episodeNumber) queryParams += `&ep=${episodeNumber}`
+
             const res = await fetch(`/api/streaming/watch/${encodeURIComponent(episodeId)}${queryParams}`)
 
             if (!res.ok) {
@@ -168,6 +173,20 @@ export function StreamingPlayer({ episodeId, poster, provider }: StreamingPlayer
                         Retry
                     </Button>
                 </div>
+            </div>
+        )
+    }
+
+    // If we have an iframe URL, use it (it's more stable as it avoids proxy issues)
+    if (sources?.iframeUrl) {
+        return (
+            <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10">
+                <iframe
+                    src={sources.iframeUrl}
+                    className="w-full h-full"
+                    allowFullScreen
+                    allow="autoplay; encrypted-media"
+                />
             </div>
         )
     }

@@ -9,11 +9,16 @@ export async function GET(
 ) {
     const { episodeId } = params
     const provider = request.nextUrl.searchParams.get('provider')
+    const malId = request.nextUrl.searchParams.get('malId')
+    const ep = request.nextUrl.searchParams.get('ep')
 
     try {
         // Call backend streaming endpoint
         // encoding episodeId is crucial as it might contain slashes/special chars
-        const queryParams = provider ? `?provider=${encodeURIComponent(provider)}` : ''
+        let queryParams = `?provider=${encodeURIComponent(provider || 'hianime')}`
+        if (malId) queryParams += `&malId=${encodeURIComponent(malId)}`
+        if (ep) queryParams += `&ep=${encodeURIComponent(ep)}`
+
         const url = `${BACKEND_API}/streaming/episode/${encodeURIComponent(episodeId)}${queryParams}`
 
         const response = await fetch(url, {

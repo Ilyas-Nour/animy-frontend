@@ -130,8 +130,10 @@ export function StreamingContainer({
             {selectedEpisode && (
                 <StreamingPlayer
                     episodeId={selectedEpisode.id}
+                    episodeNumber={selectedEpisode.number}
                     poster={animePoster}
                     provider={animeData.provider}
+                    malId={malId}
                 />
             )}
 
