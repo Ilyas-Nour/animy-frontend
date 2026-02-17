@@ -41,106 +41,100 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // 1. Fetch Top Anime
-    const fetchTopAnime = async () => {
+    const loadAllData = async () => {
       try {
-        setHeroLoading(true)
-        setTopAnimeLoading(true)
-        const res = await fetch('/api/anime/top?filter=airing&limit=15')
-        const json = await res.json()
+        setHasMounted(true)
 
-        let data = []
-        if (Array.isArray(json.data?.data)) data = json.data.data
-        else if (Array.isArray(json.data)) data = json.data
-        else if (Array.isArray(json)) data = json
+        // 1. Fetch Top Anime First (The Source of Truth for Deduplication)
+        const fetchTopAnime = async () => {
+          setHeroLoading(true)
+          setTopAnimeLoading(true)
+          const res = await fetch('/api/anime/top?filter=airing&limit=20')
+          const json = await res.json()
 
-        setTopAnime(data.slice(0, 10))
-        setHeroAnime(data.slice(0, 5))
-        setTrendingHighlight(data.slice(5, 15))
+          let data = []
+          if (Array.isArray(json.data?.data)) data = json.data.data
+          else if (Array.isArray(json.data)) data = json.data
+          else if (Array.isArray(json)) data = json
+
+          const top = data.slice(0, 10)
+          const hero = data.slice(0, 5)
+          const trending = data.slice(5, 15)
+
+          setTopAnime(top)
+          setHeroAnime(hero)
+          setTrendingHighlight(trending)
+          setHeroLoading(false)
+          setTopAnimeLoading(false)
+
+          return top // Return for sequencing
+        }
+
+        // 2. Fetch Seasonal (Sequenced)
+        const fetchSeasonal = async (baseAnime: Anime[]) => {
+          setSeasonLoading(true)
+          const res = await fetch('/api/seasons/current?limit=30')
+          const json = await res.json()
+
+          let data = []
+          if (Array.isArray(json.data?.data)) data = json.data.data
+          else if (Array.isArray(json.data)) data = json.data
+          else if (Array.isArray(json)) data = json
+
+          const topIds = new Set(baseAnime.map(a => a.mal_id))
+          const filtered = data.filter((a: Anime) => !topIds.has(a.mal_id))
+          setCurrentSeason(filtered.slice(0, 10))
+          setSeasonLoading(false)
+        }
+
+        // 3. Fetch Top Manga
+        const fetchTopManga = async () => {
+          setTopMangaLoading(true)
+          const res = await fetch('/api/manga/search?order_by=popularity&sort=desc&limit=15')
+          const json = await res.json()
+
+          let data = []
+          if (Array.isArray(json.data?.data)) data = json.data.data
+          else if (Array.isArray(json.data)) data = json.data
+          else if (Array.isArray(json)) data = json
+
+          const top = data.slice(0, 10)
+          setTopManga(top)
+          setTopMangaLoading(false)
+          return top
+        }
+
+        // 4. Fetch Publishing Manga (Sequenced)
+        const fetchPubManga = async (baseManga: Manga[]) => {
+          setPubMangaLoading(true)
+          const res = await fetch('/api/manga/search?status=publishing&type=manga&order_by=popularity&sort=desc&limit=30')
+          const json = await res.json()
+
+          let data = []
+          if (Array.isArray(json.data?.data)) data = json.data.data
+          else if (Array.isArray(json.data)) data = json.data
+          else if (Array.isArray(json)) data = json
+
+          const topIds = new Set(baseManga.map(m => m.mal_id))
+          const filtered = data.filter((m: Manga) => !topIds.has(m.mal_id))
+          setPublishingManga(filtered.slice(0, 10))
+          setPubMangaLoading(false)
+        }
+
+        // Run sequences
+        const loadedTopAnime = await fetchTopAnime()
+        await fetchSeasonal(loadedTopAnime)
+
+        const loadedTopManga = await fetchTopManga()
+        await fetchPubManga(loadedTopManga)
+
       } catch (err) {
-        console.error('Top Anime fetch error:', err)
-      } finally {
-        setHeroLoading(false)
-        setTopAnimeLoading(false)
+        console.error('Home load error:', err)
+        setError('Failed to load portal content. Please try again.')
       }
     }
 
-    // 2. Fetch Current Season
-    const fetchSeasonal = async () => {
-      try {
-        setSeasonLoading(true)
-        // Increase limit to 20 to ensure 10 remain after filter
-        const res = await fetch('/api/seasons/current?limit=25')
-        const json = await res.json()
-
-        let data = []
-        if (Array.isArray(json.data?.data)) data = json.data.data
-        else if (Array.isArray(json.data)) data = json.data
-        else if (Array.isArray(json)) data = json
-
-        // Deduplicate against Top/Hero Anime
-        const topIds = new Set(topAnime.map(a => a.mal_id))
-        const filtered = data.filter((a: Anime) => !topIds.has(a.mal_id))
-
-        setCurrentSeason(filtered.slice(0, 10))
-      } catch (err) {
-        console.error('Seasonal fetch error:', err)
-      } finally {
-        setSeasonLoading(false)
-      }
-    }
-
-    // 3. Fetch Top Manga
-    const fetchTopManga = async () => {
-      try {
-        setTopMangaLoading(true)
-        const res = await fetch('/api/manga/search?order_by=popularity&sort=desc&limit=10')
-        const json = await res.json()
-
-        let data = []
-        if (Array.isArray(json.data?.data)) data = json.data.data
-        else if (Array.isArray(json.data)) data = json.data
-        else if (Array.isArray(json)) data = json
-
-        setTopManga(data.slice(0, 10))
-      } catch (err) {
-        console.error('Top Manga fetch error:', err)
-      } finally {
-        setTopMangaLoading(false)
-      }
-    }
-
-    // 4. Fetch Publishing Manga
-    const fetchPubManga = async () => {
-      try {
-        setPubMangaLoading(true)
-        // Increase limit to find more unique items
-        const res = await fetch('/api/manga/search?status=publishing&type=manga&order_by=popularity&sort=desc&limit=25')
-        const json = await res.json()
-
-        let data = []
-        if (Array.isArray(json.data?.data)) data = json.data.data
-        else if (Array.isArray(json.data)) data = json.data
-        else if (Array.isArray(json)) data = json
-
-        // Deduplicate against Top Manga
-        const topMangaIds = new Set(topManga.map(m => m.mal_id))
-        const filtered = data.filter((m: Manga) => !topMangaIds.has(m.mal_id))
-
-        setPublishingManga(filtered.slice(0, 10))
-      } catch (err) {
-        console.error('Publishing Manga fetch error:', err)
-      } finally {
-        setPubMangaLoading(false)
-      }
-    }
-
-    // Execute all independently
-    fetchTopAnime()
-    fetchSeasonal()
-    fetchTopManga()
-    fetchPubManga()
-    setHasMounted(true)
+    loadAllData()
   }, [])
 
   if (error) return <ErrorMessage message={error} />
