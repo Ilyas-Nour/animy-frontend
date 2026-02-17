@@ -69,7 +69,8 @@ export default function HomePage() {
     const fetchSeasonal = async () => {
       try {
         setSeasonLoading(true)
-        const res = await fetch('/api/seasons/current')
+        // Increase limit to 20 to ensure 10 remain after filter
+        const res = await fetch('/api/seasons/current?limit=25')
         const json = await res.json()
 
         let data = []
@@ -77,7 +78,11 @@ export default function HomePage() {
         else if (Array.isArray(json.data)) data = json.data
         else if (Array.isArray(json)) data = json
 
-        setCurrentSeason(data.slice(0, 10))
+        // Deduplicate against Top/Hero Anime
+        const topIds = new Set(topAnime.map(a => a.mal_id))
+        const filtered = data.filter((a: Anime) => !topIds.has(a.mal_id))
+
+        setCurrentSeason(filtered.slice(0, 10))
       } catch (err) {
         console.error('Seasonal fetch error:', err)
       } finally {
@@ -109,7 +114,8 @@ export default function HomePage() {
     const fetchPubManga = async () => {
       try {
         setPubMangaLoading(true)
-        const res = await fetch('/api/manga/search?status=publishing&type=manga&order_by=popularity&sort=desc&limit=10')
+        // Increase limit to find more unique items
+        const res = await fetch('/api/manga/search?status=publishing&type=manga&order_by=popularity&sort=desc&limit=25')
         const json = await res.json()
 
         let data = []
@@ -117,7 +123,11 @@ export default function HomePage() {
         else if (Array.isArray(json.data)) data = json.data
         else if (Array.isArray(json)) data = json
 
-        setPublishingManga(data.slice(0, 10))
+        // Deduplicate against Top Manga
+        const topMangaIds = new Set(topManga.map(m => m.mal_id))
+        const filtered = data.filter((m: Manga) => !topMangaIds.has(m.mal_id))
+
+        setPublishingManga(filtered.slice(0, 10))
       } catch (err) {
         console.error('Publishing Manga fetch error:', err)
       } finally {
