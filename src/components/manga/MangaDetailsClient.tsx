@@ -54,14 +54,21 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                 api.get('/users/favorites/manga')
             ])
 
-            const listEntry = listRes.data.data.find((item: any) => item.mangaId === manga.mal_id)
-            if (listEntry) {
-                setIsInMangaList(true)
-                setMangaListStatus(listEntry.status)
+            const listData = listRes.data?.data
+            const favData = favRes.data?.data
+
+            if (Array.isArray(listData)) {
+                const listEntry = listData.find((item: any) => item.mangaId === manga.mal_id)
+                if (listEntry) {
+                    setIsInMangaList(true)
+                    setMangaListStatus(listEntry.status)
+                }
             }
 
-            const isFav = favRes.data.data.some((item: any) => item.mangaId === manga.mal_id)
-            setIsFavorited(isFav)
+            if (Array.isArray(favData)) {
+                const isFav = favData.some((item: any) => item.mangaId === manga.mal_id)
+                setIsFavorited(isFav)
+            }
         } catch (error) {
             console.error('Failed to check manga status:', error)
         }
@@ -308,12 +315,12 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                                     <span className="text-muted-foreground flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Rank</span>
                                     <span className="font-medium">#{manga.rank || 'N/A'}</span>
                                 </div>
-                                {manga.authors?.length > 0 && (
+                                {Array.isArray(manga.authors) && manga.authors.length > 0 && (
                                     <div className="space-y-1">
                                         <span className="text-muted-foreground block">Authors</span>
                                         <div className="flex flex-wrap gap-1">
-                                            {manga.authors.map(author => (
-                                                <Badge key={author.mal_id} variant="secondary" className="text-[10px] py-0">{author.name}</Badge>
+                                            {manga.authors.map((author: any) => (
+                                                <Badge key={author.mal_id || author.name} variant="secondary" className="text-[10px] py-0">{author.name}</Badge>
                                             ))}
                                         </div>
                                     </div>
@@ -368,8 +375,8 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                             </div>
 
                             <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                                {manga.genres?.map(genre => (
-                                    <Badge key={genre.mal_id} variant="secondary" className="px-3 py-1 bg-white/5 border-white/10 hover:bg-white/10">
+                                {Array.isArray(manga.genres) && manga.genres.map((genre: any) => (
+                                    <Badge key={genre.mal_id || genre.name} variant="secondary" className="px-3 py-1 bg-white/5 border-white/10 hover:bg-white/10">
                                         {genre.name}
                                     </Badge>
                                 ))}
@@ -393,9 +400,9 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                                     Characters
                                 </h2>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
-                                    {characters.slice(0, 8).map((char: any) => (
+                                    {Array.isArray(characters) && characters.slice(0, 8).map((char: any) => (
                                         <CharacterCard
-                                            key={char.character.mal_id}
+                                            key={char.character?.mal_id || char.id}
                                             character={char.character}
                                             role={char.role}
                                         />
