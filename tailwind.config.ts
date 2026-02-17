@@ -87,6 +87,11 @@ const config: Config = {
         'fade-in': 'fade-in 0.5s ease-out',
         'slide-in': 'slide-in 0.3s ease-out',
       },
+      screens: {
+        '3xl': '1920px',
+        '4xl': '2560px',
+        '5xl': '3840px',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],
