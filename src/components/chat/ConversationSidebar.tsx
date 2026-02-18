@@ -218,19 +218,19 @@ export default function ConversationSidebar({
 
 
     return (
-        <div className="w-full md:w-80 h-full bg-background/40 backdrop-blur-2xl border-r border-white/5 flex flex-col shadow-2xl relative overflow-hidden">
+        <div className="w-full md:w-80 h-full bg-background/60 backdrop-blur-2xl border-r border-border/40 flex flex-col shadow-2xl relative overflow-hidden">
             {/* Ambient Background Glows */}
             <div className="absolute top-0 -left-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 -right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
             {/* Header */}
-            <div className="p-6 border-b border-white/5 space-y-5 relative z-10 bg-background/20">
+            <div className="p-6 border-b border-border/40 space-y-5 relative z-10 bg-background/40">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl shadow-lg shadow-purple-500/20">
                             <MessageCircle className="w-5 h-5 text-white" />
                         </div>
-                        <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
+                        <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
                             AniChat
                         </h2>
                     </div>
@@ -243,7 +243,7 @@ export default function ConversationSidebar({
                         placeholder="Search conversations..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 h-11 bg-white/5 border-white/5 focus:bg-white/10 focus:border-purple-500/30 text-foreground placeholder:text-muted-foreground/50 transition-all rounded-2xl shadow-inner shadow-black/20"
+                        className="pl-10 h-11 bg-muted/40 border-border/40 focus:bg-background focus:border-purple-500/30 text-foreground placeholder:text-muted-foreground/50 transition-all rounded-2xl shadow-inner shadow-black/5"
                     />
                 </div>
             </div>
@@ -286,8 +286,8 @@ export default function ConversationSidebar({
                                         className={cn(
                                             "group p-3.5 rounded-2xl cursor-pointer transition-all duration-300 relative border border-transparent",
                                             isSelected
-                                                ? "bg-white/10 border-white/10 shadow-xl shadow-black/10 scale-[1.02]"
-                                                : "hover:bg-white/5 hover:border-white/5"
+                                                ? "bg-muted/60 border-border/40 shadow-xl shadow-black/5 scale-[1.02]"
+                                                : "hover:bg-muted/40 hover:border-border/40"
                                         )}
                                     >
                                         {isSelected && (
@@ -301,55 +301,51 @@ export default function ConversationSidebar({
                                             <div className="relative shrink-0">
                                                 <div className={cn(
                                                     "rounded-2xl transition-all duration-500 p-0.5",
-                                                    isSelected ? "ring-2 ring-purple-500/50" : "group-hover:ring-2 group-hover:ring-white/10"
+                                                    isOnline ? "ring-2 ring-green-500/50" : "group-hover:ring-2 group-hover:ring-border/40"
                                                 )}>
-                                                    <UserAvatar
-                                                        user={conversation.friend}
-                                                        size="lg"
-                                                        className="rounded-xl shadow-md"
-                                                    />
+                                                    <UserAvatar user={conversation.friend} className="w-12 h-12 text-base rounded-xl shadow-md" />
                                                 </div>
-                                                <AnimatePresence>
-                                                    {isOnline && (
-                                                        <motion.div
-                                                            initial={{ scale: 0 }}
-                                                            animate={{ scale: 1 }}
-                                                            exit={{ scale: 0 }}
-                                                            className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-3 border-background rounded-full shadow-lg"
-                                                        />
-                                                    )}
-                                                </AnimatePresence>
+                                                {isOnline && (
+                                                    <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-20"></span>
+                                                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-500 border-2 border-background"></span>
+                                                    </span>
+                                                )}
                                             </div>
-
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-center mb-1">
                                                     <h3 className={cn(
                                                         "font-bold truncate pr-2 transition-colors",
-                                                        isSelected ? "text-white" : "text-white/80 group-hover:text-white"
+                                                        isSelected ? "text-foreground" : "text-foreground/80 group-hover:text-foreground"
                                                     )}>
                                                         {conversation.friend.username}
                                                     </h3>
-                                                    {(lastMessage?.createdAt || conversation.updatedAt) && (
-                                                        <span className="text-[10px] font-medium text-white/30 whitespace-nowrap">
-                                                            {format(new Date(lastMessage?.createdAt || conversation.updatedAt), 'HH:mm')}
+                                                    {lastMessage && (
+                                                        <span className={cn(
+                                                            "text-[10px] font-medium whitespace-nowrap",
+                                                            isSelected ? "text-muted-foreground" : "text-muted-foreground/70"
+                                                        )}>
+                                                            {format(new Date(lastMessage.createdAt), 'HH:mm')}
                                                         </span>
                                                     )}
                                                 </div>
-
                                                 <div className="flex justify-between items-center gap-2">
-                                                    <p className={cn(
-                                                        "text-xs truncate transition-all duration-300",
-                                                        isSelected ? "text-white/60" : "text-white/40 group-hover:text-white/60",
-                                                        conversation.unreadCount > 0 && "text-white/90 font-bold"
-                                                    )}>
-                                                        {lastMessage?.senderId === conversation.friend.id ? '' : 'You: '}
-                                                        {lastMessage?.messageType === 'TEXT'
-                                                            ? lastMessage.content
-                                                            : lastMessage?.messageType ? `[${lastMessage.messageType}]` : 'Start a conversation...'}
-                                                    </p>
-
+                                                    {lastMessage ? (
+                                                        <p className={cn(
+                                                            "text-xs truncate transition-all duration-300",
+                                                            isSelected ? "text-muted-foreground" : "text-muted-foreground/70 group-hover:text-muted-foreground"
+                                                        )}>
+                                                            {lastMessage.senderId === user?.id && <span className="opacity-70 mr-1">You:</span>}
+                                                            {lastMessage.content}
+                                                        </p>
+                                                    ) : (
+                                                        <span className="text-xs italic text-muted-foreground/50 flex items-center gap-1">
+                                                            <Sparkles className="w-3 h-3" />
+                                                            New Chat
+                                                        </span>
+                                                    )}
                                                     {conversation.unreadCount > 0 && (
-                                                        <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 h-5 px-2 min-w-[20px] rounded-lg shadow-lg shadow-purple-500/20 text-[10px] font-bold">
+                                                        <Badge className="h-5 min-w-[1.25rem] px-1.5 flex items-center justify-center bg-purple-500 text-white border-0 shadow-lg shadow-purple-500/30 text-[10px] font-bold">
                                                             {conversation.unreadCount}
                                                         </Badge>
                                                     )}

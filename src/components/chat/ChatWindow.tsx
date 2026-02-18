@@ -635,7 +635,7 @@ function MessageBubble({
                 <div className="flex items-center gap-1 group/bubble relative z-10">
                     {/* Bubble Content */}
                     <div className={cn(
-                        "p-3 rounded-xl shadow-sm relative transition-all duration-300 border backdrop-blur-md overflow-hidden",
+                        "p-3 rounded-xl shadow-sm relative transition-all duration-300 border backdrop-blur-md overflow-hidden min-w-[85px]",
                         ['STICKER', 'ANIME_CARD', 'MEDIA_CARD'].includes(message.messageType)
                             ? "bg-transparent border-transparent shadow-none p-0 !rounded-none"
                             : isMyMessage
@@ -673,7 +673,7 @@ function MessageBubble({
                                         className="w-32 h-32 object-contain drop-shadow-2xl"
                                     />
                                 ) : message.messageType === 'TEXT' ? (
-                                    <p className="break-words [overflow-wrap:anywhere] leading-relaxed text-sm font-medium tracking-tight select-text whitespace-pre-wrap pb-4 pr-16">{message.content}</p>
+                                    <p className="break-words [overflow-wrap:anywhere] leading-relaxed text-sm font-medium tracking-tight select-text whitespace-pre-wrap pb-4">{message.content}</p>
                                 ) : message.messageType === 'MEDIA_CARD' && (
                                     <motion.div
                                         whileHover={{ y: -5 }}
