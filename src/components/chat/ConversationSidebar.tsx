@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/context/AuthContext'
 import api from '@/lib/api'
@@ -12,6 +12,7 @@ import { cn, getAvatarUrl } from '@/lib/utils'
 import Image from 'next/image'
 import UserAvatar from '@/components/common/UserAvatar'
 import { motion, AnimatePresence } from 'framer-motion'
+import ConversationItem from './ConversationItem'
 
 interface Friend {
     id: string
@@ -196,7 +197,7 @@ export default function ConversationSidebar({
         }
     }
 
-    const handleSelect = (friendId: string, conversationId: string) => {
+    const handleSelect = useCallback((friendId: string, conversationId: string) => {
         onSelectFriend(friendId)
 
         // Reset unread count locally if it's a real conversation
@@ -209,7 +210,7 @@ export default function ConversationSidebar({
         if (isMobile && onMobileSelect) {
             onMobileSelect()
         }
-    }
+    }, [onSelectFriend, isMobile, onMobileSelect])
 
     const filteredConversations = conversations.filter((c) =>
         c.friend.username.toLowerCase().includes(searchQuery.toLowerCase())
@@ -272,87 +273,18 @@ export default function ConversationSidebar({
                         <AnimatePresence initial={false}>
                             {filteredConversations.map((conversation, index) => {
                                 const isSelected = selectedFriendId === conversation.friend.id
-                                const lastMessage = conversation.messages[0]
                                 const isOnline = onlineUsers.has(conversation.friend.id)
 
                                 return (
-                                    <motion.div
+                                    <ConversationItem
                                         key={conversation.id}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: index * 0.05 }}
-                                        layout
-                                        onClick={() => handleSelect(conversation.friend.id, conversation.id)}
-                                        className={cn(
-                                            "group p-3.5 rounded-2xl cursor-pointer transition-all duration-300 relative border border-transparent",
-                                            isSelected
-                                                ? "bg-muted/60 border-border/40 shadow-xl shadow-black/5 scale-[1.02]"
-                                                : "hover:bg-muted/40 hover:border-border/40"
-                                        )}
-                                    >
-                                        {isSelected && (
-                                            <motion.div
-                                                layoutId="active-pill"
-                                                className="absolute left-2 top-3 bottom-3 w-1 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"
-                                            />
-                                        )}
-
-                                        <div className="flex items-center gap-4 relative z-10">
-                                            <div className="relative shrink-0">
-                                                <div className={cn(
-                                                    "rounded-2xl transition-all duration-500 p-0.5",
-                                                    isOnline ? "ring-2 ring-green-500/50" : "group-hover:ring-2 group-hover:ring-border/40"
-                                                )}>
-                                                    <UserAvatar user={conversation.friend} className="w-12 h-12 text-base rounded-xl shadow-md" />
-                                                </div>
-                                                {isOnline && (
-                                                    <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5">
-                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-20"></span>
-                                                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-500 border-2 border-background"></span>
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex justify-between items-center mb-1">
-                                                    <h3 className={cn(
-                                                        "font-bold truncate pr-2 transition-colors",
-                                                        isSelected ? "text-foreground" : "text-foreground/80 group-hover:text-foreground"
-                                                    )}>
-                                                        {conversation.friend.username}
-                                                    </h3>
-                                                    {lastMessage && (
-                                                        <span className={cn(
-                                                            "text-[10px] font-medium whitespace-nowrap",
-                                                            isSelected ? "text-muted-foreground" : "text-muted-foreground/70"
-                                                        )}>
-                                                            {format(new Date(lastMessage.createdAt), 'HH:mm')}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="flex justify-between items-center gap-2">
-                                                    {lastMessage ? (
-                                                        <p className={cn(
-                                                            "text-xs truncate transition-all duration-300",
-                                                            isSelected ? "text-muted-foreground" : "text-muted-foreground/70 group-hover:text-muted-foreground"
-                                                        )}>
-                                                            {lastMessage.senderId === user?.id && <span className="opacity-70 mr-1">You:</span>}
-                                                            {lastMessage.content}
-                                                        </p>
-                                                    ) : (
-                                                        <span className="text-xs italic text-muted-foreground/50 flex items-center gap-1">
-                                                            <Sparkles className="w-3 h-3" />
-                                                            New Chat
-                                                        </span>
-                                                    )}
-                                                    {conversation.unreadCount > 0 && (
-                                                        <Badge className="h-5 min-w-[1.25rem] px-1.5 flex items-center justify-center bg-purple-500 text-white border-0 shadow-lg shadow-purple-500/30 text-[10px] font-bold">
-                                                            {conversation.unreadCount}
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </motion.div>
+                                        conversation={conversation}
+                                        isSelected={isSelected}
+                                        isOnline={isOnline}
+                                        currentUserId={user?.id}
+                                        onSelect={handleSelect}
+                                        index={index}
+                                    />
                                 )
                             })}
                         </AnimatePresence>
