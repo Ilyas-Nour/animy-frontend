@@ -163,31 +163,33 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
             {/* Emoji Picker (Centered/Professional) */}
             <AnimatePresence>
                 {showEmojiPicker && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <>
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
                             onClick={() => setShowEmojiPicker(false)}
                         />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative z-[101] bg-[#1a1a1a] p-4 rounded-[2.5rem] border border-white/10 shadow-3xl"
-                        >
-                            <EmojiPicker
-                                onEmojiClick={(emojiData) => {
-                                    handleEmojiClick(emojiData)
-                                    setShowEmojiPicker(false)
-                                }}
-                                theme={Theme.DARK}
-                                width={350}
-                                height={450}
-                            />
-                        </motion.div>
-                    </div>
+                        <div className="fixed inset-0 z-[101] flex items-center justify-center pointer-events-none">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                className="pointer-events-auto bg-[#1a1a1a] p-4 rounded-[2.5rem] border border-white/10 shadow-3xl"
+                            >
+                                <EmojiPicker
+                                    onEmojiClick={(emojiData) => {
+                                        handleEmojiClick(emojiData)
+                                        setShowEmojiPicker(false)
+                                    }}
+                                    theme={Theme.DARK}
+                                    width={350}
+                                    height={450}
+                                />
+                            </motion.div>
+                        </div>
+                    </>
                 )}
             </AnimatePresence>
 
