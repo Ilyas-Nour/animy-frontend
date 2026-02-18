@@ -6,12 +6,18 @@ import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/context/AuthContext'
 import api from '@/lib/api'
 import MessageInput from './MessageInput'
-import { Loader2, ArrowLeft, Check, CheckCheck, MoreVertical, User, X, Volume2, VolumeX, Settings, Edit2, Trash2, Flame, ExternalLink } from 'lucide-react'
+import { Loader2, ArrowLeft, Check, CheckCheck, MoreVertical, User, X, Volume2, VolumeX, Settings, Edit2, Trash2, Flame, ExternalLink, Smile } from 'lucide-react'
 import { ChatSettingsModal } from './ChatSettingsModal'
 import { cn, getAvatarUrl } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import EmojiPicker, { Theme } from 'emoji-picker-react'
+
+const COMMON_REACTION_EMOJIS = [
+    '❤️', '😂', '🔥', '👍', '😮', '😢', '💀', '💯', '🙏', '🎉', '😡', '🤔',
+    '👀', '✨', '✅', '❌', '🙌', '💪', '🚀', '🌈'
+]
 
 enum MessageStatus {
     SENT = 'SENT',
@@ -47,6 +53,16 @@ interface Message {
     deletedBy?: string[]
     reactions?: Reaction[]
 
+    // Reply functionality
+    parentId?: string
+    parent?: {
+        id: string
+        content: string
+        sender: {
+            username: string
+        }
+    }
+
     sender: {
         id: string
         username: string
@@ -70,6 +86,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
     const [typingUser, setTypingUser] = useState<string | null>(null)
     const [imageError, setImageError] = useState(false)
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+    const [replyingTo, setReplyingTo] = useState<Message | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const conversationIdRef = useRef<string | null>(null)
     const {
@@ -118,9 +135,6 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
         // Fetch friend info immediately to show header while connecting
         const fetchFriendInfo = async () => {
             try {
-                // Try to find friend in the list first (faster) via generic friend endpoint if available, 
-                // or just rely on what we have. 
-                // We use the new ID-based endpoint
                 const res = await api.get(`/users/id/${friendId}`)
                 if (res.data) {
                     setFriendInfo({
@@ -242,14 +256,15 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
         }
     }, [socket, friendId, user?.id])
 
-    const handleSendMessage = (content: string, messageType: 'TEXT' | 'STICKER' | 'ANIME_CARD' = 'TEXT', animeId?: number) => {
+    const handleSendMessage = (content: string, messageType: 'TEXT' | 'STICKER' | 'ANIME_CARD' | 'MEDIA_CARD' = 'TEXT', animeId?: number, parentId?: string) => {
         if (!socket || !friendId) return
 
         socket.emit('message:send', {
             to: friendId,
             content,
             type: messageType,
-            animeId
+            animeId,
+            parentId
         })
     }
 
@@ -287,12 +302,12 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
     const getStatusIcon = (status?: MessageStatus) => {
         switch (status) {
             case MessageStatus.READ:
-                return <CheckCheck className="w-3.5 h-3.5 text-white" strokeWidth={2.5} /> // White double check (was blue)
+                return <CheckCheck className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
             case MessageStatus.DELIVERED:
-                return <CheckCheck className="w-3.5 h-3.5 text-gray-300" strokeWidth={1.5} /> // Light gray double check
+                return <CheckCheck className="w-3.5 h-3.5 text-gray-300" strokeWidth={1.5} />
             case MessageStatus.SENT:
             default:
-                return <Check className="w-3.5 h-3.5 text-gray-400" strokeWidth={1.5} /> // Single gray check
+                return <Check className="w-3.5 h-3.5 text-gray-400" strokeWidth={1.5} />
         }
     }
 
@@ -330,8 +345,6 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
                                 </div>
                             )}
                         </div>
-                        {/* Status Indicator */}
-                        {/* Status Indicator */}
                         <div className={cn(
                             "absolute bottom-0 right-0 w-3 h-3 border-2 border-background rounded-full",
                             onlineUsers.has(friendId)
@@ -446,6 +459,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
                             onEdit={handleEditMessage}
                             onDelete={handleDeleteMessage}
                             onReact={handleReactMessage}
+                            onReply={setReplyingTo}
                             currentUserId={user?.id}
                         />
                     )
@@ -454,10 +468,12 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 bg-background/80 backdrop-blur-xl border-t border-border z-10">
+            <div className="z-10 bg-background/80 backdrop-blur-xl border-t border-border">
                 <MessageInput
                     onSendMessage={handleSendMessage}
                     onTyping={handleTyping}
+                    replyingTo={replyingTo}
+                    onCancelReply={() => setReplyingTo(null)}
                 />
             </div>
 
@@ -499,6 +515,7 @@ function MessageBubble({
     onEdit,
     onDelete,
     onReact,
+    onReply,
     currentUserId
 }: {
     message: Message,
@@ -508,10 +525,12 @@ function MessageBubble({
     onEdit: (id: string, content: string) => void,
     onDelete: (id: string, forEveryone: boolean) => void,
     onReact: (id: string, type: string) => void,
+    onReply: (message: Message) => void,
     currentUserId?: string
 }) {
     const [showMenu, setShowMenu] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const [editContent, setEditContent] = useState(message.content)
 
     const handleEditSave = () => {
@@ -542,6 +561,17 @@ function MessageBubble({
             )}
 
             <div className={cn("flex flex-col relative", isMyMessage ? "items-end" : "items-start")}>
+                {/* Reply Context */}
+                {message.parent && (
+                    <div className={cn(
+                        "mb-1 px-3 py-1.5 rounded-xl bg-secondary/30 border-l-2 border-primary text-xs max-w-[200px] sm:max-w-xs truncate opacity-80 cursor-pointer hover:bg-secondary/50 transition-colors",
+                        isMyMessage ? "mr-1 text-right border-r-2 border-l-0" : "ml-1"
+                    )}>
+                        <p className="font-bold text-[10px] text-primary truncate">@{message.parent.sender.username}</p>
+                        <p className="truncate italic">{message.parent.content}</p>
+                    </div>
+                )}
+
                 {/* Bubble Container */}
                 <div className="flex items-center gap-2 group/bubble">
                     {/* Hover Actions Menu Trigger */}
@@ -553,42 +583,97 @@ function MessageBubble({
                             <div className="relative">
                                 <button
                                     onClick={() => setShowMenu(!showMenu)}
-                                    className="p-1.5 hover:bg-accent rounded-full text-muted-foreground"
+                                    className="p-1.5 hover:bg-accent rounded-full text-muted-foreground transition-all hover:scale-110"
                                 >
                                     <MoreVertical className="w-3.5 h-3.5" />
                                 </button>
                                 {showMenu && (
                                     <>
                                         <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                                        <div className="absolute bottom-full mb-1 right-0 w-32 bg-popover border border-border rounded-lg shadow-xl z-50 overflow-hidden py-1">
-                                            <button
-                                                onClick={() => { onReact(message.id, 'HEART'); setShowMenu(false); }}
-                                                className="w-full px-3 py-1.5 text-xs text-left hover:bg-accent flex items-center gap-2"
-                                            >
-                                                ❤️ {myReaction?.type === 'HEART' ? 'Remove' : 'Heart'}
-                                            </button>
-                                            {isMyMessage && (
-                                                <>
+                                        <div className="absolute bottom-full mb-1 right-0 w-56 bg-popover/90 backdrop-blur-xl border border-border rounded-2xl shadow-2xl z-50 overflow-hidden py-2 animate-in slide-in-from-bottom-2 duration-200">
+                                            {/* Reaction Grid */}
+                                            <div className="px-2 py-1 border-b border-border mb-1">
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 mb-1 tracking-wider">Reactions</p>
+                                                <div className="grid grid-cols-6 gap-0.5">
+                                                    {COMMON_REACTION_EMOJIS.map(emoji => (
+                                                        <button
+                                                            key={emoji}
+                                                            onClick={() => { onReact(message.id, emoji); setShowMenu(false); }}
+                                                            className={cn(
+                                                                "text-xl hover:scale-125 transition-all p-1.5 rounded-xl hover:bg-primary/10",
+                                                                myReaction?.type === emoji && "bg-primary/20 ring-1 ring-primary/50"
+                                                            )}
+                                                        >
+                                                            {emoji}
+                                                        </button>
+                                                    ))}
                                                     <button
-                                                        onClick={() => { setIsEditing(true); setShowMenu(false); }}
-                                                        className="w-full px-3 py-1.5 text-xs text-left hover:bg-accent flex items-center gap-2"
+                                                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                                        className="text-lg hover:scale-125 transition-all p-1.5 rounded-xl hover:bg-primary/10 flex items-center justify-center bg-secondary/30"
+                                                        title="Any Emoji"
                                                     >
-                                                        <Edit2 className="w-3 h-3" /> Edit
+                                                        <Smile className="w-5 h-5" />
                                                     </button>
-                                                    <button
-                                                        onClick={() => { onDelete(message.id, true); setShowMenu(false); }}
-                                                        className="w-full px-3 py-1.5 text-xs text-left hover:bg-rose-500/10 text-red-500 flex items-center gap-2"
-                                                    >
-                                                        <Trash2 className="w-3 h-3" /> Delete All
-                                                    </button>
-                                                </>
+                                                </div>
+                                            </div>
+
+                                            {showEmojiPicker && (
+                                                <div className="absolute bottom-full right-full mb-2 mr-2 z-[60] animate-in zoom-in-95 duration-200">
+                                                    <EmojiPicker
+                                                        onEmojiClick={(emojiData) => {
+                                                            onReact(message.id, emojiData.emoji)
+                                                            setShowEmojiPicker(false)
+                                                            setShowMenu(false)
+                                                        }}
+                                                        theme={Theme.DARK}
+                                                        width={300}
+                                                        height={350}
+                                                    />
+                                                </div>
                                             )}
-                                            <button
-                                                onClick={() => { onDelete(message.id, false); setShowMenu(false); }}
-                                                className="w-full px-3 py-1.5 text-xs text-left hover:bg-accent flex items-center gap-2"
-                                            >
-                                                <X className="w-3 h-3" /> Delete Me
-                                            </button>
+
+                                            <div className="px-1 space-y-0.5">
+                                                <button
+                                                    onClick={() => { onReply(message); setShowMenu(false); }}
+                                                    className="w-full px-3 py-2 text-sm text-left hover:bg-accent rounded-xl flex items-center gap-3 transition-colors group/item"
+                                                >
+                                                    <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-500 group-hover/item:bg-orange-500 group-hover/item:text-white transition-all">
+                                                        <Flame className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    <span className="font-medium">Reply</span>
+                                                </button>
+                                                {isMyMessage && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => { setIsEditing(true); setShowMenu(false); }}
+                                                            className="w-full px-3 py-2 text-sm text-left hover:bg-accent rounded-xl flex items-center gap-3 transition-colors group/item"
+                                                        >
+                                                            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 group-hover/item:bg-blue-500 group-hover/item:text-white transition-all">
+                                                                <Edit2 className="w-3.5 h-3.5" />
+                                                            </div>
+                                                            <span className="font-medium">Edit</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { onDelete(message.id, true); setShowMenu(false); }}
+                                                            className="w-full px-3 py-2 text-sm text-left hover:bg-rose-500/10 text-rose-500 rounded-xl flex items-center gap-3 transition-colors group/item"
+                                                        >
+                                                            <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-500 group-hover/item:bg-rose-500 group-hover/item:text-white transition-all">
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </div>
+                                                            <span className="font-medium">Delete For All</span>
+                                                        </button>
+                                                    </>
+                                                )}
+                                                <button
+                                                    onClick={() => { onDelete(message.id, false); setShowMenu(false); }}
+                                                    className="w-full px-3 py-2 text-sm text-left hover:bg-accent rounded-xl flex items-center gap-3 transition-colors group/item"
+                                                >
+                                                    <div className="p-1.5 rounded-lg bg-muted text-muted-foreground group-hover/item:bg-foreground group-hover/item:text-background transition-all">
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    <span className="font-medium">Delete For Me</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </>
                                 )}
@@ -689,11 +774,11 @@ function MessageBubble({
                                 className={cn(
                                     "px-1.5 py-0.5 rounded-full text-[10px] border flex items-center gap-1 transition-colors",
                                     reactions.some(r => r.userId === currentUserId && r.type === type)
-                                        ? "bg-purple-500/20 border-purple-500/50 text-purple-400"
+                                        ? "bg-primary/20 border-primary/50 text-primary-foreground font-bold"
                                         : "bg-secondary/50 border-border text-muted-foreground"
                                 )}
                             >
-                                {type === 'HEART' ? '❤️' : type}
+                                {type}
                                 <span>{reactions.filter(r => r.type === type).length}</span>
                             </button>
                         ))}
