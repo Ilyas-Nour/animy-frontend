@@ -137,6 +137,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             }
         })
 
+        newSocket.on('conversation:read_receipt', (data: any) => {
+            console.log('Socket: conversation:read_receipt received', data)
+            if (data.readBy === user.id) {
+                refreshUnreadCount()
+            }
+        })
+
         setSocket(newSocket)
 
         return () => {

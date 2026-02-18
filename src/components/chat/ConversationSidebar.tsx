@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSocket } from '@/contexts/SocketContext'
+import { useAuth } from '@/context/AuthContext'
 import api from '@/lib/api'
 import { Search, MessageCircle, MoreVertical, Bell, Phone, Bug } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -28,6 +29,7 @@ interface Conversation {
         senderId: string
         createdAt: string
         messageType: string
+        status?: string
     }[]
 }
 
@@ -44,6 +46,7 @@ export default function ConversationSidebar({
     isMobile,
     onMobileSelect
 }: ConversationSidebarProps) {
+    const { user } = useAuth()
     const { socket, onlineUsers } = useSocket()
     const [conversations, setConversations] = useState<Conversation[]>([])
     const [searchQuery, setSearchQuery] = useState('')
@@ -92,6 +95,23 @@ export default function ConversationSidebar({
 
         socket.on('message:notification', handleNewMessage)
         socket.on('message:new', handleNewMessage) // Also listen to room events (for sender update)
+
+        socket.on('conversation:read_receipt', ({ conversationId, readBy }: { conversationId: string, readBy: string }) => {
+            // If I read it, clear my local unread count for that conversation
+            if (readBy === user?.id) {
+                setConversations(prev => prev.map(c =>
+                    c.id === conversationId ? { ...c, unreadCount: 0 } : c
+                ))
+            } else {
+                // If friend read my messages, update status of last message to READ
+                setConversations(prev => prev.map(c =>
+                    c.id === conversationId ? {
+                        ...c,
+                        messages: c.messages.map(m => ({ ...m, status: 'READ' }))
+                    } : c
+                ))
+            }
+        })
 
         socket.on('message:read', ({ conversationId }: { conversationId: string }) => {
             // Optional: Mark local as read if needed
