@@ -449,7 +449,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                     <span className="w-1.5 h-8 bg-primary rounded-full" />
                                     Relations
                                 </h2>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                                     {Array.isArray(anime.relations) && anime.relations.filter(r => r && r.node).map((relation) => (
                                         <RelationCard key={relation.node.id} relation={relation} />
                                     ))}
@@ -537,7 +537,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                     <span className="w-1.5 h-8 bg-primary rounded-full" />
                                     Recommended for You
                                 </h2>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6">
+                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4">
                                     {Array.isArray(anime.recommendations) && anime.recommendations.filter(rec => rec && rec.mediaRecommendation).map((rec) => (
                                         <motion.div
                                             key={rec.mediaRecommendation.id}
