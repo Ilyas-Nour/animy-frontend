@@ -314,14 +314,16 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
     }
 
     return (
-        <div className="flex flex-col h-full bg-background relative overflow-hidden">
-            {/* Immersive Background Effects */}
-            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5 pointer-events-none" />
-            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="flex flex-col h-full bg-[#0b0b0b] relative overflow-hidden font-sans">
+            {/* WhatsApp-style Doodle Background (CSS Pattern) */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+                }}
+            />
 
-            {/* Premium Header */}
-            <div className="px-6 py-4 border-b border-white/5 bg-background/30 backdrop-blur-2xl flex items-center justify-between z-20 sticky top-0 shadow-sm">
+            {/* Header (Glassmorphic) */}
+            <div className="flex items-center justify-between px-4 py-3 bg-[#18181b]/80 backdrop-blur-xl border-b border-white/5 z-20 shadow-sm shrink-0">
                 <div className="flex items-center gap-4">
                     {onBack && (
                         <motion.button
@@ -474,57 +476,38 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
                 </div>
             </div>
 
-            {/* Scrollable Message Container */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 flex flex-col scrollbar-none relative z-10">
-                <div className="flex flex-col gap-2">
-                    <AnimatePresence initial={false}>
-                        {messages.length === 0 ? (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="flex flex-col items-center justify-center flex-1 text-muted-foreground space-y-6"
-                            >
-                                <div className="relative">
-                                    <motion.div
-                                        animate={{ scale: [1, 1.1, 1] }}
-                                        transition={{ repeat: Infinity, duration: 4 }}
-                                        className="absolute -inset-4 bg-purple-500/20 blur-2xl rounded-full"
-                                    />
-                                    <div className="relative w-24 h-24 bg-gradient-to-br from-white/10 to-white/5 rounded-[2.5rem] flex items-center justify-center border border-white/10 shadow-2xl">
-                                        <span className="text-5xl drop-shadow-lg">✨</span>
-                                    </div>
-                                </div>
-                                <div className="text-center space-y-2">
-                                    <h4 className="text-xl font-black text-white/80">Start the Transmission</h4>
-                                    <p className="text-sm text-white/40 max-w-[200px] leading-relaxed">Your secure connection is established. Say something incredible!</p>
-                                </div>
-                            </motion.div>
-                        ) : (
-                            <div className="flex flex-col gap-2">
-                                {messages.map((message, i) => {
-                                    const isMyMessage = message.senderId === user?.id
-                                    const showAvatar = !isMyMessage && (i === 0 || messages[i - 1].senderId !== message.senderId);
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                {messages.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center gap-6 opacity-30 select-none">
+                        <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-tr from-purple-500/20 to-blue-500/20 flex items-center justify-center backdrop-blur-3xl animate-pulse">
+                            <Sparkles className="w-10 h-10 text-white/50" />
+                        </div>
+                        <p className="text-sm font-medium tracking-widest uppercase text-white/40">Start the conversation</p>
+                    </div>
+                ) : (
+                    messages.map((message, index) => {
+                        const isMyMessage = message.senderId === user?.id
+                        const isSticker = message.messageType === 'STICKER'
+                        const showAvatar = !isMyMessage && (index === 0 || messages[index - 1].senderId !== message.senderId);
 
-                                    return (
-                                        <MessageBubble
-                                            key={message.id}
-                                            message={message}
-                                            isMyMessage={isMyMessage}
-                                            showAvatar={showAvatar}
-                                            friendInfo={friendInfo}
-                                            onEdit={handleEditMessage}
-                                            onDelete={handleDeleteMessage}
-                                            onReact={handleReactMessage}
-                                            onReply={setReplyingTo}
-                                            currentUserId={user?.id}
-                                        />
-                                    )
-                                })}
-                            </div>
-                        )}
-                    </AnimatePresence>
-                    <div ref={messagesEndRef} />
-                </div>
+                        return (
+                            <MessageBubble
+                                key={message.id}
+                                message={message}
+                                isMyMessage={isMyMessage}
+                                showAvatar={showAvatar}
+                                friendInfo={friendInfo}
+                                onEdit={handleEditMessage}
+                                onDelete={handleDeleteMessage}
+                                onReact={handleReactMessage}
+                                onReply={setReplyingTo}
+                                currentUserId={user?.id}
+                            />
+                        )
+                    })
+                )}
+                <div ref={messagesEndRef} />
             </div>
 
             {/* Futuristic Message Input */}
@@ -607,56 +590,57 @@ function MessageBubble({
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            layout
-            className={cn(
-                "flex items-end gap-3 group relative mb-2 px-1",
-                isMyMessage ? "ml-auto flex-row-reverse" : "mr-auto"
-            )}
+            key={message.id}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className={cn("flex w-full mb-1", isMyMessage ? "justify-end" : "justify-start")}
         >
             {/* Avatar */}
             <div className={cn(
-                "w-10 h-10 shrink-0 relative transition-all duration-300",
-                !showAvatar && "opacity-0 invisible h-0",
+                "w-8 h-8 shrink-0 relative transition-all duration-300 mr-2",
+                !showAvatar && "opacity-0 invisible w-0",
                 isMyMessage && "hidden"
             )}>
                 <UserAvatar
                     user={friendInfo}
                     size="md"
-                    className="rounded-2xl shadow-lg border border-white/10"
+                    className="rounded-xl shadow-lg border border-white/10"
                 />
             </div>
 
-            <div className={cn("flex flex-col min-w-0 max-w-[75%]", isMyMessage ? "items-end" : "items-start")}>
+            <div className={cn(
+                "flex flex-col min-w-0 max-w-[75%] relative group/bubble",
+                isMyMessage ? "items-end" : "items-start"
+            )}>
                 {/* Reply Context (Redesigned) */}
                 {message.parent && (
                     <motion.div
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={cn(
-                            "mb-[-12px] pb-4 pt-2 px-4 rounded-t-2xl bg-white/5 border border-white/5 text-xs flex flex-col gap-0.5 relative z-0",
-                            isMyMessage ? "mr-4 items-end border-b-0" : "ml-4 items-start border-b-0"
+                            "mb-[-12px] pb-3 pt-1.5 px-3 rounded-t-xl bg-white/5 border border-white/5 text-xs flex flex-col gap-0.5 relative z-0",
+                            isMyMessage ? "mr-3 items-end border-b-0" : "ml-3 items-start border-b-0"
                         )}
                     >
-                        <div className="flex items-center gap-2 opacity-50">
-                            <Flame className="w-3 h-3" />
-                            <span className="font-black uppercase tracking-widest text-[8px]">In response to @{message.parent.sender.username}</span>
+                        <div className="flex items-center gap-1.5 opacity-50">
+                            <Flame className="w-2.5 h-2.5" />
+                            <span className="font-black uppercase tracking-widest text-[7px]">In response to @{message.parent.sender.username}</span>
                         </div>
-                        <p className="line-clamp-1 italic text-white/40">{message.parent.content}</p>
+                        <p className="line-clamp-1 italic text-white/40 text-xs">{message.parent.content}</p>
                     </motion.div>
                 )}
 
                 {/* Bubble Container */}
-                <div className="flex items-center gap-2 group/bubble relative z-10">
+                <div className="flex items-center gap-1 group/bubble relative z-10">
                     {/* Bubble Content */}
                     <div className={cn(
-                        "p-3 sm:p-4 rounded-2xl sm:rounded-[1.5rem] shadow-xl relative transition-all duration-300 border backdrop-blur-md overflow-hidden",
+                        "p-3 rounded-xl shadow-xl relative transition-all duration-300 border backdrop-blur-md overflow-hidden",
                         ['STICKER', 'ANIME_CARD', 'MEDIA_CARD'].includes(message.messageType)
                             ? "bg-transparent border-transparent shadow-none p-0 !rounded-none"
                             : isMyMessage
-                                ? "bg-gradient-to-br from-purple-600/90 to-blue-600/90 text-white rounded-br-none border-white/10"
-                                : "bg-white/5 text-foreground/90 rounded-bl-none border-white/5 hover:bg-white/10",
+                                ? "bg-gradient-to-br from-purple-600/90 to-blue-600/90 text-white border-white/10"
+                                : "bg-white/5 text-foreground/90 border-white/5 hover:bg-white/10",
                         message.isDeletedForAll && "italic opacity-40 bg-white/5",
                         isMyMessage ? "order-2" : "order-1"
                     )}>
@@ -666,30 +650,30 @@ function MessageBubble({
                         )}
 
                         {isEditing ? (
-                            <div className="flex flex-col gap-3 min-w-[240px]">
+                            <div className="flex flex-col gap-2 min-w-[200px]">
                                 <textarea
                                     value={editContent}
                                     onChange={(e) => setEditContent(e.target.value)}
-                                    className="bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:ring-2 ring-purple-500/50 transition-all font-medium leading-relaxed"
-                                    rows={3}
+                                    className="bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:ring-2 ring-purple-500/50 transition-all font-medium leading-relaxed"
+                                    rows={2}
                                     autoFocus
                                 />
-                                <div className="flex justify-end gap-2">
-                                    <button onClick={() => setIsEditing(false)} className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors">Cancel</button>
-                                    <button onClick={handleEditSave} className="px-4 py-1 text-[10px] font-black uppercase tracking-widest bg-white text-black rounded-lg hover:bg-purple-500 hover:text-white transition-all">Update</button>
+                                <div className="flex justify-end gap-1.5">
+                                    <button onClick={() => setIsEditing(false)} className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest hover:text-white transition-colors">Cancel</button>
+                                    <button onClick={handleEditSave} className="px-3 py-0.5 text-[9px] font-black uppercase tracking-widest bg-white text-black rounded-md hover:bg-purple-500 hover:text-white transition-all">Update</button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                                 {message.messageType === 'STICKER' ? (
                                     <motion.img
                                         whileHover={{ scale: 1.1 }}
                                         src={message.content}
                                         alt="Sticker"
-                                        className="w-36 h-36 object-contain drop-shadow-2xl"
+                                        className="w-32 h-32 object-contain drop-shadow-2xl"
                                     />
                                 ) : message.messageType === 'TEXT' ? (
-                                    <p className="break-words leading-relaxed text-sm sm:text-[15px] font-medium tracking-tight select-text whitespace-pre-wrap">{message.content}</p>
+                                    <p className="break-words leading-relaxed text-sm font-medium tracking-tight select-text whitespace-pre-wrap">{message.content}</p>
                                 ) : message.messageType === 'MEDIA_CARD' && (
                                     <motion.div
                                         whileHover={{ y: -5 }}

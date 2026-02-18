@@ -210,9 +210,9 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                 )}
             </AnimatePresence>
 
-            {/* Main Input Bar (Futuristic glassmorphism) */}
-            <div className="flex items-center gap-3 p-2 bg-white/5 backdrop-blur-2xl rounded-[2rem] border border-white/10 group focus-within:border-purple-500/50 transition-all shadow-2xl relative">
-                <div className="flex items-center gap-1.5 pl-2">
+            {/* Main Input Bar (Floating Pill) */}
+            <div className="mx-4 mb-4 p-1.5 bg-[#18181b] rounded-full border border-white/10 flex items-center gap-2 shadow-2xl relative z-20">
+                <div className="flex items-center gap-1 pl-1">
                     <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
@@ -221,9 +221,9 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                             setShowEmojiPicker(false)
                         }}
                         className={cn(
-                            "p-3 rounded-2xl transition-all duration-300",
+                            "p-2.5 rounded-full transition-all duration-300",
                             showStickerPicker
-                                ? "bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+                                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
                                 : "hover:bg-white/10 text-white/40 hover:text-blue-400"
                         )}
                         title="Send sticker"
@@ -239,9 +239,9 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                             setShowStickerPicker(false)
                         }}
                         className={cn(
-                            "p-3 rounded-2xl transition-all duration-300",
+                            "p-2.5 rounded-full transition-all duration-300",
                             showEmojiPicker
-                                ? "bg-purple-600 text-white shadow-[0_0_20px_rgba(147,51,234,0.4)]"
+                                ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20"
                                 : "hover:bg-white/10 text-white/40 hover:text-purple-400"
                         )}
                         title="Insert emoji"
@@ -256,18 +256,9 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                         value={message}
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
-                        placeholder="Transmit a message..."
-                        className="w-full bg-black/40 border border-white/5 rounded-2xl px-6 h-14 text-[15px] font-medium placeholder:text-white/20 focus:outline-none focus:ring-2 ring-purple-500/30 transition-all text-white"
+                        placeholder="Message..."
+                        className="w-full bg-transparent border-none px-2 h-10 text-[15px] font-medium placeholder:text-white/20 focus:outline-none focus:ring-0 text-white"
                     />
-                    {message.length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2"
-                        >
-                            <span className="text-[10px] font-black text-white/10 uppercase tracking-widest select-none">{message.length}</span>
-                        </motion.div>
-                    )}
                 </div>
 
                 <motion.button
@@ -276,19 +267,16 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                     onClick={handleSendMessage}
                     disabled={!message.trim()}
                     className={cn(
-                        "p-4 rounded-2xl transition-all duration-500 flex items-center justify-center group/send relative overflow-hidden",
+                        "p-2.5 rounded-full transition-all duration-500 flex items-center justify-center group/send relative overflow-hidden mr-1",
                         message.trim()
-                            ? "bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-xl shadow-purple-500/20"
-                            : "bg-white/5 text-white/10 grayscale opacity-50"
+                            ? "bg-[#7c3aed] text-white shadow-lg shadow-purple-500/20"
+                            : "bg-white/5 text-white/10"
                     )}
                     title="Send message"
                 >
-                    {message.trim() && (
-                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/send:translate-y-0 transition-transform duration-500" />
-                    )}
                     <Send className={cn(
                         "w-5 h-5 relative z-10 transition-transform duration-500",
-                        message.trim() && "group-hover/send:translate-x-1 group-hover/send:-translate-y-1"
+                        message.trim() && "group-hover/send:translate-x-0.5 group-hover/send:-translate-y-0.5"
                     )} />
                 </motion.button>
             </div>
