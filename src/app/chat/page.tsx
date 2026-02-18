@@ -37,15 +37,15 @@ function ChatContent() {
                 <div className="text-center">
                     <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                     <h2 className="text-2xl font-bold mb-2">Please Log In</h2>
-                    <p className="text-gray-600">You need to be logged in to use chat</p>
+                    <p className="text-gray-500">You need to be logged in to access the chat.</p>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="container mx-auto px-4 py-8 h-[calc(100vh-80px)]">
-            <div className="bg-card/50 backdrop-blur-md rounded-xl shadow-2xl border border-border/50 overflow-hidden h-full flex">
+        <div className="container mx-auto px-4 pt-8 pb-0 h-[calc(100vh-64px)]">
+            <div className="bg-card/50 backdrop-blur-md rounded-t-xl shadow-2xl border-x border-t border-border/50 overflow-hidden h-full flex">
 
                 {/* Sidebar - Hidden on mobile if chat is selected */}
                 {(!isMobile || !selectedFriendId) && (
