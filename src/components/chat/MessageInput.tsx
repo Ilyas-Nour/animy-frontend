@@ -211,7 +211,7 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
             </AnimatePresence>
 
             {/* Main Input Bar (Floating Pill) */}
-            <div className="mx-4 mb-20 md:mb-2 p-1.5 bg-background dark:bg-[#18181b] rounded-full border border-border/40 dark:border-white/10 flex items-center gap-2 shadow-2xl dark:shadow-black/50 relative z-20">
+            <div className="mx-4 mb-14 md:mb-2 p-1.5 bg-background dark:bg-[#18181b] rounded-full border border-border/40 dark:border-white/10 flex items-center gap-2 shadow-2xl dark:shadow-black/50 relative z-20">
                 <div className="flex items-center gap-1 pl-1">
                     <motion.button
                         whileHover={{ scale: 1.1 }}
