@@ -476,7 +476,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
 
             {/* Scrollable Message Container */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 flex flex-col scrollbar-none relative z-10">
-                <div className="w-full max-w-5xl mx-auto flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
                     <AnimatePresence initial={false}>
                         {messages.length === 0 ? (
                             <motion.div
@@ -529,7 +529,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
 
             {/* Futuristic Message Input */}
             <div className="z-20 bg-background/40 backdrop-blur-3xl border-t border-white/5 px-4 py-4 sm:px-6">
-                <div className="max-w-5xl mx-auto">
+                <div>
                     <MessageInput
                         onSendMessage={handleSendMessage}
                         onTyping={handleTyping}
