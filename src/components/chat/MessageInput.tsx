@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Send, Smile, X, Sticker, Sparkles, Flame, Plus } from 'lucide-react'
 import { useSocket } from '@/contexts/SocketContext'
 import { cn } from '@/lib/utils'
@@ -43,9 +43,36 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const { playSent } = useSocket()
     const inputRef = useRef<HTMLInputElement>(null)
+    const emojiPickerRef = useRef<HTMLDivElement>(null)
+    const stickerPickerRef = useRef<HTMLDivElement>(null)
+
+    // Handle click outside to close pickers
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (showEmojiPicker && emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+                // Check if the click was on the toggle button (to avoid immediate reopen)
+                const target = event.target as Element;
+                if (!target.closest('button[title="Insert emoji"]')) {
+                    setShowEmojiPicker(false);
+                }
+            }
+            if (showStickerPicker && stickerPickerRef.current && !stickerPickerRef.current.contains(event.target as Node)) {
+                const target = event.target as Element;
+                if (!target.closest('button[title="Send sticker"]')) {
+                    setShowStickerPicker(false);
+                }
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [showEmojiPicker, showStickerPicker]);
 
     const handleEmojiClick = (emojiData: any) => {
         setMessage(prev => prev + emojiData.emoji)
+        // Kept open for multiple selection
     }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,6 +89,8 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
             setMessage('')
             onTyping(false)
             if (onCancelReply) onCancelReply()
+            setShowEmojiPicker(false)
+            setShowStickerPicker(false)
         }
     }
 
@@ -80,7 +109,7 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
     }
 
     return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 relative">
             {/* Reply Preview (Futuristic Redesign) */}
             <AnimatePresence>
                 {replyingTo && (
@@ -116,10 +145,11 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
             <AnimatePresence>
                 {showStickerPicker && (
                     <motion.div
+                        ref={stickerPickerRef}
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="mb-2 bg-[#1a1a1a]/95 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-3xl overflow-hidden z-50 ring-1 ring-white/5"
+                        className="absolute bottom-full left-0 mb-4 bg-[#1a1a1a]/95 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-3xl overflow-hidden z-50 ring-1 ring-white/5 w-full sm:w-auto"
                     >
                         <div className="flex items-center justify-between p-5 border-b border-white/5 bg-white/5">
                             <div className="flex items-center gap-3">
@@ -163,33 +193,20 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
             {/* Emoji Picker (Centered/Professional) */}
             <AnimatePresence>
                 {showEmojiPicker && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
-                            onClick={() => setShowEmojiPicker(false)}
+                    <motion.div
+                        ref={emojiPickerRef}
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        className="absolute bottom-full left-0 mb-4 z-[101] bg-[#1a1a1a] p-4 rounded-[2.5rem] border border-white/10 shadow-3xl"
+                    >
+                        <EmojiPicker
+                            onEmojiClick={(emojiData) => handleEmojiClick(emojiData)}
+                            theme={Theme.DARK}
+                            width={350}
+                            height={450}
                         />
-                        <div className="fixed inset-0 z-[101] flex items-center justify-center pointer-events-none">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                                className="pointer-events-auto bg-[#1a1a1a] p-4 rounded-[2.5rem] border border-white/10 shadow-3xl"
-                            >
-                                <EmojiPicker
-                                    onEmojiClick={(emojiData) => {
-                                        handleEmojiClick(emojiData)
-                                        setShowEmojiPicker(false)
-                                    }}
-                                    theme={Theme.DARK}
-                                    width={350}
-                                    height={450}
-                                />
-                            </motion.div>
-                        </div>
-                    </>
+                    </motion.div>
                 )}
             </AnimatePresence>
 
