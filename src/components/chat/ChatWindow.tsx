@@ -46,12 +46,13 @@ interface Message {
     mediaTitle?: string
     mediaImage?: string
 
-    status?: MessageStatus
+    status?: 'SENT' | 'DELIVERED' | 'READ'
     createdAt: string
 
     // Advanced fields
     isEdited?: boolean
     isDeletedForAll?: boolean
+    read?: boolean
     deletedBy?: string[]
     reactions?: Reaction[]
 
@@ -314,13 +315,14 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
     }
 
     return (
-        <div className="flex flex-col h-full bg-[#09090b] relative overflow-hidden font-sans">
-            {/* Sleek Dark Background (Premium Abstract) */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-[#09090b] to-[#09090b] pointer-events-none" />
+        <div className="flex flex-col h-full bg-background relative overflow-hidden font-sans">
+            {/* Animy DNA: Ambient Background Effects */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/10 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen pointer-events-none opacity-50 dark:opacity-20" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/10 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen pointer-events-none opacity-50 dark:opacity-20" />
             <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.02] pointer-events-none mix-blend-overlay" />
 
             {/* Header (Glassmorphic) */}
-            <div className="flex items-center justify-between px-4 py-3 bg-[#18181b]/80 backdrop-blur-xl border-b border-white/5 z-20 shadow-sm shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 bg-background/80 backdrop-blur-xl border-b border-border/40 z-20 shadow-sm shrink-0">
                 <div className="flex items-center gap-4">
                     {onBack && (
                         <motion.button
@@ -495,8 +497,8 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
                             <div key={message.id} className="w-full flex flex-col">
                                 {showDateSeparator && (
                                     <div className="flex justify-center my-4 sticky top-2 z-10">
-                                        <div className="bg-[#18181b]/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/5 shadow-sm">
-                                            <span className="text-[10px] font-bold text-white/60 tracking-wider uppercase">
+                                        <div className="bg-background/80 backdrop-blur-md px-3 py-1 rounded-full border border-border/40 shadow-sm">
+                                            <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
                                                 {format(new Date(message.createdAt), 'MMMM d, yyyy')}
                                             </span>
                                         </div>
@@ -615,15 +617,17 @@ function MessageBubble({
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={cn(
-                            "mb-[-12px] pb-3 pt-1.5 px-3 rounded-t-xl bg-white/5 border border-white/5 text-xs flex flex-col gap-0.5 relative z-0",
-                            isMyMessage ? "mr-3 items-end border-b-0" : "ml-3 items-start border-b-0"
+                            "mb-[-12px] pb-3 pt-1.5 px-3 rounded-t-xl text-xs flex flex-col gap-0.5 relative z-0 layer-behind",
+                            isMyMessage
+                                ? "bg-purple-500/10 border-t border-x border-purple-500/20 mr-3 items-end"
+                                : "bg-muted border-t border-x border-border/40 ml-3 items-start"
                         )}
                     >
-                        <div className="flex items-center gap-1.5 opacity-50">
-                            <CornerDownRight className="w-3 h-3" />
-                            <span className="font-black uppercase tracking-widest text-[7px]">In response to @{message.parent.sender.username}</span>
+                        <div className="flex items-center gap-1.5 opacity-70">
+                            <CornerDownRight className={cn("w-3 h-3", isMyMessage ? "text-purple-500" : "text-muted-foreground")} />
+                            <span className={cn("font-black uppercase tracking-widest text-[7px]", isMyMessage ? "text-purple-500" : "text-muted-foreground")}>In response to @{message.parent.sender.username}</span>
                         </div>
-                        <p className="line-clamp-1 italic text-white/40 text-xs">{message.parent.content}</p>
+                        <p className={cn("line-clamp-1 italic text-xs", isMyMessage ? "text-purple-500/70" : "text-muted-foreground")}>{message.parent.content}</p>
                     </motion.div>
                 )}
 
@@ -631,14 +635,14 @@ function MessageBubble({
                 <div className="flex items-center gap-1 group/bubble relative z-10">
                     {/* Bubble Content */}
                     <div className={cn(
-                        "p-3 rounded-xl shadow-xl relative transition-all duration-300 border backdrop-blur-md overflow-hidden",
+                        "p-3 rounded-xl shadow-sm relative transition-all duration-300 border backdrop-blur-md overflow-hidden",
                         ['STICKER', 'ANIME_CARD', 'MEDIA_CARD'].includes(message.messageType)
                             ? "bg-transparent border-transparent shadow-none p-0 !rounded-none"
                             : isMyMessage
-                                ? "bg-gradient-to-br from-purple-600/90 to-blue-600/90 text-white border-white/10"
-                                : "bg-white/5 text-foreground/90 border-white/5 hover:bg-white/10",
-                        message.isDeletedForAll && "italic opacity-40 bg-white/5",
-                        isMyMessage ? "order-2" : "order-1"
+                                ? "bg-gradient-to-br from-purple-600 to-blue-600 text-white border-transparent"
+                                : "bg-white dark:bg-white/5 border-border/40 dark:border-white/5 text-foreground dark:text-gray-100 shadow-sm",
+                        message.isDeletedForAll && "italic opacity-60 bg-muted/50",
+                        isMyMessage ? "order-2 rounded-tr-none" : "order-1 rounded-tl-none"
                     )}>
                         {/* Bubble Background Shine */}
                         {isMyMessage && !['STICKER', 'ANIME_CARD', 'MEDIA_CARD'].includes(message.messageType) && (
@@ -650,13 +654,13 @@ function MessageBubble({
                                 <textarea
                                     value={editContent}
                                     onChange={(e) => setEditContent(e.target.value)}
-                                    className="bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:ring-2 ring-purple-500/50 transition-all font-medium leading-relaxed"
+                                    className="bg-background/50 border border-border/50 rounded-lg p-2 text-sm text-foreground focus:outline-none focus:ring-2 ring-purple-500/50 transition-all font-medium leading-relaxed"
                                     rows={2}
                                     autoFocus
                                 />
                                 <div className="flex justify-end gap-1.5">
-                                    <button onClick={() => setIsEditing(false)} className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest hover:text-white transition-colors">Cancel</button>
-                                    <button onClick={handleEditSave} className="px-3 py-0.5 text-[9px] font-black uppercase tracking-widest bg-white text-black rounded-md hover:bg-purple-500 hover:text-white transition-all">Update</button>
+                                    <button onClick={() => setIsEditing(false)} className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest hover:text-foreground transition-colors text-muted-foreground">Cancel</button>
+                                    <button onClick={handleEditSave} className="px-3 py-0.5 text-[9px] font-black uppercase tracking-widest bg-foreground text-background rounded-md hover:bg-purple-500 hover:text-white transition-all">Update</button>
                                 </div>
                             </div>
                         ) : (
@@ -711,21 +715,27 @@ function MessageBubble({
                                     </motion.div>
                                 )}
 
-                                <div className={cn(
-                                    "flex items-center gap-2 pt-0.5 transition-opacity duration-300",
-                                    isMyMessage ? "justify-end text-white/40" : "justify-start text-white/30"
-                                )}>
-                                    {message.isEdited && !message.isDeletedForAll && <span className="text-[8px] uppercase font-black tracking-widest leading-none bg-white/5 px-1.5 py-0.5 rounded italic">Edited</span>}
-                                    <span className="text-[10px] font-medium leading-none tabular-nums">
-                                        {message.createdAt && format(new Date(message.createdAt), 'HH:mm')}
-                                    </span>
-                                    {isMyMessage && !message.isDeletedForAll && (
-                                        <span className="leading-none">{getStatusIcon(message.status)}</span>
-                                    )}
-                                </div>
+                                {/* Timestamp & Status (Inside Bubble) */}
+                                {message.messageType !== 'STICKER' && (
+                                    <div className={cn(
+                                        "absolute bottom-1 right-2 flex items-center gap-1 text-[10px] select-none",
+                                        isMyMessage ? "text-white/70" : "text-muted-foreground/60 dark:text-white/50"
+                                    )}>
+                                        <span>{new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        {isMyMessage && (
+                                            <span className={cn(
+                                                "flex items-center",
+                                                message.read ? "text-blue-200" : "text-white/70"
+                                            )}>
+                                                {message.read ? <CheckCheck className="w-3 h-3" /> : <Check className="w-3 h-3" />}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
+
 
                     {/* Actions Menu Trigger (Redesigned) */}
                     {!message.isDeletedForAll && (
@@ -738,11 +748,10 @@ function MessageBubble({
                                     whileHover={{ scale: 1.1, rotate: 90 }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => setShowMenu(!showMenu)}
-                                    className="p-2 bg-white/5 hover:bg-white/10 rounded-2xl text-white/40 hover:text-white transition-all border border-white/5"
+                                    className="p-2 bg-muted/50 hover:bg-muted rounded-2xl text-muted-foreground hover:text-foreground transition-all border border-border/40"
                                 >
                                     <MoreVertical className="w-4 h-4" />
                                 </motion.button>
-
                                 <AnimatePresence>
                                     {showMenu && (
                                         <>
@@ -757,11 +766,11 @@ function MessageBubble({
                                                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                                className="absolute bottom-full mb-3 right-0 w-64 bg-[#1a1a1a]/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-3xl z-50 overflow-hidden p-2"
+                                                className="absolute bottom-full mb-3 right-0 w-64 bg-popover/95 backdrop-blur-3xl border border-border/50 rounded-3xl shadow-2xl z-50 overflow-hidden p-2"
                                             >
                                                 {/* Quick Reactions */}
-                                                <div className="px-3 py-3 border-b border-white/5 mb-2 bg-white/5 rounded-2xl">
-                                                    <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Express Sentiment</p>
+                                                <div className="px-3 py-3 border-b border-border/10 mb-2 bg-muted/30 rounded-2xl">
+                                                    <p className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-[0.2em] mb-3 px-1">Express Sentiment</p>
                                                     <div className="grid grid-cols-5 gap-1.5">
                                                         {COMMON_REACTION_EMOJIS.slice(0, 9).map(emoji => (
                                                             <motion.button
@@ -770,7 +779,7 @@ function MessageBubble({
                                                                 whileTap={{ scale: 0.8 }}
                                                                 onClick={() => { onReact(message.id, emoji); setShowMenu(false); }}
                                                                 className={cn(
-                                                                    "text-xl p-1.5 rounded-xl hover:bg-white/10 transition-colors",
+                                                                    "text-xl p-1.5 rounded-xl hover:bg-muted transition-colors",
                                                                     myReaction?.type === emoji && "bg-purple-500/20 ring-1 ring-purple-500/50"
                                                                 )}
                                                             >
@@ -779,7 +788,7 @@ function MessageBubble({
                                                         ))}
                                                         <button
                                                             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                                            className="text-lg p-1.5 rounded-xl hover:bg-purple-500 bg-white/5 text-white transition-all flex items-center justify-center"
+                                                            className="text-lg p-1.5 rounded-xl hover:bg-purple-500 bg-muted/50 text-foreground transition-all flex items-center justify-center"
                                                         >
                                                             <Plus className="w-5 h-5" />
                                                         </button>
@@ -789,23 +798,23 @@ function MessageBubble({
                                                 <div className="space-y-1">
                                                     <button
                                                         onClick={() => { onReply(message); setShowMenu(false); }}
-                                                        className="w-full px-4 py-2.5 text-sm text-left hover:bg-white/5 rounded-xl flex items-center gap-3 transition-colors group/item"
+                                                        className="w-full px-4 py-2.5 text-sm text-left hover:bg-muted/50 rounded-xl flex items-center gap-3 transition-colors group/item"
                                                     >
                                                         <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500 group-hover/item:bg-orange-500 group-hover/item:text-white transition-all">
                                                             <CornerDownRight className="w-4 h-4" />
                                                         </div>
-                                                        <span className="font-bold text-white/70 group-hover/item:text-white">Reply</span>
+                                                        <span className="font-bold text-muted-foreground group-hover/item:text-foreground">Reply</span>
                                                     </button>
                                                     {isMyMessage && (
                                                         <>
                                                             <button
                                                                 onClick={() => { setIsEditing(true); setShowMenu(false); }}
-                                                                className="w-full px-4 py-2.5 text-sm text-left hover:bg-white/5 rounded-xl flex items-center gap-3 transition-colors group/item"
+                                                                className="w-full px-4 py-2.5 text-sm text-left hover:bg-muted/50 rounded-xl flex items-center gap-3 transition-colors group/item"
                                                             >
                                                                 <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 group-hover/item:bg-blue-500 group-hover/item:text-white transition-all">
                                                                     <Edit2 className="w-4 h-4" />
                                                                 </div>
-                                                                <span className="font-bold text-white/70 group-hover/item:text-white">Edit Transmission</span>
+                                                                <span className="font-bold text-muted-foreground group-hover/item:text-foreground">Edit Transmission</span>
                                                             </button>
                                                             <button
                                                                 onClick={() => { onDelete(message.id, true); setShowMenu(false); }}

@@ -119,20 +119,20 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                         exit={{ opacity: 0, y: 10, height: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="flex items-center gap-4 px-4 py-3 bg-purple-500/10 backdrop-blur-3xl rounded-2xl border border-purple-500/20 mb-1 group relative">
+                        <div className="flex items-center gap-4 px-4 py-3 bg-purple-500/10 backdrop-blur-3xl rounded-2xl border border-purple-500/20 mb-1 group relative mx-4">
                             <div className="w-1 h-full absolute left-0 top-0 bottom-0 bg-gradient-to-b from-purple-500 to-blue-500 rounded-l-2xl" />
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0 pl-1">
                                 <div className="flex items-center gap-2 mb-0.5">
                                     <Flame className="w-3 h-3 text-purple-400" />
                                     <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">Replying to @{replyingTo.sender.username}</span>
                                 </div>
-                                <p className="text-sm truncate text-white/60 italic font-medium">&quot;{replyingTo.content}&quot;</p>
+                                <p className="text-sm truncate text-muted-foreground italic font-medium">&quot;{replyingTo.content}&quot;</p>
                             </div>
                             <motion.button
                                 whileHover={{ scale: 1.1, rotate: 90 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={onCancelReply}
-                                className="p-2 hover:bg-white/5 rounded-xl transition-colors text-white/40 hover:text-white"
+                                className="p-2 hover:bg-muted rounded-xl transition-colors text-muted-foreground hover:text-foreground"
                             >
                                 <X className="w-4 h-4" />
                             </motion.button>
@@ -149,20 +149,20 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="absolute bottom-full left-0 mb-4 bg-[#1a1a1a]/95 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-3xl overflow-hidden z-50 ring-1 ring-white/5 w-full sm:w-auto"
+                        className="absolute bottom-full left-0 mb-4 bg-popover/95 backdrop-blur-3xl border border-border/40 rounded-[2.5rem] shadow-2xl overflow-hidden z-50 ring-1 ring-border/5 w-full sm:w-auto"
                     >
-                        <div className="flex items-center justify-between p-5 border-b border-white/5 bg-white/5">
+                        <div className="flex items-center justify-between p-5 border-b border-border/10 bg-muted/20">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 rounded-xl bg-blue-500/20 text-blue-500">
                                     <Sticker className="w-5 h-5" />
                                 </div>
-                                <span className="text-xs font-black text-white uppercase tracking-widest">Sticker Transmission</span>
+                                <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Sticker Transmission</span>
                             </div>
                             <motion.button
                                 whileHover={{ scale: 1.1, rotate: 90 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => setShowStickerPicker(false)}
-                                className="p-2 hover:bg-white/5 rounded-xl text-white/40 hover:text-white transition-colors"
+                                className="p-2 hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 <X className="w-4 h-4" />
                             </motion.button>
@@ -174,14 +174,14 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                                     whileHover={{ scale: 1.15, y: -5 }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => handleSendSticker(sticker.url)}
-                                    className="aspect-square p-3 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all flex items-center justify-center group relative overflow-hidden"
+                                    className="aspect-square p-3 rounded-3xl bg-muted/30 hover:bg-muted border border-border/10 hover:border-border/30 transition-all flex items-center justify-center group relative overflow-hidden"
                                     title={sticker.name}
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <img
                                         src={sticker.url}
                                         alt={sticker.name}
-                                        className="w-full h-full object-contain drop-shadow-2xl z-10"
+                                        className="w-full h-full object-contain drop-shadow-xl z-10"
                                     />
                                 </motion.button>
                             ))}
@@ -198,11 +198,11 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="absolute bottom-full left-0 mb-4 z-[101] bg-[#1a1a1a] p-4 rounded-[2.5rem] border border-white/10 shadow-3xl"
+                        className="absolute bottom-full left-0 mb-4 z-[101] bg-background p-4 rounded-[2.5rem] border border-border/40 shadow-2xl"
                     >
                         <EmojiPicker
                             onEmojiClick={(emojiData) => handleEmojiClick(emojiData)}
-                            theme={Theme.DARK}
+                            theme={Theme.AUTO} // Adapts to system preference
                             width={350}
                             height={450}
                         />
@@ -211,7 +211,7 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
             </AnimatePresence>
 
             {/* Main Input Bar (Floating Pill) */}
-            <div className="mx-4 mb-4 p-1.5 bg-[#18181b] rounded-full border border-white/10 flex items-center gap-2 shadow-2xl relative z-20">
+            <div className="mx-4 mb-4 p-1.5 bg-background dark:bg-[#18181b] rounded-full border border-border/40 dark:border-white/10 flex items-center gap-2 shadow-2xl dark:shadow-black/50 relative z-20">
                 <div className="flex items-center gap-1 pl-1">
                     <motion.button
                         whileHover={{ scale: 1.1 }}
@@ -224,7 +224,7 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                             "p-2.5 rounded-full transition-all duration-300",
                             showStickerPicker
                                 ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                                : "hover:bg-white/10 text-white/40 hover:text-blue-400"
+                                : "hover:bg-muted text-muted-foreground hover:text-blue-500 dark:hover:bg-white/10 dark:text-white/40 dark:hover:text-blue-400"
                         )}
                         title="Send sticker"
                     >
@@ -242,7 +242,7 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                             "p-2.5 rounded-full transition-all duration-300",
                             showEmojiPicker
                                 ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20"
-                                : "hover:bg-white/10 text-white/40 hover:text-purple-400"
+                                : "hover:bg-muted text-muted-foreground hover:text-purple-500 dark:hover:bg-white/10 dark:text-white/40 dark:hover:text-purple-400"
                         )}
                         title="Insert emoji"
                     >
@@ -257,7 +257,7 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
                         placeholder="Message..."
-                        className="w-full bg-transparent border-none px-2 h-10 text-[15px] font-medium placeholder:text-white/20 focus:outline-none focus:ring-0 text-white"
+                        className="w-full bg-transparent border-none px-2 h-10 text-[15px] font-medium placeholder:text-muted-foreground/50 dark:placeholder:text-white/20 focus:outline-none focus:ring-0 text-foreground dark:text-white"
                     />
                 </div>
 
@@ -270,7 +270,7 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                         "p-2.5 rounded-full transition-all duration-500 flex items-center justify-center group/send relative overflow-hidden mr-1",
                         message.trim()
                             ? "bg-[#7c3aed] text-white shadow-lg shadow-purple-500/20"
-                            : "bg-white/5 text-white/10"
+                            : "bg-muted text-muted-foreground dark:bg-white/5 dark:text-white/10"
                     )}
                     title="Send message"
                 >
