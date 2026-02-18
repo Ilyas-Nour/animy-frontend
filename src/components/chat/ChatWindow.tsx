@@ -628,7 +628,7 @@ function MessageBubble({
                 />
             </div>
 
-            <div className={cn("flex flex-col min-w-0 max-w-[92%] sm:max-w-[70%]", isMyMessage ? "items-end" : "items-start")}>
+            <div className={cn("flex flex-col min-w-0 max-w-[75%]", isMyMessage ? "items-end" : "items-start")}>
                 {/* Reply Context (Redesigned) */}
                 {message.parent && (
                     <motion.div
