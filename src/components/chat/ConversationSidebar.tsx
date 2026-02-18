@@ -218,7 +218,7 @@ export default function ConversationSidebar({
 
 
     return (
-        <div className="w-full md:w-85 h-full bg-background/40 backdrop-blur-2xl border-r border-white/5 flex flex-col shadow-2xl relative overflow-hidden">
+        <div className="w-full md:w-80 h-full bg-background/40 backdrop-blur-2xl border-r border-white/5 flex flex-col shadow-2xl relative overflow-hidden">
             {/* Ambient Background Glows */}
             <div className="absolute top-0 -left-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 -right-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
