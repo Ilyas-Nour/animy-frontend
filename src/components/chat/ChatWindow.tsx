@@ -6,13 +6,15 @@ import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/context/AuthContext'
 import api from '@/lib/api'
 import MessageInput from './MessageInput'
-import { Loader2, ArrowLeft, Check, CheckCheck, MoreVertical, User, X, Volume2, VolumeX, Settings, Edit2, Trash2, Flame, ExternalLink, Smile } from 'lucide-react'
+import { Loader2, ArrowLeft, Check, CheckCheck, MoreVertical, User, X, Volume2, VolumeX, Settings, Edit2, Trash2, Flame, ExternalLink, Smile, Sparkles, Plus } from 'lucide-react'
 import { ChatSettingsModal } from './ChatSettingsModal'
 import { cn, getAvatarUrl } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
+import UserAvatar from '@/components/common/UserAvatar'
 import { format } from 'date-fns'
 import EmojiPicker, { Theme } from 'emoji-picker-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const COMMON_REACTION_EMOJIS = [
     '❤️', '😂', '🔥', '👍', '😮', '😢', '💀', '💯', '🙏', '🎉', '😡', '🤔',
@@ -313,168 +315,226 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
 
     return (
         <div className="flex flex-col h-full bg-background relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-grid-white/[0.02] dark:bg-grid-white/[0.02] bg-grid-black/[0.02] -z-[1]" />
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-purple-500/10 blur-[100px] rounded-full pointer-events-none" />
+            {/* Immersive Background Effects */}
+            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5 pointer-events-none" />
+            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-            {/* Header */}
-            <div className="p-4 border-b border-border/50 bg-background/80 backdrop-blur-xl flex items-center justify-between z-10 sticky top-0">
-                <div className="flex items-center gap-3">
+            {/* Premium Header */}
+            <div className="px-6 py-4 border-b border-white/5 bg-background/30 backdrop-blur-2xl flex items-center justify-between z-20 sticky top-0 shadow-sm">
+                <div className="flex items-center gap-4">
                     {onBack && (
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={onBack}
-                            className="mr-1 p-2 hover:bg-accent rounded-full md:hidden transition-colors"
+                            className="p-2 hover:bg-white/5 rounded-2xl md:hidden transition-colors border border-transparent hover:border-white/10"
                         >
-                            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-                        </button>
+                            <ArrowLeft className="w-5 h-5 text-foreground/80" />
+                        </motion.button>
                     )}
 
-                    <div className="relative">
-                        <div className="w-10 h-10 rounded-full overflow-hidden border border-border shadow-lg ring-2 ring-purple-500/20">
+                    <div className="relative group">
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            className="w-12 h-12 rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative"
+                        >
                             {friendInfo?.avatar && !imageError ? (
                                 <Image
                                     src={getAvatarUrl(friendInfo.avatar)!}
                                     alt={friendInfo?.username}
                                     fill
-                                    className="object-cover rounded-full"
+                                    className="object-cover"
                                     onError={() => setImageError(true)}
                                 />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-sm font-bold bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-full">
+                                <div className="w-full h-full flex items-center justify-center text-lg font-black bg-gradient-to-br from-purple-600 to-blue-600 text-white">
                                     {friendInfo?.username?.[0]?.toUpperCase() || '?'}
                                 </div>
                             )}
-                        </div>
-                        <div className={cn(
-                            "absolute bottom-0 right-0 w-3 h-3 border-2 border-background rounded-full",
-                            onlineUsers.has(friendId)
-                                ? "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"
-                                : "bg-gray-500"
-                        )}></div>
+                        </motion.div>
+                        <AnimatePresence>
+                            {onlineUsers.has(friendId) && (
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                    className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 border-3 border-[#0a0a0a] rounded-full shadow-[0_0_15px_rgba(34,197,94,0.4)]"
+                                />
+                            )}
+                        </AnimatePresence>
                     </div>
 
-                    <div className="min-w-0 flex-1 ml-2">
-                        <h3 className="font-bold text-foreground flex items-center gap-2 truncate text-sm sm:text-base">
+                    <div className="min-w-0">
+                        <h3 className="font-black text-foreground flex items-center gap-2 truncate text-base tracking-tight">
                             <span className="truncate">{friendInfo?.username || 'Chat'}</span>
                         </h3>
-                        {typingUser ? (
-                            <span className="text-xs text-purple-500 animate-pulse font-medium">Typing...</span>
-                        ) : (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <span className={cn(
-                                    "w-1.5 h-1.5 rounded-full",
-                                    onlineUsers.has(friendId)
-                                        ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"
-                                        : "bg-gray-500"
-                                )}></span>
-                                {onlineUsers.has(friendId) ? 'Online' : 'Offline'}
-                            </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {typingUser ? (
+                                <div className="flex items-center gap-1">
+                                    <div className="flex gap-0.5">
+                                        <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1 h-1 bg-purple-500 rounded-full" />
+                                        <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1 h-1 bg-purple-500 rounded-full" />
+                                        <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1 h-1 bg-purple-500 rounded-full" />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-purple-500 uppercase tracking-widest">Typing</span>
+                                </div>
+                            ) : (
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                                    <div className={cn(
+                                        "w-1.5 h-1.5 rounded-full shadow-sm",
+                                        onlineUsers.has(friendId) ? "bg-green-500" : "bg-white/20"
+                                    )} />
+                                    {onlineUsers.has(friendId) ? 'Active Now' : 'Offline'}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-
-                <div className="flex items-center gap-1">
-                    <button
+                <div className="flex items-center gap-2">
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={toggleMute}
-                        className="p-2.5 hover:bg-accent rounded-full text-muted-foreground hover:text-foreground transition-all hover:scale-105 active:scale-95"
+                        className="p-2.5 hover:bg-white/5 rounded-2xl text-muted-foreground hover:text-foreground transition-all border border-transparent hover:border-white/5"
                         title={isMuted ? 'Unmute' : 'Mute'}
                     >
-                        {isMuted ? <VolumeX className="w-5 h-5 text-red-500" /> : <Volume2 className="w-5 h-5" />}
-                    </button>
+                        {isMuted ? <VolumeX className="w-5 h-5 text-rose-500" /> : <Volume2 className="w-5 h-5" />}
+                    </motion.button>
+
                     <div className="relative">
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="p-2.5 hover:bg-accent rounded-full text-muted-foreground hover:text-foreground transition-all hover:scale-105 active:scale-95"
+                            className="p-2.5 hover:bg-white/5 rounded-2xl text-muted-foreground hover:text-foreground transition-all border border-transparent hover:border-white/5"
                         >
                             <MoreVertical className="w-5 h-5" />
-                        </button>
+                        </motion.button>
 
-                        {isMenuOpen && (
-                            <>
-                                <div
-                                    className="fixed inset-0 z-40"
-                                    onClick={() => setIsMenuOpen(false)}
-                                />
-                                <div className="absolute right-0 top-12 w-48 bg-popover border border-border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-                                    <button
-                                        onClick={() => {
-                                            router.push(`/users/${friendInfo?.username}`)
-                                            setIsMenuOpen(false)
-                                        }}
-                                        className="w-full text-left px-4 py-3 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-2 transition-colors"
+                        <AnimatePresence>
+                            {isMenuOpen && (
+                                <>
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    />
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        className="absolute right-0 top-14 w-52 bg-[#1a1a1a]/95 backdrop-blur-2xl border border-white/5 rounded-2xl shadow-2xl z-50 overflow-hidden p-1.5"
                                     >
-                                        <User className="w-4 h-4" />
-                                        Visit Profile
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setIsSettingsOpen(true)
-                                            setIsMenuOpen(false)
-                                        }}
-                                        className="w-full text-left px-4 py-3 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-2 transition-colors"
-                                    >
-                                        <Settings className="w-4 h-4 text-purple-500" />
-                                        Chat Settings
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (onBack) onBack()
-                                            setIsMenuOpen(false)
-                                        }}
-                                        className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
-                                    >
-                                        <X className="w-4 h-4" />
-                                        Close Chat
-                                    </button>
-                                </div>
-                            </>
-                        )}
+                                        <button
+                                            onClick={() => {
+                                                router.push(`/users/${friendInfo?.username}`)
+                                                setIsMenuOpen(false)
+                                            }}
+                                            className="w-full text-left px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-white rounded-xl flex items-center gap-3 transition-colors group"
+                                        >
+                                            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                                <User className="w-4 h-4" />
+                                            </div>
+                                            Visit Profile
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setIsSettingsOpen(true)
+                                                setIsMenuOpen(false)
+                                            }}
+                                            className="w-full text-left px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-white rounded-xl flex items-center gap-3 transition-colors group"
+                                        >
+                                            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                                <Settings className="w-4 h-4" />
+                                            </div>
+                                            Chat Settings
+                                        </button>
+                                        <div className="my-1 h-px bg-white/5 mx-2" />
+                                        <button
+                                            onClick={() => {
+                                                if (onBack) onBack()
+                                                setIsMenuOpen(false)
+                                            }}
+                                            className="w-full text-left px-3 py-2.5 text-sm text-rose-500 hover:bg-rose-500/10 rounded-xl flex items-center gap-3 transition-colors group"
+                                        >
+                                            <div className="p-2 rounded-lg bg-rose-500/10 text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                                                <X className="w-4 h-4" />
+                                            </div>
+                                            Close Chat
+                                        </button>
+                                    </motion.div>
+                                </>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 flex flex-col scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
-                {messages.length === 0 && (
-                    <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground opacity-50 space-y-4">
-                        <div className="p-6 bg-secondary/50 rounded-full ring-1 ring-border">
-                            <span className="text-4xl">👋</span>
+            {/* Scrollable Message Container */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 flex flex-col scrollbar-none relative z-10">
+                <AnimatePresence initial={false}>
+                    {messages.length === 0 ? (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex flex-col items-center justify-center flex-1 text-muted-foreground space-y-6"
+                        >
+                            <div className="relative">
+                                <motion.div
+                                    animate={{ scale: [1, 1.1, 1] }}
+                                    transition={{ repeat: Infinity, duration: 4 }}
+                                    className="absolute -inset-4 bg-purple-500/20 blur-2xl rounded-full"
+                                />
+                                <div className="relative w-24 h-24 bg-gradient-to-br from-white/10 to-white/5 rounded-[2.5rem] flex items-center justify-center border border-white/10 shadow-2xl">
+                                    <span className="text-5xl drop-shadow-lg">✨</span>
+                                </div>
+                            </div>
+                            <div className="text-center space-y-2">
+                                <h4 className="text-xl font-black text-white/80">Start the Transmission</h4>
+                                <p className="text-sm text-white/40 max-w-[200px] leading-relaxed">Your secure connection is established. Say something incredible!</p>
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <div className="flex flex-col gap-2">
+                            {messages.map((message, i) => {
+                                const isMyMessage = message.senderId === user?.id
+                                const showAvatar = !isMyMessage && (i === 0 || messages[i - 1].senderId !== message.senderId);
+
+                                return (
+                                    <MessageBubble
+                                        key={message.id}
+                                        message={message}
+                                        isMyMessage={isMyMessage}
+                                        showAvatar={showAvatar}
+                                        friendInfo={friendInfo}
+                                        onEdit={handleEditMessage}
+                                        onDelete={handleDeleteMessage}
+                                        onReact={handleReactMessage}
+                                        onReply={setReplyingTo}
+                                        currentUserId={user?.id}
+                                    />
+                                )
+                            })}
                         </div>
-                        <p className="text-sm font-medium">No messages yet. Say hello!</p>
-                    </div>
-                )}
-
-                {messages.map((message, i) => {
-                    const isMyMessage = message.senderId === user?.id
-                    const showAvatar = !isMyMessage && (i === 0 || messages[i - 1].senderId !== message.senderId);
-
-                    return (
-                        <MessageBubble
-                            key={message.id}
-                            message={message}
-                            isMyMessage={isMyMessage}
-                            showAvatar={showAvatar}
-                            friendInfo={friendInfo}
-                            onEdit={handleEditMessage}
-                            onDelete={handleDeleteMessage}
-                            onReact={handleReactMessage}
-                            onReply={setReplyingTo}
-                            currentUserId={user?.id}
-                        />
-                    )
-                })}
+                    )}
+                </AnimatePresence>
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Message Input */}
-            <div className="z-10 bg-background/80 backdrop-blur-xl border-t border-border">
-                <MessageInput
-                    onSendMessage={handleSendMessage}
-                    onTyping={handleTyping}
-                    replyingTo={replyingTo}
-                    onCancelReply={() => setReplyingTo(null)}
-                />
+            {/* Futuristic Message Input */}
+            <div className="z-20 bg-background/40 backdrop-blur-3xl border-t border-white/5 px-4 py-4 sm:px-6">
+                <div className="max-w-5xl mx-auto">
+                    <MessageInput
+                        onSendMessage={handleSendMessage}
+                        onTyping={handleTyping}
+                        replyingTo={replyingTo}
+                        onCancelReply={() => setReplyingTo(null)}
+                    />
+                </div>
             </div>
 
             <ChatSettingsModal
@@ -544,247 +604,310 @@ function MessageBubble({
     const myReaction = reactions.find(r => r.userId === currentUserId)
 
     return (
-        <div className={cn(
-            "flex items-end gap-2 group relative mb-1",
-            isMyMessage ? "ml-auto flex-row-reverse" : "mr-auto"
-        )}>
-            {!isMyMessage && (
-                <div className={cn("w-6 h-6 rounded-full overflow-hidden shrink-0 opacity-0", showAvatar && "opacity-100 mb-0.5")}>
-                    {friendInfo?.avatar ? (
-                        <Image src={getAvatarUrl(friendInfo.avatar)!} alt="Avatar" width={24} height={24} className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full bg-secondary flex items-center justify-center text-[10px] text-muted-foreground">
-                            {friendInfo?.username?.[0]?.toUpperCase()}
-                        </div>
-                    )}
-                </div>
+        <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            layout
+            className={cn(
+                "flex items-end gap-3 group relative mb-2 px-1",
+                isMyMessage ? "ml-auto flex-row-reverse" : "mr-auto"
             )}
+        >
+            {/* Avatar */}
+            <div className={cn(
+                "w-10 h-10 shrink-0 relative transition-all duration-300",
+                !showAvatar && "opacity-0 invisible h-0",
+                isMyMessage && "hidden"
+            )}>
+                <UserAvatar
+                    user={friendInfo}
+                    size="md"
+                    className="rounded-2xl shadow-lg border border-white/10"
+                />
+            </div>
 
-            <div className={cn("flex flex-col relative", isMyMessage ? "items-end" : "items-start")}>
-                {/* Reply Context */}
+            <div className={cn("flex flex-col min-w-0 max-w-[85%] sm:max-w-[70%]", isMyMessage ? "items-end" : "items-start")}>
+                {/* Reply Context (Redesigned) */}
                 {message.parent && (
-                    <div className={cn(
-                        "mb-1 px-3 py-1.5 rounded-xl bg-secondary/30 border-l-2 border-primary text-xs max-w-[200px] sm:max-w-xs truncate opacity-80 cursor-pointer hover:bg-secondary/50 transition-colors",
-                        isMyMessage ? "mr-1 text-right border-r-2 border-l-0" : "ml-1"
-                    )}>
-                        <p className="font-bold text-[10px] text-primary truncate">@{message.parent.sender.username}</p>
-                        <p className="truncate italic">{message.parent.content}</p>
-                    </div>
+                    <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={cn(
+                            "mb-[-12px] pb-4 pt-2 px-4 rounded-t-2xl bg-white/5 border border-white/5 text-xs flex flex-col gap-0.5 relative z-0",
+                            isMyMessage ? "mr-4 items-end border-b-0" : "ml-4 items-start border-b-0"
+                        )}
+                    >
+                        <div className="flex items-center gap-2 opacity-50">
+                            <Flame className="w-3 h-3" />
+                            <span className="font-black uppercase tracking-widest text-[8px]">In response to @{message.parent.sender.username}</span>
+                        </div>
+                        <p className="line-clamp-1 italic text-white/40">{message.parent.content}</p>
+                    </motion.div>
                 )}
 
                 {/* Bubble Container */}
-                <div className="flex items-center gap-2 group/bubble">
-                    {/* Hover Actions Menu Trigger */}
-                    {!message.isDeletedForAll && (
-                        <div className={cn(
-                            "opacity-0 group-hover/bubble:opacity-100 transition-opacity flex items-center gap-1",
-                            isMyMessage ? "order-1" : "order-2"
-                        )}>
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowMenu(!showMenu)}
-                                    className="p-1.5 hover:bg-accent rounded-full text-muted-foreground transition-all hover:scale-110"
-                                >
-                                    <MoreVertical className="w-3.5 h-3.5" />
-                                </button>
-                                {showMenu && (
-                                    <>
-                                        <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                                        <div className="absolute bottom-full mb-1 right-0 w-56 bg-popover/90 backdrop-blur-xl border border-border rounded-2xl shadow-2xl z-50 overflow-hidden py-2 animate-in slide-in-from-bottom-2 duration-200">
-                                            {/* Reaction Grid */}
-                                            <div className="px-2 py-1 border-b border-border mb-1">
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase px-2 mb-1 tracking-wider">Reactions</p>
-                                                <div className="grid grid-cols-6 gap-0.5">
-                                                    {COMMON_REACTION_EMOJIS.map(emoji => (
-                                                        <button
-                                                            key={emoji}
-                                                            onClick={() => { onReact(message.id, emoji); setShowMenu(false); }}
-                                                            className={cn(
-                                                                "text-xl hover:scale-125 transition-all p-1.5 rounded-xl hover:bg-primary/10",
-                                                                myReaction?.type === emoji && "bg-primary/20 ring-1 ring-primary/50"
-                                                            )}
-                                                        >
-                                                            {emoji}
-                                                        </button>
-                                                    ))}
-                                                    <button
-                                                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                                        className="text-lg hover:scale-125 transition-all p-1.5 rounded-xl hover:bg-primary/10 flex items-center justify-center bg-secondary/30"
-                                                        title="Any Emoji"
-                                                    >
-                                                        <Smile className="w-5 h-5" />
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {showEmojiPicker && (
-                                                <div className="absolute bottom-full right-full mb-2 mr-2 z-[60] animate-in zoom-in-95 duration-200">
-                                                    <EmojiPicker
-                                                        onEmojiClick={(emojiData) => {
-                                                            onReact(message.id, emojiData.emoji)
-                                                            setShowEmojiPicker(false)
-                                                            setShowMenu(false)
-                                                        }}
-                                                        theme={Theme.DARK}
-                                                        width={300}
-                                                        height={350}
-                                                    />
-                                                </div>
-                                            )}
-
-                                            <div className="px-1 space-y-0.5">
-                                                <button
-                                                    onClick={() => { onReply(message); setShowMenu(false); }}
-                                                    className="w-full px-3 py-2 text-sm text-left hover:bg-accent rounded-xl flex items-center gap-3 transition-colors group/item"
-                                                >
-                                                    <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-500 group-hover/item:bg-orange-500 group-hover/item:text-white transition-all">
-                                                        <Flame className="w-3.5 h-3.5" />
-                                                    </div>
-                                                    <span className="font-medium">Reply</span>
-                                                </button>
-                                                {isMyMessage && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => { setIsEditing(true); setShowMenu(false); }}
-                                                            className="w-full px-3 py-2 text-sm text-left hover:bg-accent rounded-xl flex items-center gap-3 transition-colors group/item"
-                                                        >
-                                                            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 group-hover/item:bg-blue-500 group-hover/item:text-white transition-all">
-                                                                <Edit2 className="w-3.5 h-3.5" />
-                                                            </div>
-                                                            <span className="font-medium">Edit</span>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => { onDelete(message.id, true); setShowMenu(false); }}
-                                                            className="w-full px-3 py-2 text-sm text-left hover:bg-rose-500/10 text-rose-500 rounded-xl flex items-center gap-3 transition-colors group/item"
-                                                        >
-                                                            <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-500 group-hover/item:bg-rose-500 group-hover/item:text-white transition-all">
-                                                                <Trash2 className="w-3.5 h-3.5" />
-                                                            </div>
-                                                            <span className="font-medium">Delete For All</span>
-                                                        </button>
-                                                    </>
-                                                )}
-                                                <button
-                                                    onClick={() => { onDelete(message.id, false); setShowMenu(false); }}
-                                                    className="w-full px-3 py-2 text-sm text-left hover:bg-accent rounded-xl flex items-center gap-3 transition-colors group/item"
-                                                >
-                                                    <div className="p-1.5 rounded-lg bg-muted text-muted-foreground group-hover/item:bg-foreground group-hover/item:text-background transition-all">
-                                                        <X className="w-3.5 h-3.5" />
-                                                    </div>
-                                                    <span className="font-medium">Delete For Me</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Actual Bubble */}
+                <div className="flex items-center gap-2 group/bubble relative z-10 w-full">
+                    {/* Bubble Content */}
                     <div className={cn(
-                        "p-3 rounded-2xl shadow-sm relative transition-all duration-200 border",
+                        "p-4 rounded-[1.5rem] shadow-xl relative transition-all duration-300 border backdrop-blur-md overflow-hidden",
                         ['STICKER', 'ANIME_CARD', 'MEDIA_CARD'].includes(message.messageType)
-                            ? "bg-transparent border-transparent shadow-none p-0"
+                            ? "bg-transparent border-transparent shadow-none p-0 !rounded-none"
                             : isMyMessage
-                                ? "bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-tr-sm border-white/10"
-                                : "bg-card text-card-foreground rounded-tl-sm border-border/50",
-                        message.isDeletedForAll && "italic opacity-50 bg-secondary/30",
+                                ? "bg-gradient-to-br from-purple-600/90 to-blue-600/90 text-white rounded-br-none border-white/10"
+                                : "bg-white/5 text-foreground/90 rounded-bl-none border-white/5 hover:bg-white/10",
+                        message.isDeletedForAll && "italic opacity-40 bg-white/5",
                         isMyMessage ? "order-2" : "order-1"
                     )}>
+                        {/* Bubble Background Shine */}
+                        {isMyMessage && !['STICKER', 'ANIME_CARD', 'MEDIA_CARD'].includes(message.messageType) && (
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl pointer-events-none" />
+                        )}
+
                         {isEditing ? (
-                            <div className="flex flex-col gap-2 min-w-[200px]">
+                            <div className="flex flex-col gap-3 min-w-[240px]">
                                 <textarea
                                     value={editContent}
                                     onChange={(e) => setEditContent(e.target.value)}
-                                    className="bg-black/20 border border-white/20 rounded p-2 text-sm text-white focus:outline-none"
-                                    rows={2}
+                                    className="bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:ring-2 ring-purple-500/50 transition-all font-medium leading-relaxed"
+                                    rows={3}
                                     autoFocus
                                 />
                                 <div className="flex justify-end gap-2">
-                                    <button onClick={() => setIsEditing(false)} className="text-[10px] hover:underline">Cancel</button>
-                                    <button onClick={handleEditSave} className="text-[10px] font-bold bg-white text-black px-2 py-0.5 rounded">Save</button>
+                                    <button onClick={() => setIsEditing(false)} className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest hover:text-white transition-colors">Cancel</button>
+                                    <button onClick={handleEditSave} className="px-4 py-1 text-[10px] font-black uppercase tracking-widest bg-white text-black rounded-lg hover:bg-purple-500 hover:text-white transition-all">Update</button>
                                 </div>
                             </div>
                         ) : (
-                            <>
+                            <div className="space-y-2">
                                 {message.messageType === 'STICKER' ? (
-                                    <img src={message.content} alt="Sticker" className="w-32 h-32 object-contain" />
+                                    <motion.img
+                                        whileHover={{ scale: 1.1 }}
+                                        src={message.content}
+                                        alt="Sticker"
+                                        className="w-36 h-36 object-contain drop-shadow-2xl"
+                                    />
                                 ) : message.messageType === 'TEXT' ? (
-                                    <p className="break-words leading-relaxed text-[15px]">{message.content}</p>
+                                    <p className="break-words leading-relaxed text-[15px] font-medium tracking-tight sele">{message.content}</p>
                                 ) : message.messageType === 'MEDIA_CARD' && (
-                                    <div className="block w-64 bg-card/40 backdrop-blur-md rounded-[2rem] overflow-hidden border border-border/50 shadow-xl group/card transition-all hover:border-indigo-500/30">
+                                    <motion.div
+                                        whileHover={{ y: -5 }}
+                                        className="block w-64 bg-background/40 backdrop-blur-2xl rounded-[2.5rem] overflow-hidden border border-white/10 shadow-3xl group/card transition-all"
+                                    >
                                         {message.mediaImage && (
                                             <div className="relative aspect-[16/10] w-full overflow-hidden">
                                                 <Image
                                                     src={message.mediaImage}
                                                     alt="Media"
                                                     fill
-                                                    className="object-cover transition-transform duration-500 group-hover/card:scale-110"
+                                                    className="object-cover transition-transform duration-700 group-hover/card:scale-110"
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                                                <div className="absolute top-3 left-3 px-2 py-1 rounded-lg bg-indigo-500/20 backdrop-blur-md border border-indigo-500/30 flex items-center gap-1.5">
-                                                    <Flame className="w-3 h-3 text-indigo-400 animate-pulse" />
-                                                    <span className="text-[8px] font-black text-indigo-300 uppercase tracking-widest">Signal</span>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
+                                                <div className="absolute top-4 left-4 flex gap-2">
+                                                    <div className="px-2.5 py-1 rounded-full bg-purple-500/20 backdrop-blur-md border border-purple-500/30 flex items-center gap-1.5 ring-1 ring-purple-500/20">
+                                                        <Sparkles className="w-3 h-3 text-purple-400" />
+                                                        <span className="text-[8px] font-black text-white uppercase tracking-widest">Featured</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="p-4 space-y-2">
+                                        <div className="p-5 space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em]">{message.mediaType}</span>
-                                                <div className="h-px flex-1 bg-border/30" />
+                                                <span className="text-[9px] font-black text-purple-400 uppercase tracking-[0.25em]">{message.mediaType}</span>
+                                                <div className="h-px flex-1 bg-white/5" />
                                             </div>
-                                            <p className="text-xs font-black leading-tight text-foreground line-clamp-2 uppercase tracking-tight italic scale-y-110">
+                                            <p className="text-sm font-black leading-tight text-white line-clamp-2 uppercase tracking-tight italic">
                                                 {message.mediaTitle}
                                             </p>
                                             <Link
                                                 href={message.mediaType === 'NEWS' ? `/news` : (message.mediaType === 'PROFILE' ? `/users/${message.mediaTitle}` : `/${message.mediaType?.toLowerCase()}/${message.mediaId}`)}
-                                                className="mt-2 flex items-center justify-center gap-2 w-full py-2 bg-secondary/50 hover:bg-indigo-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-border group-hover/card:border-indigo-500/50"
+                                                className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-white/5 hover:bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/5 active:scale-[0.98]"
                                             >
-                                                View Transmission
+                                                Open Database
                                                 <ExternalLink className="w-3 h-3" />
                                             </Link>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 )}
 
                                 <div className={cn(
-                                    "text-[9px] mt-1 flex items-center justify-end gap-1 opacity-70",
-                                    isMyMessage ? "text-white/80" : "text-muted-foreground"
+                                    "flex items-center gap-2 pt-0.5 transition-opacity duration-300",
+                                    isMyMessage ? "justify-end text-white/40" : "justify-start text-white/30"
                                 )}>
-                                    {message.isEdited && !message.isDeletedForAll && <span className="mr-1 italic">(edited)</span>}
-                                    {message.createdAt && format(new Date(message.createdAt), 'HH:mm')}
-                                    {isMyMessage && !message.isDeletedForAll && <span>{getStatusIcon(message.status)}</span>}
+                                    {message.isEdited && !message.isDeletedForAll && <span className="text-[8px] uppercase font-black tracking-widest leading-none bg-white/5 px-1.5 py-0.5 rounded italic">Edited</span>}
+                                    <span className="text-[10px] font-medium leading-none tabular-nums">
+                                        {message.createdAt && format(new Date(message.createdAt), 'HH:mm')}
+                                    </span>
+                                    {isMyMessage && !message.isDeletedForAll && (
+                                        <span className="leading-none">{getStatusIcon(message.status)}</span>
+                                    )}
                                 </div>
-                            </>
+                            </div>
                         )}
                     </div>
+
+                    {/* Actions Menu Trigger (Redesigned) */}
+                    {!message.isDeletedForAll && (
+                        <div className={cn(
+                            "opacity-0 group-hover/bubble:opacity-100 transition-all duration-300 flex items-center gap-1",
+                            isMyMessage ? "order-1" : "order-2"
+                        )}>
+                            <div className="relative">
+                                <motion.button
+                                    whileHover={{ scale: 1.1, rotate: 90 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => setShowMenu(!showMenu)}
+                                    className="p-2 bg-white/5 hover:bg-white/10 rounded-2xl text-white/40 hover:text-white transition-all border border-white/5"
+                                >
+                                    <MoreVertical className="w-4 h-4" />
+                                </motion.button>
+
+                                <AnimatePresence>
+                                    {showMenu && (
+                                        <>
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                className="fixed inset-0 z-40"
+                                                onClick={() => setShowMenu(false)}
+                                            />
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                                className="absolute bottom-full mb-3 right-0 w-64 bg-[#1a1a1a]/95 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-3xl z-50 overflow-hidden p-2"
+                                            >
+                                                {/* Quick Reactions */}
+                                                <div className="px-3 py-3 border-b border-white/5 mb-2 bg-white/5 rounded-2xl">
+                                                    <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Express Sentiment</p>
+                                                    <div className="grid grid-cols-5 gap-1.5">
+                                                        {COMMON_REACTION_EMOJIS.slice(0, 9).map(emoji => (
+                                                            <motion.button
+                                                                key={emoji}
+                                                                whileHover={{ scale: 1.3, rotate: [0, -10, 10, 0] }}
+                                                                whileTap={{ scale: 0.8 }}
+                                                                onClick={() => { onReact(message.id, emoji); setShowMenu(false); }}
+                                                                className={cn(
+                                                                    "text-xl p-1.5 rounded-xl hover:bg-white/10 transition-colors",
+                                                                    myReaction?.type === emoji && "bg-purple-500/20 ring-1 ring-purple-500/50"
+                                                                )}
+                                                            >
+                                                                {emoji}
+                                                            </motion.button>
+                                                        ))}
+                                                        <button
+                                                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                                            className="text-lg p-1.5 rounded-xl hover:bg-purple-500 bg-white/5 text-white transition-all flex items-center justify-center"
+                                                        >
+                                                            <Plus className="w-5 h-5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <button
+                                                        onClick={() => { onReply(message); setShowMenu(false); }}
+                                                        className="w-full px-4 py-2.5 text-sm text-left hover:bg-white/5 rounded-xl flex items-center gap-3 transition-colors group/item"
+                                                    >
+                                                        <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500 group-hover/item:bg-orange-500 group-hover/item:text-white transition-all">
+                                                            <Flame className="w-4 h-4" />
+                                                        </div>
+                                                        <span className="font-bold text-white/70 group-hover/item:text-white">Reply</span>
+                                                    </button>
+                                                    {isMyMessage && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => { setIsEditing(true); setShowMenu(false); }}
+                                                                className="w-full px-4 py-2.5 text-sm text-left hover:bg-white/5 rounded-xl flex items-center gap-3 transition-colors group/item"
+                                                            >
+                                                                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 group-hover/item:bg-blue-500 group-hover/item:text-white transition-all">
+                                                                    <Edit2 className="w-4 h-4" />
+                                                                </div>
+                                                                <span className="font-bold text-white/70 group-hover/item:text-white">Edit Transmission</span>
+                                                            </button>
+                                                            <button
+                                                                onClick={() => { onDelete(message.id, true); setShowMenu(false); }}
+                                                                className="w-full px-4 py-2.5 text-sm text-left hover:bg-rose-500/10 rounded-xl flex items-center gap-3 transition-colors group/item"
+                                                            >
+                                                                <div className="p-2 rounded-lg bg-rose-500/10 text-rose-500 group-hover/item:bg-rose-500 group-hover/item:text-white transition-all">
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </div>
+                                                                <span className="font-bold text-rose-500">Delete Permanently</span>
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {/* Reactions Display */}
+                {/* Emojis Display (Redesigned) */}
                 {reactions.length > 0 && (
-                    <div className={cn(
-                        "flex flex-wrap gap-1 mt-1",
-                        isMyMessage ? "justify-end" : "justify-start"
-                    )}>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className={cn(
+                            "flex flex-wrap gap-1.5 mt-1 relative z-20",
+                            isMyMessage ? "justify-end" : "justify-start"
+                        )}
+                    >
                         {Array.from(new Set(reactions.map(r => r.type))).map(type => (
-                            <button
+                            <motion.button
                                 key={type}
+                                whileHover={{ scale: 1.1, y: -2 }}
+                                whileTap={{ scale: 0.9 }}
                                 onClick={() => onReact(message.id, type)}
                                 className={cn(
-                                    "px-1.5 py-0.5 rounded-full text-[10px] border flex items-center gap-1 transition-colors",
+                                    "px-2 py-1 rounded-full text-xs backdrop-blur-md border flex items-center gap-1.5 transition-all shadow-lg",
                                     reactions.some(r => r.userId === currentUserId && r.type === type)
-                                        ? "bg-primary/20 border-primary/50 text-primary-foreground font-bold"
-                                        : "bg-secondary/50 border-border text-muted-foreground"
+                                        ? "bg-purple-500/20 border-purple-500/50 text-white font-black"
+                                        : "bg-white/5 border-white/10 text-white/50"
                                 )}
                             >
-                                {type}
-                                <span>{reactions.filter(r => r.type === type).length}</span>
-                            </button>
+                                <span className="text-sm leading-none drop-shadow-md">{type}</span>
+                                <span className="text-[10px] opacity-80">{reactions.filter(r => r.type === type).length}</span>
+                            </motion.button>
                         ))}
-                    </div>
+                    </motion.div>
                 )}
             </div>
-        </div>
+
+            {/* Emoji Picker Modal */}
+            <AnimatePresence>
+                {showEmojiPicker && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                            onClick={() => setShowEmojiPicker(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative z-[101] bg-[#1a1a1a] p-4 rounded-[2.5rem] border border-white/10 shadow-3xl"
+                        >
+                            <EmojiPicker
+                                onEmojiClick={(emojiData) => {
+                                    onReact(message.id, emojiData.emoji)
+                                    setShowEmojiPicker(false)
+                                    setShowMenu(false)
+                                }}
+                                theme={Theme.DARK}
+                                width={350}
+                                height={450}
+                            />
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </motion.div>
     )
 }
