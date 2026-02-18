@@ -97,7 +97,7 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                                     <Flame className="w-3 h-3 text-purple-400" />
                                     <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">Replying to @{replyingTo.sender.username}</span>
                                 </div>
-                                <p className="text-sm truncate text-white/60 italic font-medium">"{replyingTo.content}"</p>
+                                <p className="text-sm truncate text-white/60 italic font-medium">&quot;{replyingTo.content}&quot;</p>
                             </div>
                             <motion.button
                                 whileHover={{ scale: 1.1, rotate: 90 }}
