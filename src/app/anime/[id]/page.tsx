@@ -72,7 +72,9 @@ export default async function AnimeDetailPage({ params }: { params: { id: string
 
   const anime = {
     ...animeData.data,
-    characters: charactersData.data || []
+    characters: (charactersData.data && charactersData.data.length > 0)
+      ? charactersData.data
+      : (animeData.data.characters || [])
   }
 
   return (
