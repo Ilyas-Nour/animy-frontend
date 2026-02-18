@@ -44,7 +44,7 @@ function ChatContent() {
     }
 
     return (
-        <div className="container mx-auto px-4 pt-8 pb-0 h-[calc(100vh-64px)]">
+        <div className="container mx-auto px-4 pt-8 pb-20 md:pb-0 h-[calc(100vh-64px)]">
             <div className="bg-card/50 backdrop-blur-md rounded-t-xl shadow-2xl border-x border-t border-border/50 overflow-hidden h-full flex">
 
                 {/* Sidebar - Hidden on mobile if chat is selected */}
