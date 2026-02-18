@@ -476,53 +476,55 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
 
             {/* Scrollable Message Container */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-1 flex flex-col scrollbar-none relative z-10">
-                <AnimatePresence initial={false}>
-                    {messages.length === 0 ? (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="flex flex-col items-center justify-center flex-1 text-muted-foreground space-y-6"
-                        >
-                            <div className="relative">
-                                <motion.div
-                                    animate={{ scale: [1, 1.1, 1] }}
-                                    transition={{ repeat: Infinity, duration: 4 }}
-                                    className="absolute -inset-4 bg-purple-500/20 blur-2xl rounded-full"
-                                />
-                                <div className="relative w-24 h-24 bg-gradient-to-br from-white/10 to-white/5 rounded-[2.5rem] flex items-center justify-center border border-white/10 shadow-2xl">
-                                    <span className="text-5xl drop-shadow-lg">✨</span>
-                                </div>
-                            </div>
-                            <div className="text-center space-y-2">
-                                <h4 className="text-xl font-black text-white/80">Start the Transmission</h4>
-                                <p className="text-sm text-white/40 max-w-[200px] leading-relaxed">Your secure connection is established. Say something incredible!</p>
-                            </div>
-                        </motion.div>
-                    ) : (
-                        <div className="flex flex-col gap-2">
-                            {messages.map((message, i) => {
-                                const isMyMessage = message.senderId === user?.id
-                                const showAvatar = !isMyMessage && (i === 0 || messages[i - 1].senderId !== message.senderId);
-
-                                return (
-                                    <MessageBubble
-                                        key={message.id}
-                                        message={message}
-                                        isMyMessage={isMyMessage}
-                                        showAvatar={showAvatar}
-                                        friendInfo={friendInfo}
-                                        onEdit={handleEditMessage}
-                                        onDelete={handleDeleteMessage}
-                                        onReact={handleReactMessage}
-                                        onReply={setReplyingTo}
-                                        currentUserId={user?.id}
+                <div className="w-full max-w-5xl mx-auto flex flex-col gap-2">
+                    <AnimatePresence initial={false}>
+                        {messages.length === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex flex-col items-center justify-center flex-1 text-muted-foreground space-y-6"
+                            >
+                                <div className="relative">
+                                    <motion.div
+                                        animate={{ scale: [1, 1.1, 1] }}
+                                        transition={{ repeat: Infinity, duration: 4 }}
+                                        className="absolute -inset-4 bg-purple-500/20 blur-2xl rounded-full"
                                     />
-                                )
-                            })}
-                        </div>
-                    )}
-                </AnimatePresence>
-                <div ref={messagesEndRef} />
+                                    <div className="relative w-24 h-24 bg-gradient-to-br from-white/10 to-white/5 rounded-[2.5rem] flex items-center justify-center border border-white/10 shadow-2xl">
+                                        <span className="text-5xl drop-shadow-lg">✨</span>
+                                    </div>
+                                </div>
+                                <div className="text-center space-y-2">
+                                    <h4 className="text-xl font-black text-white/80">Start the Transmission</h4>
+                                    <p className="text-sm text-white/40 max-w-[200px] leading-relaxed">Your secure connection is established. Say something incredible!</p>
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <div className="flex flex-col gap-2">
+                                {messages.map((message, i) => {
+                                    const isMyMessage = message.senderId === user?.id
+                                    const showAvatar = !isMyMessage && (i === 0 || messages[i - 1].senderId !== message.senderId);
+
+                                    return (
+                                        <MessageBubble
+                                            key={message.id}
+                                            message={message}
+                                            isMyMessage={isMyMessage}
+                                            showAvatar={showAvatar}
+                                            friendInfo={friendInfo}
+                                            onEdit={handleEditMessage}
+                                            onDelete={handleDeleteMessage}
+                                            onReact={handleReactMessage}
+                                            onReply={setReplyingTo}
+                                            currentUserId={user?.id}
+                                        />
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </AnimatePresence>
+                    <div ref={messagesEndRef} />
+                </div>
             </div>
 
             {/* Futuristic Message Input */}
