@@ -250,7 +250,7 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                     </motion.button>
                 </div>
 
-                <div className="flex-1 relative">
+                <div className="flex-1 relative min-w-0">
                     <input
                         ref={inputRef}
                         value={message}
