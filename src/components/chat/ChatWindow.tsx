@@ -669,7 +669,7 @@ function MessageBubble({
                                         className="w-32 h-32 object-contain drop-shadow-2xl"
                                     />
                                 ) : message.messageType === 'TEXT' ? (
-                                    <p className="break-words leading-relaxed text-sm font-medium tracking-tight select-text whitespace-pre-wrap">{message.content}</p>
+                                    <p className="break-words [overflow-wrap:anywhere] leading-relaxed text-sm font-medium tracking-tight select-text whitespace-pre-wrap">{message.content}</p>
                                 ) : message.messageType === 'MEDIA_CARD' && (
                                     <motion.div
                                         whileHover={{ y: -5 }}
