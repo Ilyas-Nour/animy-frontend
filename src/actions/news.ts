@@ -1,5 +1,7 @@
 'use server'
 
+import { MOCK_NEWS } from '@/lib/mock-news'
+
 export async function fetchRedditPosts() {
     console.log('[News Action] Initializing Multi-Channel Fetch...')
 
@@ -16,6 +18,12 @@ export async function fetchRedditPosts() {
     if (!posts || posts.length === 0) {
         console.warn('[News Action] Channel 2 failed, trying Channel 3 (RSS Proxy)...')
         posts = await fetchFallbackRSS()
+    }
+
+    // Channel 4: Emergency Mock Data (Vercel/IP Block Fallback)
+    if (!posts || posts.length === 0) {
+        console.warn('[News Action] All live channels failed. Engaging emergency backup protocols (Mock Data).')
+        return MOCK_NEWS
     }
 
     console.log(`[News Action] Final Dispatch: ${posts?.length || 0} posts delivered.`)
