@@ -249,7 +249,7 @@ export default function ConversationSidebar({
             </div>
 
             {/* Conversation List */}
-            <div className="flex-1 overflow-y-auto scrollbar-none relative z-10 px-3 py-4">
+            <div className="flex-1 overflow-y-auto scrollbar-none relative z-10 px-3 pt-4 pb-20 md:pb-4">
                 {loading ? (
                     <div className="space-y-3">
                         {[1, 2, 3, 4, 5].map(i => (
