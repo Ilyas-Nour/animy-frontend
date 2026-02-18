@@ -648,7 +648,7 @@ function MessageBubble({
                 )}
 
                 {/* Bubble Container */}
-                <div className="flex items-center gap-2 group/bubble relative z-10 w-full">
+                <div className="flex items-center gap-2 group/bubble relative z-10">
                     {/* Bubble Content */}
                     <div className={cn(
                         "p-4 rounded-[1.5rem] shadow-xl relative transition-all duration-300 border backdrop-blur-md overflow-hidden",
