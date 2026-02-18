@@ -234,15 +234,7 @@ export default function ConversationSidebar({
                             AniChat
                         </h2>
                     </div>
-                    <div className="flex items-center gap-1">
-                        <button className="p-2 hover:bg-white/5 rounded-full transition-colors relative group">
-                            <Bell className="w-4.5 h-4.5 text-muted-foreground group-hover:text-yellow-400" />
-                            <div className="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full border-2 border-background" />
-                        </button>
-                        <button className="p-2 hover:bg-white/5 rounded-full transition-colors group">
-                            <Settings className="w-4.5 h-4.5 text-muted-foreground group-hover:text-white" />
-                        </button>
-                    </div>
+
                 </div>
 
                 <div className="relative group">
