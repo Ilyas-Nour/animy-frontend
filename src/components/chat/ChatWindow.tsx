@@ -628,7 +628,7 @@ function MessageBubble({
                 />
             </div>
 
-            <div className={cn("flex flex-col min-w-0 max-w-[85%] sm:max-w-[70%]", isMyMessage ? "items-end" : "items-start")}>
+            <div className={cn("flex flex-col min-w-0 max-w-[92%] sm:max-w-[70%]", isMyMessage ? "items-end" : "items-start")}>
                 {/* Reply Context (Redesigned) */}
                 {message.parent && (
                     <motion.div
@@ -651,7 +651,7 @@ function MessageBubble({
                 <div className="flex items-center gap-2 group/bubble relative z-10">
                     {/* Bubble Content */}
                     <div className={cn(
-                        "p-4 rounded-[1.5rem] shadow-xl relative transition-all duration-300 border backdrop-blur-md overflow-hidden",
+                        "p-3 sm:p-4 rounded-2xl sm:rounded-[1.5rem] shadow-xl relative transition-all duration-300 border backdrop-blur-md overflow-hidden",
                         ['STICKER', 'ANIME_CARD', 'MEDIA_CARD'].includes(message.messageType)
                             ? "bg-transparent border-transparent shadow-none p-0 !rounded-none"
                             : isMyMessage
@@ -689,7 +689,7 @@ function MessageBubble({
                                         className="w-36 h-36 object-contain drop-shadow-2xl"
                                     />
                                 ) : message.messageType === 'TEXT' ? (
-                                    <p className="break-words leading-relaxed text-[15px] font-medium tracking-tight sele">{message.content}</p>
+                                    <p className="break-words leading-relaxed text-sm sm:text-[15px] font-medium tracking-tight select-text whitespace-pre-wrap">{message.content}</p>
                                 ) : message.messageType === 'MEDIA_CARD' && (
                                     <motion.div
                                         whileHover={{ y: -5 }}
