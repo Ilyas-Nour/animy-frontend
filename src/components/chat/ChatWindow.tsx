@@ -6,7 +6,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/context/AuthContext'
 import api from '@/lib/api'
 import MessageInput from './MessageInput'
-import { Loader2, ArrowLeft, Check, CheckCheck, MoreVertical, User, X, Volume2, VolumeX, Settings, Edit2, Trash2, Flame, ExternalLink, Smile, Sparkles, Plus } from 'lucide-react'
+import { Loader2, ArrowLeft, Check, CheckCheck, MoreVertical, User, X, Volume2, VolumeX, Settings, Edit2, Trash2, CornerDownRight, ExternalLink, Smile, Sparkles, Plus } from 'lucide-react'
 import { ChatSettingsModal } from './ChatSettingsModal'
 import { cn, getAvatarUrl } from '@/lib/utils'
 import Image from 'next/image'
@@ -314,13 +314,10 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
     }
 
     return (
-        <div className="flex flex-col h-full bg-[#0b0b0b] relative overflow-hidden font-sans">
-            {/* WhatsApp-style Doodle Background (CSS Pattern) */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-                }}
-            />
+        <div className="flex flex-col h-full bg-[#09090b] relative overflow-hidden font-sans">
+            {/* Sleek Dark Background (Premium Abstract) */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-[#09090b] to-[#09090b] pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.02] pointer-events-none mix-blend-overlay" />
 
             {/* Header (Glassmorphic) */}
             <div className="flex items-center justify-between px-4 py-3 bg-[#18181b]/80 backdrop-blur-xl border-b border-white/5 z-20 shadow-sm shrink-0">
@@ -489,21 +486,34 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
                     messages.map((message, index) => {
                         const isMyMessage = message.senderId === user?.id
                         const isSticker = message.messageType === 'STICKER'
-                        const showAvatar = !isMyMessage && (index === 0 || messages[index - 1].senderId !== message.senderId);
+
+                        // Date Separator Logic
+                        const showDateSeparator = index === 0 ||
+                            new Date(messages[index - 1].createdAt).toDateString() !== new Date(message.createdAt).toDateString()
 
                         return (
-                            <MessageBubble
-                                key={message.id}
-                                message={message}
-                                isMyMessage={isMyMessage}
-                                showAvatar={showAvatar}
-                                friendInfo={friendInfo}
-                                onEdit={handleEditMessage}
-                                onDelete={handleDeleteMessage}
-                                onReact={handleReactMessage}
-                                onReply={setReplyingTo}
-                                currentUserId={user?.id}
-                            />
+                            <div key={message.id} className="w-full flex flex-col">
+                                {showDateSeparator && (
+                                    <div className="flex justify-center my-4 sticky top-2 z-10">
+                                        <div className="bg-[#18181b]/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/5 shadow-sm">
+                                            <span className="text-[10px] font-bold text-white/60 tracking-wider uppercase">
+                                                {format(new Date(message.createdAt), 'MMMM d, yyyy')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <MessageBubble
+                                    message={message}
+                                    isMyMessage={isMyMessage}
+                                    friendInfo={friendInfo}
+                                    onEdit={handleEditMessage}
+                                    onDelete={handleDeleteMessage}
+                                    onReact={handleReactMessage}
+                                    onReply={setReplyingTo}
+                                    currentUserId={user?.id}
+                                />
+                            </div>
                         )
                     })
                 )}
@@ -555,7 +565,6 @@ const getStatusIcon = (status?: MessageStatus) => {
 function MessageBubble({
     message,
     isMyMessage,
-    showAvatar,
     friendInfo,
     onEdit,
     onDelete,
@@ -565,7 +574,6 @@ function MessageBubble({
 }: {
     message: Message,
     isMyMessage: boolean,
-    showAvatar: boolean,
     friendInfo: any,
     onEdit: (id: string, content: string) => void,
     onDelete: (id: string, forEveryone: boolean) => void,
@@ -590,24 +598,11 @@ function MessageBubble({
 
     return (
         <motion.div
-            key={message.id}
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={cn("flex w-full mb-1", isMyMessage ? "justify-end" : "justify-start")}
+            className={cn("flex w-full mb-1", isMyMessage ? "justify-end" : "justify-start px-2")} // Added padding for left messages
         >
-            {/* Avatar */}
-            <div className={cn(
-                "w-8 h-8 shrink-0 relative transition-all duration-300 mr-2",
-                !showAvatar && "opacity-0 invisible w-0",
-                isMyMessage && "hidden"
-            )}>
-                <UserAvatar
-                    user={friendInfo}
-                    size="md"
-                    className="rounded-xl shadow-lg border border-white/10"
-                />
-            </div>
 
             <div className={cn(
                 "flex flex-col min-w-0 max-w-[75%] relative group/bubble",
@@ -624,7 +619,7 @@ function MessageBubble({
                         )}
                     >
                         <div className="flex items-center gap-1.5 opacity-50">
-                            <Flame className="w-2.5 h-2.5" />
+                            <CornerDownRight className="w-3 h-3" />
                             <span className="font-black uppercase tracking-widest text-[7px]">In response to @{message.parent.sender.username}</span>
                         </div>
                         <p className="line-clamp-1 italic text-white/40 text-xs">{message.parent.content}</p>
@@ -796,7 +791,7 @@ function MessageBubble({
                                                         className="w-full px-4 py-2.5 text-sm text-left hover:bg-white/5 rounded-xl flex items-center gap-3 transition-colors group/item"
                                                     >
                                                         <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500 group-hover/item:bg-orange-500 group-hover/item:text-white transition-all">
-                                                            <Flame className="w-4 h-4" />
+                                                            <CornerDownRight className="w-4 h-4" />
                                                         </div>
                                                         <span className="font-bold text-white/70 group-hover/item:text-white">Reply</span>
                                                     </button>
