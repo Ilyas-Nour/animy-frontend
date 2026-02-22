@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, MessageSquare, Send, CheckCircle, Loader2, MapPin, Phone, Github, Instagram, Twitter } from 'lucide-react'
+import { Mail, MessageSquare, Send, CheckCircle, Loader2, MapPin, Phone, Github, Linkedin } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -82,16 +82,6 @@ export default function ContactPage() {
             <div className="space-y-6">
               <div className="flex items-center space-x-4 text-foreground/80 hover:text-primary transition-colors cursor-pointer group">
                 <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                  <Mail className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="font-bold">Email Us</p>
-                  <p className="text-sm text-muted-foreground">eliasnoureislam@gmail.com</p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4 text-foreground/80 hover:text-primary transition-colors cursor-pointer group">
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
                   <MessageSquare className="h-6 w-6" />
                 </div>
                 <div>
@@ -105,17 +95,27 @@ export default function ContactPage() {
                   <MapPin className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="font-bold">HQ</p>
-                  <p className="text-sm text-muted-foreground">Akihabara, Tokyo, Japan</p>
+                  <p className="font-bold">Location</p>
+                  <p className="text-sm text-muted-foreground">Morocco, Casablanca</p>
                 </div>
               </div>
             </div>
 
             <div className="flex space-x-4">
-              {[Twitter, Github, Instagram].map((Icon, i) => (
-                <Button key={i} size="icon" variant="outline" className="rounded-full h-12 w-12 border-2 hover:bg-primary hover:text-white hover:border-primary transition-all">
-                  <Icon className="h-5 w-5" />
-                </Button>
+              {[
+                { icon: Github, href: 'https://github.com/Ilyas-Nour' },
+                { icon: Linkedin, href: 'https://www.linkedin.com/in/ilyasnour/' }
+              ].map((item, i) => (
+                <a
+                  key={i}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button size="icon" variant="outline" className="rounded-full h-12 w-12 border-2 hover:bg-primary hover:text-white hover:border-primary transition-all">
+                    <item.icon className="h-5 w-5" />
+                  </Button>
+                </a>
               ))}
             </div>
           </motion.div>
