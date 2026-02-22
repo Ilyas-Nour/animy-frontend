@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Twitter, Instagram, Disc as Discord, Github, Heart, ChevronDown } from 'lucide-react'
+import { Github, Linkedin, ChevronDown, ExternalLink } from 'lucide-react'
 import { AnimatedLogo } from './AnimatedLogo'
 import { cn } from '@/lib/utils'
 
@@ -13,21 +13,21 @@ export function Footer() {
 
   const footerSections = [
     {
-      title: 'Discover',
+      title: 'Navigation',
       links: [
-        { name: 'Trending', href: '/anime?filter=airing' },
-        { name: 'Current Season', href: '/seasons' },
-        { name: 'Top Manga', href: '/manga' },
-        { name: 'Latest Movies', href: '/movies' },
+        { name: 'Trending Anime', href: '/anime?filter=airing' },
+        { name: 'Seasonal Chart', href: '/seasons' },
+        { name: 'Manga Library', href: '/manga' },
+        { name: 'Movie Archive', href: '/movies' },
       ],
     },
     {
       title: 'Community',
       links: [
-        { name: 'Guidelines', href: '/guidelines' },
-        { name: 'Official Blog', href: '/blog' },
-        { name: 'Merchandise', href: '#' },
-        { name: 'Discord', href: 'https://discord.com' },
+        { name: 'Community Guidelines', href: '/guidelines' },
+        { name: 'Discussion Forum', href: '#' },
+        { name: 'Support Center', href: '/contact' },
+        { name: 'Discord Community', href: 'https://discord.com' },
       ],
     },
     {
@@ -35,17 +35,25 @@ export function Footer() {
       links: [
         { name: 'Privacy Policy', href: '/privacy' },
         { name: 'Terms of Service', href: '/terms' },
-        { name: 'Cookie Settings', href: '/cookies' },
-        { name: 'Contact', href: '/contact' },
+        { name: 'Cookie Policy', href: '/cookies' },
+        { name: 'DMCA Notice', href: '/dmca' },
       ],
     },
   ]
 
   const socialIcons = [
-    { icon: Twitter, href: '#', label: 'X (Twitter)', color: 'hover:text-sky-400' },
-    { icon: Instagram, href: '#', label: 'Instagram', color: 'hover:text-pink-500' },
-    { icon: Discord, href: '#', label: 'Discord', color: 'hover:text-indigo-500' },
-    { icon: Github, href: '#', label: 'GitHub', color: 'hover:text-white' },
+    {
+      icon: Github,
+      href: 'https://github.com/Ilyas-Nour',
+      label: 'GitHub',
+      color: 'hover:text-white hover:bg-white/10'
+    },
+    {
+      icon: Linkedin,
+      href: 'https://www.linkedin.com/in/ilyasnour/',
+      label: 'LinkedIn',
+      color: 'hover:text-[#0077B5] hover:bg-[#0077B5]/10'
+    },
   ]
 
   const toggleSection = (title: string) => {
@@ -53,40 +61,47 @@ export function Footer() {
   }
 
   return (
-    <footer className="w-full bg-background border-t border-white/5 pt-16 pb-24 md:pb-16 overflow-hidden">
-      <div className="container px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
+    <footer className="w-full bg-background border-t border-white/5 pt-16 pb-24 md:pb-12 overflow-hidden relative">
+      {/* Subtle Background Accent */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
 
-          {/* 1. Brand Section (lg: 3 cols - 25%) */}
+      <div className="container px-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+
+          {/* 1. Brand Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="lg:col-span-3 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6"
+            className="lg:col-span-4 space-y-8"
           >
-            <AnimatedLogo className="scale-125 lg:scale-110 lg:origin-left" />
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Your Daily Otaku Lifestyle. Discover, track, and share your favorite anime and manga experiences with the community.
-            </p>
-            <div className="flex gap-4">
-              {socialIcons.map((social) => (
-                <Link
-                  key={social.label}
-                  href={social.href}
-                  className={cn(
-                    "h-10 w-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 text-muted-foreground transition-all hover:scale-110 hover:border-white/10",
-                    social.color
-                  )}
-                  aria-label={social.label}
-                >
-                  <social.icon size={18} />
-                </Link>
-              ))}
+            <div className="flex flex-col items-center lg:items-start space-y-6">
+              <AnimatedLogo className="scale-110 lg:origin-left" />
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-sm text-center lg:text-left">
+                The ultimate destination for anime enthusiasts. Discover trending shows, track your progress, and join a global community of otaku.
+              </p>
+              <div className="flex gap-3">
+                {socialIcons.map((social) => (
+                  <Link
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "h-11 w-11 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 text-muted-foreground transition-all duration-300 hover:scale-105 hover:border-white/10",
+                      social.color
+                    )}
+                    aria-label={social.label}
+                  >
+                    <social.icon size={20} />
+                  </Link>
+                ))}
+              </div>
             </div>
           </motion.div>
 
-          {/* 2. Nav Sections (lg: 9 cols - 75%) */}
-          <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-3 gap-8 lg:pl-12">
+          {/* 2. Nav Sections */}
+          <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-10">
             {footerSections.map((section, idx) => (
               <motion.div
                 key={section.title}
@@ -94,91 +109,68 @@ export function Footer() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="space-y-4 md:space-y-6"
+                className="space-y-6"
               >
-                {/* Mobile Header (Button) */}
                 <button
                   onClick={() => toggleSection(section.title)}
-                  className="w-full flex items-center justify-between md:cursor-default md:pointer-events-none group"
+                  className="w-full flex items-center justify-between md:cursor-default md:pointer-events-none"
                 >
-                  <h4 className="font-black text-sm uppercase tracking-widest text-foreground/80">{section.title}</h4>
+                  <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] text-foreground/40">{section.title}</h4>
                   <motion.div
                     animate={{ rotate: openSection === section.title ? 180 : 0 }}
-                    className="md:hidden p-1 bg-white/5 rounded-lg"
+                    className="md:hidden p-1.5 bg-white/5 rounded-xl border border-white/5"
                   >
-                    <ChevronDown size={16} className="text-muted-foreground" />
+                    <ChevronDown size={14} className="text-muted-foreground" />
                   </motion.div>
                 </button>
 
-                {/* Content - Hidden on mobile unless open */}
+                {/* Mobile / Desktop List */}
                 <AnimatePresence mode="wait">
-                  {openSection === section.title ? (
+                  {(openSection === section.title || typeof window !== 'undefined' && window.innerWidth >= 768) && (
                     <motion.ul
-                      key={`footer-list-${section.title}`}
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="space-y-3 overflow-hidden md:hidden"
+                      className="space-y-4 overflow-hidden md:!h-auto md:!opacity-100"
                     >
                       {section.links.map((link) => (
                         <li key={link.name}>
                           <Link
                             href={link.href}
-                            className="text-muted-foreground text-sm hover:text-primary transition-all flex items-center gap-2 group py-1"
+                            className="text-muted-foreground/80 text-sm hover:text-foreground transition-colors flex items-center gap-2 group"
                           >
-                            <span className="h-1 w-1 rounded-full bg-primary/40 group-hover:w-2 group-hover:bg-primary transition-all" />
+                            <span className="h-[1px] w-0 bg-primary group-hover:w-3 transition-all duration-300" />
                             {link.name}
                           </Link>
                         </li>
                       ))}
                     </motion.ul>
-                  ) : null}
+                  )}
                 </AnimatePresence>
-
-                {/* Always visible on Desktop */}
-                <ul className="hidden md:block space-y-3">
-                  {section.links.map((link) => (
-                    <li key={`desktop-${link.name}`}>
-                      <Link
-                        href={link.href}
-                        className="text-muted-foreground text-sm hover:text-primary transition-all flex items-center gap-2 group py-1"
-                      >
-                        <span className="h-1 w-1 rounded-full bg-primary/40 group-hover:w-2 group-hover:bg-primary transition-all" />
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
               </motion.div>
             ))}
           </div>
-
         </div>
 
-        {/* Bottom Bar */}
         {/* Bottom Bar */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mt-16 border-t border-white/5 py-8 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0"
+          className="mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6"
         >
-          <div className="text-xs text-muted-foreground font-medium order-2 md:order-1">
-            © {currentYear} <span className="text-foreground font-bold">Animy</span>. All rights reserved.
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-[13px] text-muted-foreground/60">
+            <span>© {currentYear} <span className="text-foreground/80 font-semibold tracking-tight">Animy</span></span>
+            <span className="hidden md:block h-1 w-1 rounded-full bg-white/10" />
+            <span className="flex items-center gap-1">
+              Developed by <Link href="https://github.com/Ilyas-Nour" target="_blank" className="text-foreground/80 hover:text-primary transition-colors font-medium">Ilyas Nour</Link>
+            </span>
           </div>
 
-          <div className="flex flex-row items-center gap-6 text-xs order-1 md:order-2">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Systems Normal</span>
-            </div>
-
-            <div className="text-muted-foreground flex items-center gap-1.5 font-medium whitespace-nowrap">
-              Made with <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}><Heart size={12} className="text-red-500 fill-current" /></motion.span> by <span className="text-foreground font-bold">Ilyas Nour</span>
-            </div>
+          <div className="flex items-center gap-8 text-[13px] font-medium text-muted-foreground/60">
+            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link href="/cookies" className="hover:text-foreground transition-colors">Cookies</Link>
           </div>
         </motion.div>
       </div>
