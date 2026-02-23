@@ -258,7 +258,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
             socket.off('message:reactions_updated', handleReactionsUpdated)
             socket.off('conversation:cleared', handleConversationCleared)
         }
-    }, [socket, friendId, user?.id, refreshUnreadCount])
+    }, [socket, friendId, user?.id])
 
     const handleSendMessage = (content: string, messageType: 'TEXT' | 'STICKER' | 'ANIME_CARD' | 'MEDIA_CARD' = 'TEXT', animeId?: number, parentId?: string) => {
         if (!socket || !friendId) return
@@ -477,7 +477,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-2 overscroll-contain touch-pan-y" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center gap-6 opacity-30 select-none">
                         <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-tr from-purple-500/20 to-blue-500/20 flex items-center justify-center backdrop-blur-3xl animate-pulse">
