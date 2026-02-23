@@ -1,11 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { StreamingPlayer } from './StreamingPlayer'
+import dynamic from 'next/dynamic'
 import { EpisodeGrid } from './EpisodeGrid'
 import { Loader2, AlertCircle, Wifi } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api'
+
+const StreamingPlayer = dynamic(() => import('./StreamingPlayer').then(mod => mod.StreamingPlayer), {
+    ssr: false,
+    loading: () => (
+        <div className="aspect-video bg-black/50 rounded-xl flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        </div>
+    )
+})
 
 interface StreamingContainerProps {
     animeTitle: string

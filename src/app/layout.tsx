@@ -82,9 +82,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
       <body className={inter.className}>
-        <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+        <SmoothScrollProvider>
+          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+        </SmoothScrollProvider>
       </body>
     </html>
   )
