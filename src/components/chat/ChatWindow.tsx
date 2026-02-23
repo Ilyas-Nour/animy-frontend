@@ -258,7 +258,7 @@ export default function ChatWindow({ friendId, onBack }: ChatWindowProps) {
             socket.off('message:reactions_updated', handleReactionsUpdated)
             socket.off('conversation:cleared', handleConversationCleared)
         }
-    }, [socket, friendId, user?.id])
+    }, [socket, friendId, user?.id, refreshUnreadCount])
 
     const handleSendMessage = (content: string, messageType: 'TEXT' | 'STICKER' | 'ANIME_CARD' | 'MEDIA_CARD' = 'TEXT', animeId?: number, parentId?: string) => {
         if (!socket || !friendId) return

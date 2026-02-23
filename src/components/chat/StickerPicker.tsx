@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 interface StickerPickerProps {
     onSelectSticker: (stickerUrl: string) => void
 }
@@ -28,10 +30,13 @@ export default function StickerPicker({ onSelectSticker }: StickerPickerProps) {
                         onClick={() => onSelectSticker(sticker)}
                         className="w-12 h-12 rounded hover:bg-gray-100 transition-colors flex items-center justify-center"
                     >
-                        <img
+                        <Image
                             src={sticker}
                             alt={`Sticker ${index + 1}`}
-                            className="w-10 h-10 object-contain"
+                            width={40}
+                            height={40}
+                            className="object-contain"
+                            unoptimized
                             onError={(e) => {
                                 // Fallback to emoji if image not found
                                 e.currentTarget.style.display = 'none'

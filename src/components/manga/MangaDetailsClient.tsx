@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -33,21 +33,7 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
     const [actionLoading, setActionLoading] = useState(false)
     const [scrolled, setScrolled] = useState(false)
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            checkStatus()
-        }
-    }, [isAuthenticated, manga.mal_id])
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 300)
-        }
-        window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
-
-    const checkStatus = async () => {
+    const checkStatus = useCallback(async () => {
         try {
             const [listRes, favRes] = await Promise.all([
                 api.get('/users/mangalist'),
@@ -72,7 +58,13 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
         } catch (error) {
             console.error('Failed to check manga status:', error)
         }
-    }
+    }, [manga.mal_id])
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            checkStatus()
+        }
+    }, [isAuthenticated, manga.mal_id, checkStatus])
 
     const handleToggleFavorite = async () => {
 

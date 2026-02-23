@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import Hls from 'hls.js'
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -21,11 +21,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     const videoRef = useRef<HTMLVideoElement>(null)
     const hlsRef = useRef<Hls | null>(null)
 
-    useEffect(() => {
-        fetchSources()
-    }, [episodeId, provider])
-
-    const fetchSources = async () => {
+    const fetchSources = useCallback(async () => {
         try {
             setLoading(true)
             setError(null)
@@ -66,21 +62,13 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
         } finally {
             setLoading(false)
         }
-    }
+    }, [episodeId, provider, malId, episodeNumber])
 
     useEffect(() => {
-        if (!sources || !videoRef.current) return
+        fetchSources()
+    }, [fetchSources])
 
-        initializePlayer()
-
-        return () => {
-            if (hlsRef.current) {
-                hlsRef.current.destroy()
-            }
-        }
-    }, [sources])
-
-    const initializePlayer = () => {
+    const initializePlayer = useCallback(() => {
         if (!sources || !videoRef.current) return
 
         // Find best quality source
@@ -142,7 +130,19 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             videoRef.current.src = videoUrl
             videoRef.current.play().catch(console.error)
         }
-    }
+    }, [sources, retryCount])
+
+    useEffect(() => {
+        if (!sources || !videoRef.current) return
+
+        initializePlayer()
+
+        return () => {
+            if (hlsRef.current) {
+                hlsRef.current.destroy()
+            }
+        }
+    }, [sources, initializePlayer])
 
     if (loading) {
         return (

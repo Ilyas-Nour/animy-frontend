@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import { Search, Loader2, Send, Users, Flame } from 'lucide-react'
 import api from '@/lib/api'
 import { getAvatarUrl, getInitials, cn } from '@/lib/utils'
@@ -152,9 +153,15 @@ export function ShareNewsModal({ open, onOpenChange, newsItem }: ShareNewsModalP
                                     >
                                         <div className="relative">
                                             <div className="w-10 h-10 rounded-lg bg-indigo-500/20 p-px shadow-inner transition-transform group-hover:scale-105">
-                                                <div className="w-full h-full rounded-[0.45rem] bg-zinc-900 flex items-center justify-center overflow-hidden">
+                                                <div className="w-full h-full rounded-[0.45rem] bg-zinc-900 flex items-center justify-center overflow-hidden relative">
                                                     {friend.avatar ? (
-                                                        <img src={getAvatarUrl(friend.avatar)} alt={friend.username} className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-opacity" />
+                                                        <Image
+                                                            src={getAvatarUrl(friend.avatar) || ''}
+                                                            alt={friend.username || 'User'}
+                                                            fill
+                                                            className="object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-opacity"
+                                                            unoptimized
+                                                        />
                                                     ) : (
                                                         <span className="text-xs font-black text-indigo-500/30 group-hover:text-indigo-400 transition-colors">
                                                             {getInitials(friend.firstName || friend.username)}

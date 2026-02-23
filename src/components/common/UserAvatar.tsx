@@ -68,11 +68,12 @@ const UserAvatar = ({ user, className, size = 'md' }: UserAvatarProps) => {
     return (
         <div className={cn("relative shrink-0 overflow-hidden rounded-full bg-muted", sizeClasses[size], className)}>
             {!imageError && avatarUrl ? (
-                <img
+                <Image
                     src={avatarUrl}
                     alt={user?.firstName || "User"}
-                    className="h-full w-full object-cover"
-                    referrerPolicy="no-referrer"
+                    fill
+                    className="object-cover"
+                    unoptimized
                     onError={() => setImageError(true)}
                 />
             ) : (

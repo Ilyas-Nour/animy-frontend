@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { EpisodeGrid } from './EpisodeGrid'
 import { Loader2, AlertCircle, Wifi } from 'lucide-react'
@@ -39,12 +39,7 @@ export function StreamingContainer({
         setMounted(true)
     }, [])
 
-    useEffect(() => {
-        if (!mounted) return
-        fetchAnimeData()
-    }, [mounted, animeTitle])
-
-    const fetchAnimeData = async () => {
+    const fetchAnimeData = useCallback(async () => {
         try {
             setLoading(true)
             setError(null)
@@ -85,7 +80,12 @@ export function StreamingContainer({
         } finally {
             setLoading(false)
         }
-    }
+    }, [animeTitle])
+
+    useEffect(() => {
+        if (!mounted) return
+        fetchAnimeData()
+    }, [mounted, fetchAnimeData])
 
     if (!mounted) {
         return (

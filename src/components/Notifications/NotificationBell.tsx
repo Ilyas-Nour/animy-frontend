@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
 import { getAvatarUrl, getInitials, cn } from '@/lib/utils'
 import { useSocket } from '@/contexts/SocketContext'
+import Image from 'next/image'
 
 interface Notification {
     id: string
@@ -65,7 +66,7 @@ export function NotificationBell() {
         return () => {
             socket.off('notification:receive', handleNewNotification)
         }
-    }, [socket])
+    }, [socket, playNotif])
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -164,12 +165,14 @@ function NotificationItem({ notification, onRead, onClose }: { notification: Not
             )}
         >
             <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-xl bg-accent overflow-hidden shrink-0 border border-border/50 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-accent overflow-hidden shrink-0 border border-border/50 shadow-sm relative">
                     {notification.sender?.avatar ? (
-                        <img
-                            src={getAvatarUrl(notification.sender.avatar)}
-                            alt={notification.sender.username}
-                            className="w-full h-full object-cover"
+                        <Image
+                            src={getAvatarUrl(notification.sender.avatar) || ''}
+                            alt={notification.sender.username || 'User'}
+                            fill
+                            className="object-cover"
+                            unoptimized
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs font-black text-foreground">
