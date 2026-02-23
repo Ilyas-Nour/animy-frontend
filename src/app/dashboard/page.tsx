@@ -398,8 +398,8 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-3">
               {friends.length > 0 ? friends.slice(0, 4).map((friend) => (
-                <div key={friend.id} className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full border border-border overflow-hidden relative bg-muted flex items-center justify-center">
+                <Link key={friend.id} href={`/users/${friend.username}`} className="flex items-center gap-3 p-2 hover:bg-secondary/50 rounded-2xl transition-all group">
+                  <div className="w-10 h-10 rounded-full border border-border overflow-hidden relative bg-muted flex items-center justify-center group-hover:border-indigo-500/50 transition-colors">
                     {friend.avatar ? (
                       <img src={getAvatarUrl(friend.avatar)} alt={friend.username} className="w-full h-full object-cover" crossOrigin="anonymous" />
                     ) : (
@@ -407,10 +407,10 @@ export default function DashboardPage() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <span className="text-sm font-bold block text-foreground">{friend.firstName || friend.username}</span>
+                    <span className="text-sm font-bold block text-foreground group-hover:text-indigo-400 transition-colors">{friend.firstName || friend.username}</span>
                     <span className="text-[10px] font-bold uppercase text-muted-foreground">Friend</span>
                   </div>
-                </div>
+                </Link>
               )) : (
                 <div className="py-8 text-center bg-card dark:bg-white/5 rounded-2xl border border-dashed border-border">
                   <p className="text-xs text-muted-foreground italic font-medium">No friends found.</p>
@@ -419,25 +419,25 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Middle Box: SHRINE (Character Focus) */}
+          {/* Right Box: CUSTOM (Favorites Preview) */}
           <div className="bg-card dark:bg-[#0a0a0a] border border-border rounded-3xl p-6 relative overflow-hidden group">
             <div className="absolute inset-0 bg-pink-500/5 group-hover:bg-pink-500/10 transition-colors" />
             <div className="relative z-10 h-full flex flex-col justify-between">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold flex items-center gap-2">
                   <Heart className="w-5 h-5 text-pink-500" />
-                  Shrine
+                  Favorites
                 </h3>
-                <Link href="/profile/shrine">
+                <Link href="/dashboard/favorites">
                   <ArrowUpRightIcon />
                 </Link>
               </div>
               <div className="text-center py-6">
-                <span className="text-5xl font-black text-foreground block mb-2">{stats?.totalFavoriteCharacters || 0}</span>
-                <span className="text-xs uppercase font-bold text-pink-500 dark:text-pink-300">Characters Worshipped</span>
+                <span className="text-5xl font-black text-foreground block mb-2">{stats?.totalFavorites || 0}</span>
+                <span className="text-xs uppercase font-bold text-pink-500 dark:text-pink-300">Items Liked</span>
               </div>
-              <Link href="/profile/shrine">
-                <Button className="w-full bg-pink-600 hover:bg-pink-700 text-white rounded-xl">Visit Shrine</Button>
+              <Link href="/dashboard/favorites">
+                <Button className="w-full bg-pink-600 hover:bg-pink-700 text-white rounded-xl">View Collection</Button>
               </Link>
             </div>
           </div>

@@ -368,12 +368,14 @@ export default function UserProfilePage() {
                             >
                                 {/* Anime Stats */}
                                 <section className="space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-2xl bg-primary/20 flex items-center justify-center">
-                                            <PlayCircle className="h-6 w-6 text-primary" />
+                                    <Link href={`/users/${username}/anime`} className="group/title inline-block">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-2xl bg-primary/20 flex items-center justify-center group-hover/title:bg-primary group-hover/title:text-white transition-all">
+                                                <PlayCircle className="h-6 w-6 text-primary group-hover/title:text-white" />
+                                            </div>
+                                            <h2 className="text-2xl font-black uppercase tracking-tight group-hover/title:text-primary transition-colors">Anime Journey</h2>
                                         </div>
-                                        <h2 className="text-2xl font-black uppercase tracking-tight">Anime Journey</h2>
-                                    </div>
+                                    </Link>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                                         {[
                                             { label: 'Total', value: stats.totalWatchlist, icon: BarChart3, color: 'text-primary', bg: 'bg-primary/5' },
@@ -396,12 +398,14 @@ export default function UserProfilePage() {
 
                                 {/* Manga Stats */}
                                 <section className="space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-2xl bg-orange-500/20 flex items-center justify-center">
-                                            <BookOpen className="h-6 w-6 text-orange-500" />
+                                    <Link href={`/users/${username}/manga`} className="group/title inline-block">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-2xl bg-orange-500/20 flex items-center justify-center group-hover/title:bg-orange-500 group-hover/title:text-white transition-all">
+                                                <BookOpen className="h-6 w-6 text-orange-500 group-hover/title:text-white" />
+                                            </div>
+                                            <h2 className="text-2xl font-black uppercase tracking-tight group-hover/title:text-orange-500 transition-colors">Manga Legend</h2>
                                         </div>
-                                        <h2 className="text-2xl font-black uppercase tracking-tight">Manga Legend</h2>
-                                    </div>
+                                    </Link>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                                         {[
                                             { label: 'Total', value: stats.totalMangaList || 0, icon: BarChart3, color: 'text-orange-500', bg: 'bg-orange-500/5' },
