@@ -134,14 +134,14 @@ export default function DashboardPage() {
 
             {/* XP Bar */}
             <div className="flex items-center gap-3 w-full max-w-md">
-              <div className="flex-1 bg-secondary/50 dark:bg-black/50 border border-border/10 backdrop-blur-sm h-5 rounded-full overflow-hidden relative group/xp cursor-help shadow-inner">
+              <div className="flex-1 bg-secondary/50 dark:bg-black/50 border border-border/10 backdrop-blur-sm h-8 md:h-5 rounded-full overflow-hidden relative group/xp cursor-help shadow-inner">
                 <div
                   className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 relative transition-all duration-1000 ease-out"
                   style={{ width: `${((user?.xp || 0) / (user?.nextLevelXp || 1)) * 100}%` }}
                 >
                   <div className="absolute inset-0 bg-white/20 animate-pulse" />
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-widest font-black text-foreground/80 mix-blend-difference opacity-0 group-hover/xp:opacity-100 transition-opacity">
+                <div className="absolute inset-0 flex items-center justify-center text-[11px] md:text-[10px] uppercase tracking-widest font-black text-foreground/80 mix-blend-difference opacity-100 md:opacity-0 group-hover/xp:opacity-100 transition-opacity">
                   {user?.xp || 0} / {user?.nextLevelXp || 1} XP To Level Up
                 </div>
               </div>
