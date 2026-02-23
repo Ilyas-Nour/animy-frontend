@@ -57,8 +57,8 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     </motion.div>
 
                     {/* Content Layer */}
-                    <div className="container relative h-full z-20 flex flex-col justify-center pt-20">
-                        <div className="max-w-4xl space-y-8">
+                    <div className="container relative h-full z-20 flex flex-col justify-center pt-12 md:pt-20">
+                        <div className="max-w-4xl space-y-4 md:space-y-6 lg:space-y-8">
                             <motion.div
                                 initial={{ y: 30, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
@@ -79,32 +79,32 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 initial={{ y: 30, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.3 }}
-                                className="space-y-4"
+                                className="space-y-3 md:space-y-4"
                             >
-                                <h1 className={`font-black leading-[0.9] tracking-tighter text-foreground drop-shadow-sm dark:drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] line-clamp-2 md:line-clamp-3 ${active.title.length > 30 ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl' : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-8xl'}`}>
+                                <h1 className={`font-black leading-[0.9] tracking-tighter text-foreground drop-shadow-sm dark:drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] line-clamp-2 md:line-clamp-3 ${active.title.length > 50 ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl' : active.title.length > 30 ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl' : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-8xl'}`}>
                                     {active.title}
                                 </h1>
 
-                                <div className="flex items-center gap-4 md:gap-6 text-foreground/90">
+                                <div className="flex items-center gap-3 md:gap-6 text-foreground/90">
                                     {active.score && (
-                                        <div className="flex items-center gap-1.5 md:gap-2 bg-yellow-500/10 dark:bg-yellow-500/20 backdrop-blur-2xl px-3 py-1.5 md:px-4 md:py-2 rounded-xl md:rounded-2xl border border-yellow-500/30">
-                                            <Star className="h-4 w-4 md:h-5 md:w-5 text-yellow-500 fill-yellow-500" />
-                                            <span className="text-lg md:text-xl font-black">{active.score.toFixed(1)}</span>
+                                        <div className="flex items-center gap-1.5 md:gap-2 bg-yellow-500/10 dark:bg-yellow-500/20 backdrop-blur-2xl px-2.5 py-1 md:px-4 md:py-2 rounded-xl md:rounded-2xl border border-yellow-500/30">
+                                            <Star className="h-3.5 w-3.5 md:h-5 md:w-5 text-yellow-500 fill-yellow-500" />
+                                            <span className="text-base md:text-xl font-black">{active.score.toFixed(1)}</span>
                                         </div>
                                     )}
                                     <div className="flex flex-col">
-                                        <span className="text-muted-foreground text-[8px] md:text-[10px] font-black uppercase tracking-widest">Format</span>
-                                        <span className="text-xs md:text-base font-bold">{active.type}</span>
+                                        <span className="text-muted-foreground text-[7px] md:text-[10px] font-black uppercase tracking-widest">Format</span>
+                                        <span className="text-[10px] md:text-base font-bold">{active.type}</span>
                                     </div>
-                                    <div className="h-6 md:h-8 w-px bg-border hidden sm:block" />
+                                    <div className="h-4 md:h-8 w-px bg-border hidden sm:block" />
                                     <div className="flex flex-col">
-                                        <span className="text-muted-foreground text-[8px] md:text-[10px] font-black uppercase tracking-widest">Year</span>
-                                        <span className="text-xs md:text-base font-bold">{active.year || 'Unknown'}</span>
+                                        <span className="text-muted-foreground text-[7px] md:text-[10px] font-black uppercase tracking-widest">Year</span>
+                                        <span className="text-[10px] md:text-base font-bold">{active.year || 'Unknown'}</span>
                                     </div>
-                                    <div className="h-6 md:h-8 w-px bg-border hidden sm:block" />
+                                    <div className="h-4 md:h-8 w-px bg-border hidden sm:block" />
                                     <div className="flex flex-col">
-                                        <span className="text-muted-foreground text-[8px] md:text-[10px] font-black uppercase tracking-widest">Status</span>
-                                        <span className="text-xs md:text-base font-bold">{active.status}</span>
+                                        <span className="text-muted-foreground text-[7px] md:text-[10px] font-black uppercase tracking-widest">Status</span>
+                                        <span className="text-[10px] md:text-base font-bold">{active.status}</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -113,7 +113,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.4 }}
-                                className="text-sm sm:text-base lg:text-lg xl:text-xl text-muted-foreground line-clamp-3 max-w-2xl leading-relaxed font-medium"
+                                className="text-xs sm:text-base lg:text-lg xl:text-xl text-muted-foreground line-clamp-2 md:line-clamp-3 max-w-2xl leading-relaxed font-medium"
                             >
                                 {active.synopsis}
                             </motion.p>
@@ -122,7 +122,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.5 }}
-                                className="flex flex-wrap gap-4 pt-4 md:pt-6"
+                                className="flex flex-wrap gap-4 pt-2 md:pt-4"
                             >
                                 <Link href={`/anime/${active.mal_id}`}>
                                     <Button size="lg" className="relative h-11 sm:h-12 lg:h-13 xl:h-14 px-6 lg:px-8 xl:px-10 text-[11px] sm:text-xs md:text-sm lg:text-sm xl:text-base font-black gap-2 md:gap-3 bg-gradient-to-r from-primary via-purple-500 to-indigo-600 text-primary-foreground shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_35px_rgba(139,92,246,0.5)] rounded-xl md:rounded-2xl lg:rounded-3xl border-0 overflow-hidden group/btn transition-all duration-300 hover:scale-105 active:scale-95">
