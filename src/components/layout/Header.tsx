@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, LogOut, User as UserIcon, Users, MessageCircle, Home, Tv, BookOpen, Film, Layers, Calendar, Mail, Sun, Moon, ShieldCheck, Flame } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -285,113 +285,130 @@ export function Header() {
       </div>
 
       {/* Mobile Menu */}
-      {isMenuOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="lg:hidden border-t"
-        >
-          <nav className="container py-4 flex flex-col space-y-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsMenuOpen(false)}
-                className={cn(
-                  'text-sm font-medium transition-colors hover:text-primary',
-                  pathname === item.href
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
-                )}
-              >
-                {item.name}
-              </Link>
-            ))}
-
-            {/* Dark Mode Toggle (mobile) */}
-            <button
-              onClick={toggleDarkMode}
-              className="flex items-center justify-between px-4 py-2 rounded-lg bg-accent text-sm w-full"
-            >
-              <span>{dark ? 'Dark Mode' : 'Light Mode'}</span>
-              <div className="relative w-5 h-5 flex items-center justify-center">
-                <Sun className={`w-5 h-5 text-orange-500 absolute transition-all duration-500 ${dark ? 'rotate-90 scale-0 opacity-0' : 'rotate-0 scale-100 opacity-100'}`} />
-                <Moon className={`w-5 h-5 text-blue-500 absolute transition-all duration-500 ${dark ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-0 opacity-0'}`} />
-              </div>
-            </button>
-
-            <div className="pt-4 border-t">
-              {isAuthenticated ? (
-                <div className="space-y-2">
-                  <Link href="/dashboard/friends" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" className="w-full gap-2 justify-start relative">
-                      <div className="relative">
-                        <span className="text-lg">👥</span>
-                        {requestCount > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                            {requestCount}
-                          </span>
-                        )}
-                      </div>
-                      Friends
-                    </Button>
-                  </Link>
-                  <Link href="/chat" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" className="w-full gap-2 justify-start relative group">
-                      <div className="relative">
-                        <MessageCircle className="w-5 h-5 text-purple-500" />
-                        {unreadCount > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                            {unreadCount > 9 ? '9+' : unreadCount}
-                          </span>
-                        )}
-                      </div>
-                      Chat
-                    </Button>
-                  </Link>
-                  <Link href="/profile/shrine" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" className="w-full gap-2 justify-start">
-                      <span className="text-lg">⛩️</span>
-                      Character Shrine
-                    </Button>
-                  </Link>
-                  <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" className="w-full gap-2 justify-start">
-                      {user?.avatar ? (
-                        <Image
-                          src={getAvatarUrl(user.avatar)!}
-                          alt="Avatar"
-                          width={20}
-                          height={20}
-                          className="w-5 h-5 rounded-full object-cover"
-                        />
-                      ) : (
-                        <UserIcon className="h-4 w-4" />
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="lg:hidden border-t bg-background/80 backdrop-blur-2xl overflow-hidden"
+          >
+            <nav className="container py-8 space-y-10">
+              {/* Nav Items Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {navItems.map((item) => {
+                  const isActive = pathname === item.href
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={cn(
+                        'flex items-center gap-3 p-4 rounded-2xl border transition-all duration-300',
+                        isActive
+                          ? 'bg-primary/10 border-primary/20 text-primary'
+                          : 'bg-secondary/30 border-white/5 text-muted-foreground hover:bg-secondary/50 hover:border-white/10 hover:text-foreground'
                       )}
-                      Dashboard ({user?.firstName})
-                    </Button>
-                  </Link>
-                  <Button variant="outline" onClick={logout} className="w-full">
-                    Logout
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-col space-y-2">
-                  <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      Login
-                    </Button>
-                  </Link>
-                  <Link href="/auth/register" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="w-full">Sign Up</Button>
-                  </Link>
-                </div>
-              )}
-            </div>
-          </nav>
-        </motion.div>
-      )}
+                    >
+                      <item.icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
+                      <span className="text-sm font-black uppercase tracking-tight">{item.name}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+
+              {/* Theme & Settings Section */}
+              <div className="space-y-4">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-2">Settings & Theme</h3>
+                <button
+                  onClick={toggleDarkMode}
+                  className="flex items-center justify-between w-full p-4 rounded-2xl bg-secondary/30 border border-white/5 hover:bg-secondary/50 transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                      {dark ? <Moon className="w-4 h-4 text-blue-500" /> : <Sun className="w-4 h-4 text-orange-500" />}
+                    </div>
+                    <span className="text-sm font-bold">{dark ? 'Dark Mode' : 'Light Mode'}</span>
+                  </div>
+                  <div className="w-10 h-6 bg-muted rounded-full relative p-1 group-hover:bg-muted/80 transition-colors">
+                    <motion.div
+                      animate={{ x: dark ? 16 : 0 }}
+                      className="w-4 h-4 bg-white rounded-full shadow-sm"
+                    />
+                  </div>
+                </button>
+              </div>
+
+              {/* Account Section */}
+              <div className="space-y-4 pt-6 border-t border-white/5">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-2">Account</h3>
+                {isAuthenticated ? (
+                  <div className="space-y-3">
+                    {/* User Profile Summary */}
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-4 p-4 rounded-2xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-all"
+                    >
+                      <UserAvatar user={user!} className="h-12 w-12 rounded-xl ring-2 ring-primary/20" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-black truncate">{user?.firstName}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase">Level {user?.level || 1} • {user?.rank || 'Initiate'}</p>
+                      </div>
+                      <Layers className="w-4 h-4 text-primary" />
+                    </Link>
+
+                    {/* Action Links Grid */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <Link href="/dashboard/friends" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="outline" className="w-full gap-2 justify-start h-12 rounded-xl border-white/5 bg-secondary/20 hover:bg-secondary/40">
+                          <Users className="w-4 h-4 text-blue-500" />
+                          <span className="text-xs font-bold">Friends</span>
+                          {requestCount > 0 && <span className="ml-auto w-2 h-2 bg-red-500 rounded-full animate-pulse" />}
+                        </Button>
+                      </Link>
+                      <Link href="/chat" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="outline" className="w-full gap-2 justify-start h-12 rounded-xl border-white/5 bg-secondary/20 hover:bg-secondary/40">
+                          <MessageCircle className="w-4 h-4 text-purple-500" />
+                          <span className="text-xs font-bold">Inbox</span>
+                          {unreadCount > 0 && <span className="ml-auto w-2 h-2 bg-red-500 rounded-full animate-pulse" />}
+                        </Button>
+                      </Link>
+                      <Link href="/profile/shrine" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="outline" className="w-full gap-2 justify-start h-12 rounded-xl border-white/5 bg-secondary/20 hover:bg-secondary/40">
+                          <Flame className="w-4 h-4 text-orange-500" />
+                          <span className="text-xs font-bold">Shrine</span>
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        onClick={logout}
+                        className="w-full gap-2 justify-start h-12 rounded-xl border-white/5 bg-red-500/5 hover:bg-red-500/10 text-red-500"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span className="text-xs font-bold">Logout</span>
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <Link href="/auth/login" onClick={() => setIsMenuOpen(false)} className="w-full">
+                      <Button variant="outline" className="w-full h-12 rounded-xl border-white/5 bg-secondary/20 hover:bg-secondary/40 font-bold">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/auth/register" onClick={() => setIsMenuOpen(false)} className="w-full">
+                      <Button className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20">
+                        Join Now
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   )
 }
