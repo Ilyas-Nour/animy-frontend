@@ -1,11 +1,6 @@
 import { Manga } from '@/types/manga'
 import { notFound } from 'next/navigation'
-import dynamic from 'next/dynamic'
-
-const MangaDetailsClient = dynamic(() => import('@/components/manga/MangaDetailsClient'), {
-    ssr: false,
-    loading: () => <div className="min-h-screen bg-background animate-pulse" />
-})
+import MangaDetailsClient from '@/components/manga/MangaDetailsClient'
 
 export const revalidate = 3600 // ISR: 1 hour
 

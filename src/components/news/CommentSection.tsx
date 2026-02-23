@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Reply, Heart, Edit2, Trash2, X, Check, MoreVertical, UserPlus } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
-import NextImage from 'next/image'
 import api from '@/lib/api'
 import { toast } from 'sonner'
 import { getAvatarUrl, getInitials, cn } from '@/lib/utils'
@@ -41,7 +40,7 @@ export function CommentSection({ newsId }: { newsId: string }) {
     const [isLoading, setIsLoading] = useState(true)
     const [friends, setFriends] = useState<Set<string>>(new Set())
 
-    const fetchFriends = useCallback(async () => {
+    const fetchFriends = async () => {
         if (!user) return
         try {
             const res = await api.get('/friends/list')
@@ -57,9 +56,9 @@ export function CommentSection({ newsId }: { newsId: string }) {
         } catch (error) {
             console.error("Failed to fetch friends", error)
         }
-    }, [user])
+    }
 
-    const fetchComments = useCallback(async () => {
+    const fetchComments = async () => {
         try {
             const url = `/comments/${newsId}${user ? `?userId=${user.id}` : ''}`
             const res = await api.get(url)
@@ -69,12 +68,12 @@ export function CommentSection({ newsId }: { newsId: string }) {
         } finally {
             setIsLoading(false)
         }
-    }, [newsId, user])
+    }
 
     useEffect(() => {
         fetchComments()
         fetchFriends()
-    }, [newsId, user, fetchComments, fetchFriends])
+    }, [newsId, user])
 
     const scrollToHash = () => {
         if (typeof window === 'undefined') return
@@ -289,15 +288,11 @@ function CommentItem({
                 <Link href={`/users/${comment.user.username}`} className="shrink-0 group/avatar">
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-600/20 overflow-hidden border border-border shadow-md transform group-hover/avatar:scale-105 transition-transform">
                         {comment.user.avatar ? (
-                            <div className="w-full h-full relative">
-                                <NextImage
-                                    src={getAvatarUrl(comment.user.avatar) || ''}
-                                    alt={comment.user.username || 'User'}
-                                    fill
-                                    className="object-cover"
-                                    unoptimized
-                                />
-                            </div>
+                            <img
+                                src={getAvatarUrl(comment.user.avatar)}
+                                alt={comment.user.username}
+                                className="w-full h-full object-cover"
+                            />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-[11px] font-black text-foreground">
                                 {getInitials(comment.user.firstName || comment.user.username)}

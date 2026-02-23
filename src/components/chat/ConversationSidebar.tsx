@@ -55,76 +55,10 @@ export default function ConversationSidebar({
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
-    const fetchData = useCallback(async () => {
-        try {
-            setError(null)
-
-            // Fetch individually to catch specific errors
-            let conversationsRes, friendsRes
-
-            try {
-                conversationsRes = await api.get('/chat/conversations')
-            } catch (err: any) {
-                console.error('Chat API failed', err)
-                throw new Error(`Chat API: ${err.response?.status || err.message}`)
-            }
-
-            try {
-                friendsRes = await api.get('/friends/list')
-            } catch (err: any) {
-                console.error('Friends API failed', err)
-                throw new Error(`Friends API: ${err.response?.status || err.message}`)
-            }
-
-            // Unwrap the NestJS TransformInterceptor response: { success: true, data: ... }
-            const activeConversations: Conversation[] = conversationsRes.data.data || []
-            const allFriends: any[] = friendsRes.data.data?.friends || []
-
-            // Map friends to Conversation structure
-            const merged: Conversation[] = allFriends.map(friend => {
-                const existingConv = activeConversations.find(c => c.friend.id === friend.id)
-                if (existingConv) {
-                    return existingConv
-                }
-
-                // Placeholder for friend without chat history
-                return {
-                    id: `new_${friend.id}`,
-                    updatedAt: new Date(friend.createdAt || Date.now()).toISOString(),
-                    friend: {
-                        id: friend.id,
-                        username: friend.username,
-                        avatar: friend.avatar
-                    },
-                    unreadCount: 0,
-                    messages: [] // No messages
-                }
-            })
-
-            // Sort: Prioritize conversations with messages, then by latest message time
-            merged.sort((a, b) => {
-                const lastMsgA = a.messages[0]
-                const lastMsgB = b.messages[0]
-
-                const timeA = lastMsgA ? new Date(lastMsgA.createdAt).getTime() : new Date(a.updatedAt).getTime()
-                const timeB = lastMsgB ? new Date(lastMsgB.createdAt).getTime() : new Date(b.updatedAt).getTime()
-
-                return timeB - timeA
-            })
-
-            setConversations(merged)
-        } catch (error: any) {
-            console.error('Failed to fetch data:', error)
-            setError(error.message || 'Fetch failed')
-        } finally {
-            setLoading(false)
-        }
-    }, [])
-
     // Initial fetch
     useEffect(() => {
         fetchData()
-    }, [fetchData])
+    }, [])
 
     // Socket events for real-time updates
     useEffect(() => {
@@ -190,7 +124,78 @@ export default function ConversationSidebar({
             socket.off('message:new', handleNewMessage)
             socket.off('message:read')
         }
-    }, [socket, selectedFriendId, user?.id, fetchData])
+    }, [socket, selectedFriendId])
+
+    const [debugInfo, setDebugInfo] = useState<string>('')
+
+    const fetchData = async () => {
+        try {
+            setError(null)
+
+            // Fetch individually to catch specific errors
+            let conversationsRes, friendsRes
+
+            try {
+                conversationsRes = await api.get('/chat/conversations')
+            } catch (err: any) {
+                console.error('Chat API failed', err)
+                throw new Error(`Chat API: ${err.response?.status || err.message}`)
+            }
+
+            try {
+                friendsRes = await api.get('/friends/list')
+            } catch (err: any) {
+                console.error('Friends API failed', err)
+                throw new Error(`Friends API: ${err.response?.status || err.message}`)
+            }
+
+            // Debug: Capture first 100 chars of response to see structure
+            setDebugInfo(JSON.stringify(friendsRes.data).slice(0, 150))
+
+            // Unwrap the NestJS TransformInterceptor response: { success: true, data: ... }
+            const activeConversations: Conversation[] = conversationsRes.data.data || []
+            const allFriends: any[] = friendsRes.data.data?.friends || []
+
+            // Map friends to Conversation structure
+            const merged: Conversation[] = allFriends.map(friend => {
+                const existingConv = activeConversations.find(c => c.friend.id === friend.id)
+                if (existingConv) {
+                    return existingConv
+                }
+
+                // Placeholder for friend without chat history
+                return {
+                    id: `new_${friend.id}`,
+                    updatedAt: new Date(friend.createdAt || Date.now()).toISOString(),
+                    friend: {
+                        id: friend.id,
+                        username: friend.username,
+                        avatar: friend.avatar
+                    },
+                    unreadCount: 0,
+                    messages: [] // No messages
+                }
+            })
+
+            // Sort: Prioritize conversations with messages, then by latest message time
+            merged.sort((a, b) => {
+                const lastMsgA = a.messages[0]
+                const lastMsgB = b.messages[0]
+
+                const timeA = lastMsgA ? new Date(lastMsgA.createdAt).getTime() : new Date(a.updatedAt).getTime()
+                const timeB = lastMsgB ? new Date(lastMsgB.createdAt).getTime() : new Date(b.updatedAt).getTime()
+
+                return timeB - timeA
+            })
+
+            setConversations(merged)
+        } catch (error: any) {
+            console.error('Failed to fetch data:', error)
+            setError(error.message || 'Fetch failed')
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const handleSelect = useCallback((friendId: string, conversationId: string) => {
         onSelectFriend(friendId)

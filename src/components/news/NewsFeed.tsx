@@ -31,9 +31,9 @@ interface NewsItem {
     score: number
 }
 
-export function NewsFeed({ initialNews = [] }: { initialNews?: NewsItem[] }) {
-    const [news, setNews] = useState<NewsItem[]>(initialNews)
-    const [isLoading, setIsLoading] = useState(initialNews.length === 0)
+export function NewsFeed() {
+    const [news, setNews] = useState<NewsItem[]>([])
+    const [isLoading, setIsLoading] = useState(true)
     const [targetPostId, setTargetPostId] = useState<string | null>(null)
 
     useEffect(() => {
@@ -45,28 +45,27 @@ export function NewsFeed({ initialNews = [] }: { initialNews?: NewsItem[] }) {
     }, [])
 
     useEffect(() => {
-        // If we don't have initial news, fetch them (client-side fallback)
-        if (initialNews.length === 0) {
-            const fetchNews = async () => {
-                try {
-                    const validPosts = await fetchRedditPosts()
-                    setNews(validPosts)
-                } catch (error) {
-                    console.error("Failed to fetch news", error)
-                } finally {
-                    setIsLoading(false)
-                }
+        const fetchNews = async () => {
+            try {
+                // Use Server Action to bypass CORS and ensure consistent matching
+                const validPosts = await fetchRedditPosts()
+
+                console.log('[NewsFeed] Posts from Server Action:', validPosts)
+                setNews(validPosts)
+            } catch (error) {
+                console.error("Failed to fetch news via Server Action", error)
+            } finally {
+                setIsLoading(false)
             }
-            fetchNews()
         }
-    }, [initialNews])
+
+        fetchNews()
+    }, [])
 
     return (
         <div className="w-full max-w-2xl mx-auto space-y-8">
             {isLoading ? (
-                <div className="text-center text-white/20 animate-pulse font-black uppercase tracking-[0.2em] text-[10px]">
-                    Scanning frequencies...
-                </div>
+                <div className="text-center text-white/20 animate-pulse">Scanning frequencies...</div>
             ) : (
                 <>
                     {news.length === 0 && (
@@ -223,13 +222,11 @@ function NewsCard({ item, index, targetPostId }: { item: NewsItem, index: number
                 {item.image_url ? (
                     <div className="px-2 md:px-3">
                         <div className="w-full aspect-[16/10] relative rounded-[1.2rem] md:rounded-[2rem] overflow-hidden bg-muted group/img">
-                            <Image
+                            <img
                                 src={item.image_url}
                                 alt={item.title}
-                                fill
-                                className="object-cover transition-transform duration-700 group-hover/img:scale-105"
-                                priority={index < 2}
-                                sizes="(max-width: 768px) 100vw, 800px"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-105"
+                                onError={(e) => e.currentTarget.style.display = 'none'}
                             />
                             {/* Overlay gradient */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity" />

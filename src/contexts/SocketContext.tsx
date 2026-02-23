@@ -73,13 +73,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         }
     }, [token])
 
-    const socketRef = React.useRef<Socket | null>(null)
-
     useEffect(() => {
         if (!token || !user) {
-            if (socketRef.current) {
-                socketRef.current.disconnect()
-                socketRef.current = null
+            if (socket) {
+                socket.disconnect()
                 setSocket(null)
                 setIsConnected(false)
                 setUnreadCount(0)
@@ -99,8 +96,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             autoConnect: true,
             transports: ['websocket', 'polling'],
         })
-
-        socketRef.current = newSocket
 
         newSocket.on('connect', () => {
             setIsConnected(true)
@@ -153,11 +148,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         return () => {
             newSocket.disconnect()
-            socketRef.current = null
-            setSocket(null) // Clear the socket state on cleanup
         }
-    }, [token, user, playNotif, refreshUnreadCount])
-    // Removed activeFriendId dependency to prevent socket reconnections, added refreshUnreadCount
+    }, [token, user, playNotif, refreshUnreadCount]) // Removed activeFriendId dependency to prevent socket reconnections, added refreshUnreadCount
 
     // Polling fallback
     useEffect(() => {

@@ -37,7 +37,7 @@ export default function DiscoveryPage() {
                 console.warn('[Discovery] Token exists but user profile missing. Staying put.')
             }
         }
-    }, [user, authLoading, router])
+    }, [user, authLoading])
 
     const handleContinue = async () => {
         if (selectedInterests.length > 0) {

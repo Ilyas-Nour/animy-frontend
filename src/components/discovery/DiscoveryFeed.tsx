@@ -177,12 +177,10 @@ function TiltCard({
                     <div className="w-20 h-20 rounded-full p-[2px] bg-gradient-to-br from-cyan-400 to-violet-500">
                         <div className="w-full h-full rounded-full bg-black overflow-hidden relative flex items-center justify-center">
                             {match.avatar ? (
-                                <Image
-                                    src={getAvatarUrl(match.avatar) || ''}
-                                    alt={match.username || 'User'}
-                                    fill
-                                    className="object-cover"
-                                    unoptimized
+                                <img
+                                    src={getAvatarUrl(match.avatar)}
+                                    alt={match.username}
+                                    className="w-full h-full object-cover"
                                     crossOrigin="anonymous"
                                 />
                             ) : (

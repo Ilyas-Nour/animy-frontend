@@ -1,8 +1,7 @@
 'use client'
 
 import { useRef, ChangeEvent } from 'react'
-import { Upload, X, Loader2, Camera, Image as ImageIcon } from 'lucide-react'
-import Image from 'next/image'
+import { Camera } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { getAvatarUrl } from '@/lib/utils'
 
@@ -81,15 +80,11 @@ export function ImageUpload({
                     style={{ background: getDefaultImage() }}
                 />
             ) : (
-                <div className="relative w-full h-full">
-                    <Image
-                        src={getAvatarUrl(currentImage) || getDefaultImage()}
-                        alt={label}
-                        fill
-                        className={imageClasses}
-                        unoptimized={!!currentImage?.startsWith('data:')}
-                    />
-                </div>
+                <img
+                    src={getAvatarUrl(currentImage) || getDefaultImage()}
+                    alt={label}
+                    className={imageClasses}
+                />
             )}
 
             {/* Hover overlay */}

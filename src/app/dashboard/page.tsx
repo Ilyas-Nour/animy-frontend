@@ -97,13 +97,11 @@ export default function DashboardPage() {
         <div className="absolute inset-0 z-0">
           {user?.bannerUrl ? (
             <div className="relative w-full h-full">
-              <Image
-                src={getAvatarUrl(user.bannerUrl) || ''}
+              <img
+                src={getAvatarUrl(user.bannerUrl)}
                 alt="Profile Banner"
-                fill
-                className="object-cover opacity-90"
+                className="w-full h-full object-cover opacity-90"
                 crossOrigin="anonymous"
-                unoptimized
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 dark:from-black dark:via-black/20 to-transparent" />
             </div>
@@ -383,14 +381,7 @@ export default function DashboardPage() {
                 <Link key={friend.id} href={`/users/${friend.username}`} className="flex items-center gap-3 p-2 hover:bg-secondary/50 rounded-2xl transition-all group">
                   <div className="w-10 h-10 rounded-full border border-border overflow-hidden relative bg-muted flex items-center justify-center group-hover:border-indigo-500/50 transition-colors">
                     {friend.avatar ? (
-                      <Image
-                        src={getAvatarUrl(friend.avatar) || ''}
-                        alt={friend.username || 'User'}
-                        fill
-                        className="object-cover"
-                        crossOrigin="anonymous"
-                        unoptimized
-                      />
+                      <img src={getAvatarUrl(friend.avatar)} alt={friend.username} className="w-full h-full object-cover" crossOrigin="anonymous" />
                     ) : (
                       <span className="text-xs font-bold text-muted-foreground">{getInitials(friend.firstName || friend.username)}</span>
                     )}
