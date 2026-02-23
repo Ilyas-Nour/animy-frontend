@@ -133,15 +133,15 @@ export default function DashboardPage() {
             </div>
 
             {/* XP Bar */}
-            <div className="flex items-center gap-3 w-full max-w-[300px] sm:max-w-sm md:max-w-md mx-auto md:mx-0">
-              <div className="flex-1 bg-secondary/40 dark:bg-black/40 border border-white/5 backdrop-blur-md h-9 md:h-5 rounded-full overflow-hidden relative group/xp cursor-help shadow-lg">
+            <div className="flex items-center gap-3 w-full px-5 md:px-0 max-w-none md:max-w-md mx-auto md:mx-0">
+              <div className="flex-1 bg-secondary/40 dark:bg-black/40 border border-white/5 backdrop-blur-md h-10 md:h-5 rounded-full overflow-hidden relative group/xp cursor-help shadow-lg">
                 <div
                   className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 relative transition-all duration-1000 ease-out"
                   style={{ width: `${((user?.xp || 0) / (user?.nextLevelXp || 1)) * 100}%` }}
                 >
                   <div className="absolute inset-0 bg-white/20 animate-pulse" />
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center text-[10px] md:text-[9px] uppercase tracking-[0.15em] font-black text-white mix-blend-difference opacity-100 md:opacity-0 group-hover/xp:opacity-100 transition-opacity whitespace-nowrap px-4">
+                <div className="absolute inset-0 flex items-center justify-center text-[11px] md:text-[9px] uppercase tracking-[0.2em] font-black text-white mix-blend-difference opacity-100 md:opacity-0 group-hover/xp:opacity-100 transition-opacity whitespace-nowrap px-4">
                   {user?.xp || 0} / {user?.nextLevelXp || 1} XP To Level Up
                 </div>
               </div>
