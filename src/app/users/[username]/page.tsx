@@ -224,14 +224,14 @@ export default function UserProfilePage() {
 
                     </motion.div>
 
-                    {/* Desktop Only Actions in Header */}
-                    <div className="hidden md:flex items-center gap-3 mt-6">
+                    {/* Actions in Header */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-6 px-4">
                         {renderActionButton()}
 
                         {isFriend && (
                             <>
                                 <Link href={`/chat?friendId=${user.id}`}>
-                                    <Button variant="outline" className="gap-2 bg-background/50 backdrop-blur-md border-white/10 h-11 px-6 rounded-2xl font-bold">
+                                    <Button variant="outline" className="gap-2 bg-background/50 backdrop-blur-md border-white/10 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm">
                                         <MessageSquare className="h-4 w-4" /> Message
                                     </Button>
                                 </Link>
@@ -244,7 +244,7 @@ export default function UserProfilePage() {
                                     id={user.id}
                                     path={`/users/${user.username}`}
                                     trigger={
-                                        <Button variant="outline" className="gap-2 bg-background/50 backdrop-blur-md border-white/10 h-11 px-6 rounded-2xl font-bold">
+                                        <Button variant="outline" className="gap-2 bg-background/50 backdrop-blur-md border-white/10 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm">
                                             <Share2 className="h-4 w-4" /> Share
                                         </Button>
                                     }
@@ -252,7 +252,7 @@ export default function UserProfilePage() {
 
                                 <Button
                                     variant="destructive"
-                                    className="gap-2 h-11 px-6 rounded-2xl font-bold"
+                                    className="gap-2 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm"
                                     onClick={handleUnfriend}
                                     disabled={actionLoading}
                                 >
@@ -522,44 +522,6 @@ export default function UserProfilePage() {
                 )}
             </div>
 
-            {/* Sticky Mobile Actions */}
-            <div className="md:hidden fixed bottom-24 left-6 right-6 z-50">
-                <div className="bg-background/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-3 flex gap-3 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                    <div className="flex-1">
-                        {renderActionButton()}
-                    </div>
-                    {isFriend && (
-                        <div className="flex-1 flex gap-2">
-                            <Link href={`/chat?friendId=${user.id}`} className="flex-1">
-                                <Button className="w-full h-11 rounded-2xl gap-2 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/20 font-bold">
-                                    <MessageSquare className="h-4 w-4" />
-                                </Button>
-                            </Link>
-                            <ShareModal
-                                title={`${user.firstName} ${user.lastName}`}
-                                description={`Check out @${user.username} on AnimeHub!`}
-                                image={getAvatarUrl(user.avatar) || undefined}
-                                type="PROFILE"
-                                id={user.id}
-                                path={`/users/${user.username}`}
-                                trigger={
-                                    <Button variant="outline" className="flex-1 h-11 rounded-2xl gap-2 border-white/10 font-bold">
-                                        <Share2 className="h-4 w-4" />
-                                    </Button>
-                                }
-                            />
-                            <Button
-                                variant="destructive"
-                                className="flex-1 h-11 rounded-2xl gap-2 font-bold"
-                                onClick={handleUnfriend}
-                                disabled={actionLoading}
-                            >
-                                <UserMinus className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    )}
-                </div>
-            </div>
         </div>
     )
 }
