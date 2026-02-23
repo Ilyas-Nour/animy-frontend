@@ -153,7 +153,7 @@ export default function UserProfilePage() {
     return (
         <div className="min-h-screen pb-24 md:pb-12 bg-background">
             {/* Hero Section / Cinematic Header */}
-            <div className="relative h-[300px] md:h-[450px] w-full overflow-hidden">
+            <div className="relative h-[320px] md:h-[450px] w-full overflow-hidden pt-16 md:pt-0">
                 {/* Blurred Background Layer */}
                 <div className="absolute inset-0 z-0">
                     {user.bannerUrl || user.avatar ? (
