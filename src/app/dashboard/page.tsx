@@ -25,6 +25,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { XpBar } from '@/components/shared/XpBar'
+import { XpInfoButton } from '@/components/shared/XpInfoButton'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -132,77 +135,12 @@ export default function DashboardPage() {
               <p className="text-xl text-muted-foreground font-bold">@{user?.username}</p>
             </div>
 
-            {/* XP Bar */}
-            <div className="flex items-center gap-3 w-full px-5 md:px-0 max-w-none md:max-w-md mx-auto md:mx-0">
-              <div className="flex-1 bg-secondary/40 dark:bg-black/40 border border-white/5 backdrop-blur-md h-10 md:h-5 rounded-full overflow-hidden relative group/xp cursor-help shadow-lg">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 relative transition-all duration-1000 ease-out"
-                  style={{ width: `${((user?.xp || 0) / (user?.nextLevelXp || 1)) * 100}%` }}
-                >
-                  <div className="absolute inset-0 bg-white/20 animate-pulse" />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center text-[11px] md:text-[9px] uppercase tracking-[0.2em] font-black text-white mix-blend-difference opacity-100 md:opacity-0 group-hover/xp:opacity-100 transition-opacity whitespace-nowrap px-4">
-                  {user?.xp || 0} / {user?.nextLevelXp || 1} XP To Level Up
-                </div>
-              </div>
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/5 backdrop-blur-md shrink-0 focus-visible:ring-0">
-                    <Info className="w-4 h-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-card/95 backdrop-blur-xl border-border">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-xl font-black">
-                      <Zap className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                      How to Earn XP
-                    </DialogTitle>
-                    <DialogDescription>
-                      Level up to unlock new badges and profile features!
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50 border border-border">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-pink-500/10 flex items-center justify-center">
-                          <Heart className="w-4 h-4 text-pink-500" />
-                        </div>
-                        <span className="font-bold">Favorite a Character</span>
-                      </div>
-                      <span className="font-black text-green-500">+100 XP</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50 border border-border">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-                          <Users className="w-4 h-4 text-blue-500" />
-                        </div>
-                        <span className="font-bold">Add a Friend</span>
-                      </div>
-                      <span className="font-black text-green-500">+200 XP</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50 border border-border">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
-                          <BookOpen className="w-4 h-4 text-purple-500" />
-                        </div>
-                        <span className="font-bold">Add to List</span>
-                      </div>
-                      <span className="font-black text-green-500">+50 XP</span>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            {/* Bio */}
+            {/* Bio moved up to fill space left by XP bar */}
             <p className="text-muted-foreground font-medium max-w-xl italic text-lg leading-relaxed">&ldquo;{user?.bio || "No bio yet."}&rdquo;</p>
 
             {/* Social Links */}
             {user && <SocialLinks user={user} />}
           </div>
-
-
 
           {/* Actions Section */}
           <div className="flex flex-col gap-3">
@@ -217,6 +155,48 @@ export default function DashboardPage() {
       </div>
 
       <div className="container max-w-7xl mx-auto mt-12 px-4 relative z-20 space-y-12">
+
+        {/* --- 2. PROGRESSION SECTION --- */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="bg-card/40 backdrop-blur-xl border border-white/5 overflow-hidden shadow-2xl shadow-blue-500/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-3 text-xl font-black uppercase tracking-tight">
+                <Zap className="h-6 w-6 text-yellow-500 fill-yellow-500" />
+                Level Progression
+                <XpInfoButton />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 pt-2">
+              <div className="flex flex-col md:flex-row gap-8 md:items-center">
+                {/* XP Bar */}
+                <div className="flex-1">
+                  <XpBar
+                    level={user?.level || 1}
+                    currentXp={user?.xp || 0}
+                    requiredXp={user?.nextLevelXp || 1000}
+                    rank={user?.rank || 'Initiate'}
+                    size="lg"
+                  />
+                </div>
+
+                {/* Rank Badge / Info */}
+                <div className="shrink-0 flex items-center gap-4 bg-secondary/30 backdrop-blur-md p-4 rounded-3xl border border-white/5 group transition-all hover:bg-secondary/50">
+                  <div className="h-14 w-14 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-3xl shadow-lg shadow-yellow-500/10 group-hover:scale-110 transition-transform">
+                    <Crown className="w-8 h-8 text-yellow-500" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Current Rank</p>
+                    <p className="text-xl font-black text-foreground group-hover:text-primary transition-colors">{user?.rank || 'Initiate'}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* --- 2. STAT SHARDS (Anime) --- */}
         <div className="space-y-4">
