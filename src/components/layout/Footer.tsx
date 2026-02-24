@@ -57,7 +57,8 @@ export function Footer() {
     {
       icon: (props: any) => (
         <svg
-          {...props}
+          width={props.size || 20}
+          height={props.size || 20}
           viewBox="0 0 24 24"
           fill="currentColor"
           xmlns="http://www.w3.org/2000/svg"
@@ -152,6 +153,8 @@ export function Footer() {
                         <li key={link.name}>
                           <Link
                             href={link.href}
+                            target={link.href.startsWith('http') ? '_blank' : undefined}
+                            rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                             className="text-muted-foreground/80 text-sm hover:text-foreground transition-colors flex items-center gap-2 group"
                           >
                             <span className="h-[1px] w-0 bg-primary group-hover:w-3 transition-all duration-300" />
