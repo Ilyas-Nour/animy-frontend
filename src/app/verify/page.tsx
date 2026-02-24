@@ -110,9 +110,14 @@ function VerifyContent() {
                     setStatus('expired')
                     setMessage('The verification frequency has faded. Your link has expired.')
                     setUserEmail(data.email || '')
+                } else if (err.response?.status === 400 && (data?.message?.includes('Invalid') || data?.message?.includes('expired'))) {
+                    setStatus('error')
+                    setMessage('This frequency seems out of sync. You might already be authenticated. Try logging in to the Nexus directly.')
                 } else {
                     setStatus('error')
-                    setMessage(data?.message || 'A glitch in the simulation occurred. Please try again.')
+                    // Ensure message is a string to avoid React Error #31
+                    const rawMessage = data?.message || 'A glitch in the simulation occurred. Please try again.'
+                    setMessage(typeof rawMessage === 'string' ? rawMessage : JSON.stringify(rawMessage))
                 }
             }
         }
