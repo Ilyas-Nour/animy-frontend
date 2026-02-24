@@ -61,7 +61,7 @@ export function DiscoveryFeed({ selectedInterests }: DiscoveryFeedProps) {
     if (!Array.isArray(matches) || matches.length === 0) {
         return (
             <div className="text-center py-20 space-y-4">
-                <p className="text-white/40 italic">No spirits found in this spectrum yet...</p>
+                <p className="text-muted-foreground/40 italic">No spirits found in this spectrum yet...</p>
             </div>
         )
     }
@@ -72,7 +72,7 @@ export function DiscoveryFeed({ selectedInterests }: DiscoveryFeedProps) {
                 <motion.h3
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-2xl font-black text-white"
+                    className="text-2xl font-black text-foreground"
                 >
                     Suggested Spirits
                 </motion.h3>
@@ -80,7 +80,7 @@ export function DiscoveryFeed({ selectedInterests }: DiscoveryFeedProps) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="text-white/40 text-sm font-medium"
+                    className="text-muted-foreground/60 text-sm font-medium"
                 >
                     Based on your refraction pattern.
                 </motion.p>
@@ -98,7 +98,7 @@ export function DiscoveryFeed({ selectedInterests }: DiscoveryFeedProps) {
                 ))}
             </div>
 
-            <div className="h-24 flex items-center justify-center text-white/20 text-xs font-mono uppercase tracking-widest">
+            <div className="h-24 flex items-center justify-center text-muted-foreground/20 text-xs font-mono uppercase tracking-widest">
                 End of Transmission
             </div>
         </div>
@@ -163,7 +163,7 @@ function TiltCard({
             onMouseMove={onMouseMove}
             onMouseLeave={onMouseLeave}
             style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-            className="relative group bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 hover:shadow-[0_0_50px_rgba(139,92,246,0.15)] transition-shadow duration-500 overflow-hidden"
+            className="relative group bg-card/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border border-border/50 dark:border-white/5 rounded-[2rem] p-6 hover:shadow-[0_0_50px_rgba(var(--primary),0.1)] transition-shadow duration-500 overflow-hidden"
         >
             {/* Dynamic Light Leak */}
             <div
@@ -175,7 +175,7 @@ function TiltCard({
                 {/* Avatar with Ring */}
                 <div className="relative shrink-0">
                     <div className="w-20 h-20 rounded-full p-[2px] bg-gradient-to-br from-cyan-400 to-violet-500">
-                        <div className="w-full h-full rounded-full bg-black overflow-hidden relative flex items-center justify-center">
+                        <div className="w-full h-full rounded-full bg-background overflow-hidden relative flex items-center justify-center">
                             {match.avatar ? (
                                 <img
                                     src={getAvatarUrl(match.avatar)}
@@ -184,11 +184,11 @@ function TiltCard({
                                     crossOrigin="anonymous"
                                 />
                             ) : (
-                                <span className="text-xl font-bold text-white">{getInitials(match.firstName || match.username)}</span>
+                                <span className="text-xl font-bold text-foreground">{getInitials(match.firstName || match.username)}</span>
                             )}
                         </div>
                     </div>
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur border border-white/10 px-2 py-0.5 rounded-full text-[10px] font-bold text-white whitespace-nowrap flex items-center gap-1 shadow-lg">
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur border border-border/50 px-2 py-0.5 rounded-full text-[10px] font-bold text-foreground whitespace-nowrap flex items-center gap-1 shadow-lg">
                         <Zap className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                         {match.matchScore}%
                     </div>
@@ -197,8 +197,8 @@ function TiltCard({
                 {/* Content */}
                 <div className="flex-1 space-y-3">
                     <div>
-                        <h4 className="text-xl font-black text-white tracking-tight">{match.firstName || match.username}</h4>
-                        <p className="text-sm text-white/50 font-medium leading-snug line-clamp-2">
+                        <h4 className="text-xl font-black text-foreground tracking-tight">{match.firstName || match.username}</h4>
+                        <p className="text-sm text-muted-foreground/60 font-medium leading-snug line-clamp-2">
                             {match.bio || "Refracting through the digital void..."}
                         </p>
                     </div>
@@ -213,8 +213,8 @@ function TiltCard({
                                     className={clsx(
                                         "text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md border transition-all duration-300",
                                         isShared
-                                            ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.2)]"
-                                            : "bg-white/5 border-white/5 text-white/30"
+                                            ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-300 shadow-[0_0_10px_rgba(var(--primary),0.1)]"
+                                            : "bg-muted border-border/50 text-muted-foreground/60"
                                     )}
                                 >
                                     #{tag}
@@ -226,7 +226,7 @@ function TiltCard({
             </div>
 
             {/* Action Bar */}
-            <div className="relative z-10 mt-6 pt-6 border-t border-white/5 flex items-center justify-end" style={{ transform: "translateZ(10px)" }}>
+            <div className="relative z-10 mt-6 pt-6 border-t border-border/50 flex items-center justify-end" style={{ transform: "translateZ(10px)" }}>
                 <div className="flex gap-2">
                     {!isAlreadyConnected && (
                         <button
@@ -234,8 +234,8 @@ function TiltCard({
                             disabled={connectStatus !== 'idle'}
                             className={clsx(
                                 "h-10 px-6 rounded-full font-bold text-sm transition-all duration-300 flex items-center gap-2 shadow-xl",
-                                connectStatus === 'idle' && "bg-white text-black hover:scale-105 shadow-white/20",
-                                connectStatus === 'loading' && "bg-white/50 text-black/50 cursor-wait",
+                                connectStatus === 'idle' && "bg-foreground text-background hover:scale-105 shadow-foreground/10",
+                                connectStatus === 'loading' && "bg-muted text-muted-foreground/50 cursor-wait",
                                 connectStatus === 'sent' && "bg-emerald-500 text-white cursor-default shadow-emerald-500/20",
                                 connectStatus === 'error' && "bg-rose-500 text-white shadow-rose-500/20"
                             )}

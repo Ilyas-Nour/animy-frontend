@@ -47,8 +47,8 @@ export function InterestGrid({ selected, toggleInterest }: InterestGridProps) {
                         className={clsx(
                             "relative group h-32 rounded-2xl border transition-all duration-500 overflow-hidden flex flex-col items-center justify-center gap-3",
                             isSelected
-                                ? "bg-white/10 border-white/40 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
-                                : "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/20"
+                                ? "bg-muted/30 border-primary/40 shadow-[0_0_30px_rgba(var(--primary),0.1)]"
+                                : "bg-card/50 border-border/50 hover:bg-card hover:border-border transition-colors shadow-sm"
                         )}
                     >
                         {/* Refraction Gradient Overlay */}
@@ -68,20 +68,20 @@ export function InterestGrid({ selected, toggleInterest }: InterestGridProps) {
                         {/* Icon */}
                         <Icon className={clsx(
                             "w-8 h-8 transition-colors duration-300 relative z-10",
-                            isSelected ? "text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" : "text-white/40 group-hover:text-white/80"
+                            isSelected ? "text-primary drop-shadow-[0_0_10px_rgba(var(--primary),0.5)]" : "text-muted-foreground/40 group-hover:text-foreground/80"
                         )} />
 
                         {/* Label */}
                         <span className={clsx(
                             "text-sm font-bold tracking-wider relative z-10",
-                            isSelected ? "text-white" : "text-white/40 group-hover:text-white/80"
+                            isSelected ? "text-foreground" : "text-muted-foreground/40 group-hover:text-text-foreground/80"
                         )}>
                             {interest.label}
                         </span>
 
                         {/* Glass Reflections */}
-                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-foreground/5 to-transparent" />
+                        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-foreground/5 to-transparent" />
                     </motion.button>
                 )
             })}

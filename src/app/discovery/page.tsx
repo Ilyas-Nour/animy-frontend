@@ -55,15 +55,15 @@ export default function DiscoveryPage() {
         }
     }
 
-    if (authLoading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white/20">Initialsing Prism...</div>
+    if (authLoading) return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground/20">Initialsing Prism...</div>
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white relative overflow-hidden selection:bg-cyan-500/30">
+        <div className="min-h-screen bg-background text-foreground relative overflow-hidden selection:bg-cyan-500/30">
             {/* Prism Background Effects */}
             <div className="fixed inset-0 pointer-events-none">
                 <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-violet-600/10 rounded-full blur-[150px]" />
                 <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-cyan-600/10 rounded-full blur-[150px]" />
-                <div className="absolute top-[20%] left-[20%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[100px] animate-pulse" />
+                <div className="absolute top-[20%] left-[20%] w-[60%] h-[60%] bg-foreground/[0.02] rounded-full blur-[100px] animate-pulse" />
             </div>
 
             <div className="relative z-10 container max-w-7xl mx-auto px-4 py-8 min-h-screen flex flex-col">
@@ -74,10 +74,10 @@ export default function DiscoveryPage() {
                             <Users className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-200 to-white/50">
+                            <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-foreground via-cyan-600 to-foreground/50">
                                 Find Your Kindred Spirits
                             </h1>
-                            <p className="text-xs font-bold text-white/30 tracking-widest uppercase">Social Discovery</p>
+                            <p className="text-xs font-bold text-muted-foreground/40 tracking-widest uppercase">Social Discovery</p>
                         </div>
                     </div>
                 </header>
@@ -94,10 +94,10 @@ export default function DiscoveryPage() {
                                 className="w-full max-w-4xl"
                             >
                                 <div className="text-center mb-12 space-y-4">
-                                    <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white">
+                                    <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
                                         Define Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">Spectrum</span>
                                     </h2>
-                                    <p className="text-white/40 text-lg max-w-xl mx-auto font-medium">
+                                    <p className="text-muted-foreground/60 text-lg max-w-xl mx-auto font-medium">
                                         Select topics that resonate with you to refract light towards like-minded souls.
                                     </p>
                                 </div>
@@ -118,8 +118,8 @@ export default function DiscoveryPage() {
                                         className={`
                                     group relative px-8 py-4 rounded-2xl font-black tracking-widest uppercase transition-all duration-500
                                     ${selectedInterests.length > 0 && !isSaving
-                                                ? 'bg-white text-black hover:scale-105 shadow-[0_0_40px_rgba(255,255,255,0.3)] cursor-pointer'
-                                                : 'bg-white/5 text-white/20 cursor-not-allowed'}
+                                                ? 'bg-foreground text-background hover:scale-105 shadow-[0_0_40px_rgba(var(--foreground),0.1)] cursor-pointer'
+                                                : 'bg-muted text-muted-foreground/40 cursor-not-allowed'}
                                 `}
                                     >
                                         <span className="relative z-10 flex items-center gap-2">
