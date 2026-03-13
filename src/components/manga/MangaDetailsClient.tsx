@@ -387,7 +387,7 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                                 <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 rounded-xl px-4 py-2">
                                     <Users className="h-5 w-5 text-purple-500" />
                                     <div>
-                                        <div className="text-xl font-bold text-purple-500">{manga.members?.toLocaleString()}</div>
+                                        <div className="text-xl font-bold text-purple-500">{manga.members?.toLocaleString('en-US')}</div>
                                         <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Members</div>
                                     </div>
                                 </div>
