@@ -32,6 +32,8 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
     const [isFavorited, setIsFavorited] = useState(false)
     const [actionLoading, setActionLoading] = useState(false)
     const [scrolled, setScrolled] = useState(false)
+    const [chapters, setChapters] = useState<any[]>([])
+    const [chaptersLoading, setChaptersLoading] = useState(true)
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -46,6 +48,23 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
+
+    useEffect(() => {
+        const fetchChapters = async () => {
+            try {
+                const res = await api.get(`/manga/${manga.mal_id}/read-chapters`)
+                if (res.data?.chapters) {
+                    setChapters(res.data.chapters)
+                }
+            } catch (error) {
+                console.error('Failed to fetch chapters:', error)
+            } finally {
+                setChaptersLoading(false)
+            }
+        }
+        
+        fetchChapters()
+    }, [manga.mal_id])
 
     const checkStatus = async () => {
         try {
@@ -408,6 +427,50 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                                         />
                                     ))}
                                 </div>
+                            </section>
+
+                            {/* Chapters Section */}
+                            <section className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
+                                <h2 className="text-2xl font-bold flex items-center gap-2">
+                                    <Layers className="h-6 w-6 text-primary" />
+                                    Chapters
+                                </h2>
+                                
+                                {chaptersLoading ? (
+                                    <div className="flex justify-center py-8 bg-white/5 rounded-2xl border border-white/5">
+                                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                    </div>
+                                ) : chapters.length > 0 ? (
+                                    <div className="bg-white/5 rounded-2xl border border-white/5 overflow-hidden">
+                                        <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2 space-y-1">
+                                            {chapters.map((chapter) => (
+                                                <Link 
+                                                    key={chapter.id} 
+                                                    href={`/manga/read/${chapter.id}?mangaId=${manga.mal_id}`}
+                                                    className="flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors group"
+                                                >
+                                                    <div>
+                                                        <h3 className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                                                            {chapter.title ? chapter.title : `Chapter ${chapter.chapterNumber}`}
+                                                        </h3>
+                                                        <span className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                                                            {chapter.chapterNumber ? `Ch. ${chapter.chapterNumber}` : ''}
+                                                            {chapter.volumeNumber ? `• Vol. ${chapter.volumeNumber}` : ''}
+                                                            {chapter.pages ? `• ${chapter.pages} Pages` : ''}
+                                                        </span>
+                                                    </div>
+                                                    <Button variant="secondary" size="sm" className="opacity-0 md:opacity-100 group-hover:opacity-100 transition-opacity">
+                                                        Read
+                                                    </Button>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-muted-foreground bg-white/5 rounded-2xl border border-white/5 text-sm font-medium">
+                                        No readable chapters found for this title.
+                                    </div>
+                                )}
                             </section>
                         </div>
                     </div>
