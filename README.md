@@ -1,7 +1,6 @@
 # 🌌 Animy - The Ultimate Anime & Manga Experience
 
 <div align="center">
-  <img src="public/logo.svg" alt="Animy Logo" width="120" height="120" />
   <h3>Seamlessly aggregate, stream, and track your favorite anime and manga.</h3>
 </div>
 
