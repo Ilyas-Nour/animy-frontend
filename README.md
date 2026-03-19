@@ -11,16 +11,16 @@
 <div align="center">
   <table style="width: 100%; border-collapse: collapse;">
     <tr>
-      <td width="50%"><img src="public/1.png" alt="Screenshot 1" /></td>
-      <td width="50%"><img src="public/2.png" alt="Screenshot 2" /></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/Ilyas-Nour/animy-frontend/master/public/1.png" alt="Screenshot 1" /></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/Ilyas-Nour/animy-frontend/master/public/2.png" alt="Screenshot 2" /></td>
     </tr>
     <tr>
-      <td width="50%"><img src="public/3.png" alt="Screenshot 3" /></td>
-      <td width="50%"><img src="public/4.png" alt="Screenshot 4" /></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/Ilyas-Nour/animy-frontend/master/public/3.png" alt="Screenshot 3" /></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/Ilyas-Nour/animy-frontend/master/public/4.png" alt="Screenshot 4" /></td>
     </tr>
     <tr>
-      <td width="50%"><img src="public/5.png" alt="Screenshot 5" /></td>
-      <td width="50%"><img src="public/6.png" alt="Screenshot 6" /></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/Ilyas-Nour/animy-frontend/master/public/5.png" alt="Screenshot 5" /></td>
+      <td width="50%"><img src="https://raw.githubusercontent.com/Ilyas-Nour/animy-frontend/master/public/6.png" alt="Screenshot 6" /></td>
     </tr>
   </table>
 </div>
@@ -76,7 +76,7 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/animy-frontend.git
+   git clone https://github.com/Ilyas-Nour/animy-frontend.git
    cd animy-frontend
    ```
 
