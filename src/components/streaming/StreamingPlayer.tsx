@@ -58,6 +58,14 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             }
 
             console.log(`Found ${sourcesData.sources.length} sources`)
+            
+            // If backend didn't provide an iframeUrl but we have malId and ep, 
+            // and we have no valid video sources, create a fallback iframeUrl
+            if (!sourcesData.iframeUrl && malId && episodeNumber && (!sourcesData.sources || sourcesData.sources.length === 0)) {
+                sourcesData.iframeUrl = `https://vidlink.pro/anime/${malId}/${episodeNumber}`
+                console.log('Using VidLink fallback iframe')
+            }
+
             setSources(sourcesData)
 
         } catch (err: any) {
