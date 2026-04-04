@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { Star, BookOpen, Tv } from 'lucide-react'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { truncateText } from '@/lib/utils'
+import { truncateText, stripHtml } from '@/lib/utils'
 
 interface MediaCardProps {
     id: number
@@ -81,7 +81,7 @@ export function MediaCard({
 
                         {synopsis && (
                             <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute inset-x-3 bottom-12 z-10 text-white drop-shadow-md hidden md:block">
-                                {truncateText(synopsis, 80)}
+                                {truncateText(stripHtml(synopsis), 80)}
                             </p>
                         )}
                     </CardContent>

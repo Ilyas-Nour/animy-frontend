@@ -408,9 +408,10 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                                     <BookOpen className="h-6 w-6 text-primary" />
                                     Synopsis
                                 </h2>
-                                <p className="text-base md:text-lg leading-relaxed text-muted-foreground whitespace-pre-line bg-white/5 p-6 rounded-2xl border border-white/5">
-                                    {manga.synopsis || 'No synopsis available.'}
-                                </p>
+                                <div
+                                    className="text-base md:text-lg leading-relaxed text-muted-foreground whitespace-pre-line bg-white/5 p-6 rounded-2xl border border-white/5"
+                                    dangerouslySetInnerHTML={{ __html: manga.synopsis || 'No synopsis available.' }}
+                                />
                             </section>
 
                             <section className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">

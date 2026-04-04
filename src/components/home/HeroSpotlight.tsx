@@ -114,9 +114,8 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.4 }}
                                 className="text-xs sm:text-base lg:text-lg xl:text-xl text-muted-foreground line-clamp-2 md:line-clamp-3 max-w-2xl leading-relaxed font-medium"
-                            >
-                                {active.synopsis}
-                            </motion.p>
+                                dangerouslySetInnerHTML={{ __html: active.synopsis || '' }}
+                            />
 
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}

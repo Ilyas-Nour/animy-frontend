@@ -19,6 +19,10 @@ export const truncateText = (text: string, maxLength: number): string => {
   return text.substring(0, maxLength) + '...'
 }
 
+export const stripHtml = (html: string): string => {
+  return html.replace(/<[^>]*>?/gm, '')
+}
+
 export const getSeasonYear = (): { season: string; year: number } => {
   const now = new Date()
   const month = now.getMonth() + 1
