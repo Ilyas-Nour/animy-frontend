@@ -8,7 +8,7 @@ import api from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function MangaReaderPage() {
+function MangaReaderContent() {
     const params = useParams()
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -89,8 +89,6 @@ export default function MangaReaderPage() {
 
     const nextChapter = () => {
         const currentIndex = chapters.findIndex(c => c.id === chapterId)
-        // Usually index 0 is the latest chapter in many providers, but let's check sorting
-        // If sorting is desc, next chapter is at currentIndex - 1
         if (currentIndex > 0) {
             const nextId = chapters[currentIndex - 1].id
             router.push(`/manga/read/${nextId}?mangaId=${mangaId}`)
@@ -263,7 +261,6 @@ export default function MangaReaderPage() {
                 ) : (
                     // Horizontal Single Page Mode
                     <div className="relative w-full h-full flex items-center justify-center bg-black">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={pages[currentPage]?.img || pages[currentPage]?.url || pages[currentPage]}
                             alt={`Page ${currentPage + 1}`}
@@ -287,7 +284,7 @@ export default function MangaReaderPage() {
                             className="absolute right-0 top-0 bottom-0 w-1/3 cursor-pointer group" 
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (currentPage < pages.length - 1) setCurrentPage(p => p + 1);
+                                if (currentPage < pages.length - 1) setCurrentPage(p => p - 1);
                             }}
                         >
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 p-2 rounded-full">
@@ -334,5 +331,18 @@ export default function MangaReaderPage() {
                 )}
             </AnimatePresence>
         </div>
+    )
+}
+
+export default function MangaReaderPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-white fixed inset-0 z-[100]">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                <p className="font-medium animate-pulse text-muted-foreground tracking-widest uppercase text-xs">Loading Scrolls...</p>
+            </div>
+        }>
+            <MangaReaderContent />
+        </Suspense>
     )
 }
