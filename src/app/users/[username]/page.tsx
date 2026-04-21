@@ -153,7 +153,7 @@ export default function UserProfilePage() {
     return (
         <div className="min-h-screen pb-24 md:pb-12 bg-background">
             {/* Hero Section / Cinematic Header */}
-            <div className="relative h-[320px] md:h-[450px] w-full overflow-hidden pt-16 md:pt-0">
+            <div className="relative h-[420px] md:h-[450px] w-full overflow-hidden pt-16 md:pt-0">
                 {/* Blurred Background Layer */}
                 <div className="absolute inset-0 z-0">
                     {user.bannerUrl || user.avatar ? (
@@ -188,7 +188,7 @@ export default function UserProfilePage() {
                 )}
 
                 {/* Centered Avatar and Info for Mobile */}
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-end pb-8 w-full px-4">
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center md:justify-end pb-8 pt-10 md:pt-0 w-full px-4">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -225,34 +225,38 @@ export default function UserProfilePage() {
                     </motion.div>
 
                     {/* Actions in Header */}
-                    <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-6 px-4">
-                        {renderActionButton()}
+                    <div className="grid grid-cols-2 md:flex md:flex-wrap items-center justify-center gap-2 md:gap-3 mt-6 px-4 w-full max-w-[400px] md:max-w-none mx-auto">
+                        <div className="contents md:block">
+                            {renderActionButton()}
+                        </div>
 
                         {isFriend && (
                             <>
-                                <Link href={`/chat?friendId=${user.id}`}>
-                                    <Button variant="outline" className="gap-2 bg-background/50 backdrop-blur-md border-white/10 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm">
+                                <Link href={`/chat?friendId=${user.id}`} className="w-full md:w-auto">
+                                    <Button variant="outline" className="w-full gap-2 bg-background/50 backdrop-blur-md border-white/10 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm">
                                         <MessageSquare className="h-4 w-4" /> Message
                                     </Button>
                                 </Link>
 
-                                <ShareModal
-                                    title={`${user.firstName} ${user.lastName}`}
-                                    description={`Check out @${user.username} on Animy!`}
-                                    image={getAvatarUrl(user.avatar) || undefined}
-                                    type="PROFILE"
-                                    id={user.id}
-                                    path={`/users/${user.username}`}
-                                    trigger={
-                                        <Button variant="outline" className="gap-2 bg-background/50 backdrop-blur-md border-white/10 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm">
-                                            <Share2 className="h-4 w-4" /> Share
-                                        </Button>
-                                    }
-                                />
+                                <div className="w-full md:w-auto">
+                                    <ShareModal
+                                        title={`${user.firstName} ${user.lastName}`}
+                                        description={`Check out @${user.username} on Animy!`}
+                                        image={getAvatarUrl(user.avatar) || undefined}
+                                        type="PROFILE"
+                                        id={user.id}
+                                        path={`/users/${user.username}`}
+                                        trigger={
+                                            <Button variant="outline" className="w-full gap-2 bg-background/50 backdrop-blur-md border-white/10 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm">
+                                                <Share2 className="h-4 w-4" /> Share
+                                            </Button>
+                                        }
+                                    />
+                                </div>
 
                                 <Button
                                     variant="destructive"
-                                    className="gap-2 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm"
+                                    className="w-full gap-2 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm"
                                     onClick={handleUnfriend}
                                     disabled={actionLoading}
                                 >
