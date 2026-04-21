@@ -227,7 +227,7 @@ function MangaReaderContent() {
                         {/* End of Chapter Navigation */}
                         <div className="w-full py-20 px-4 flex flex-col items-center gap-8 border-t border-white/5 mt-10">
                             <div className="text-center space-y-2">
-                                <h3 className="text-xl font-bold text-white/50 italic capitalize tracking-tighter">You've reached the end of the scroll</h3>
+                                <h3 className="text-xl font-bold text-white/50 italic capitalize tracking-tighter">You&apos;ve reached the end of the scroll</h3>
                                 <p className="text-sm text-muted-foreground font-medium">Continue your journey to the next chapter</p>
                             </div>
                             
