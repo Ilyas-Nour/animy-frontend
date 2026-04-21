@@ -284,7 +284,7 @@ function MangaReaderContent() {
                             className="absolute right-0 top-0 bottom-0 w-1/3 cursor-pointer group" 
                             onClick={(e) => {
                                 e.stopPropagation();
-                                if (currentPage < pages.length - 1) setCurrentPage(p => p - 1);
+                                if (currentPage < pages.length - 1) setCurrentPage(p => p + 1);
                             }}
                         >
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 p-2 rounded-full">
