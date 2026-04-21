@@ -59,10 +59,13 @@ function MangaReaderContent() {
                 setLoading(true)
                 const timestamp = new Date().getTime()
                 const res = await api.get(`/manga/read/${chapterId}?t=${timestamp}`)
-                if (res.data?.pages?.length > 0) {
-                    setPages(res.data.pages)
-                } else if (Array.isArray(res.data) && res.data.length > 0) {
-                    setPages(res.data) 
+                const pagesData = res.data?.data?.pages || res.data?.pages
+                const rawData = Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : [])
+                
+                if (pagesData && pagesData.length > 0) {
+                    setPages(pagesData)
+                } else if (rawData.length > 0) {
+                    setPages(rawData) 
                 } else {
                     setError('No pages found for this chapter.')
                 }
@@ -80,8 +83,9 @@ function MangaReaderContent() {
                 setFetchingChapters(true)
                 const timestamp = new Date().getTime()
                 const res = await api.get(`/manga/${mangaId}/read-chapters?t=${timestamp}`)
-                if (res.data?.chapters) {
-                    setChapters(res.data.chapters)
+                const chaptersData = res.data?.data?.chapters || res.data?.chapters
+                if (chaptersData) {
+                    setChapters(chaptersData)
                 }
             } catch (err) {
                 console.error('Failed to fetch chapters:', err)

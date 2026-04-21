@@ -60,8 +60,9 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                 // Add timestamp to bypass cache
                 const timestamp = new Date().getTime()
                 const res = await api.get(`/manga/${manga.mal_id}/read-chapters?t=${timestamp}`)
-                if (res.data?.chapters) {
-                    setChapters(res.data.chapters)
+                const chaptersData = res.data?.data?.chapters || res.data?.chapters
+                if (chaptersData) {
+                    setChapters(chaptersData)
                 }
             } catch (error) {
                 console.error('Failed to fetch chapters:', error)
