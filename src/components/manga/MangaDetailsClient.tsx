@@ -34,6 +34,11 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
     const [scrolled, setScrolled] = useState(false)
     const [chapters, setChapters] = useState<any[]>([])
     const [chaptersLoading, setChaptersLoading] = useState(true)
+    const [isMounted, setIsMounted] = useState(false)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -52,7 +57,9 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
     useEffect(() => {
         const fetchChapters = async () => {
             try {
-                const res = await api.get(`/manga/${manga.mal_id}/read-chapters`)
+                // Add timestamp to bypass cache
+                const timestamp = new Date().getTime()
+                const res = await api.get(`/manga/${manga.mal_id}/read-chapters?t=${timestamp}`)
                 if (res.data?.chapters) {
                     setChapters(res.data.chapters)
                 }
@@ -63,8 +70,10 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
             }
         }
         
-        fetchChapters()
-    }, [manga.mal_id])
+        if (isMounted) {
+            fetchChapters()
+        }
+    }, [manga.mal_id, isMounted])
 
     const checkStatus = async () => {
         try {
@@ -172,6 +181,8 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
         { value: 'DROPPED', label: 'Dropped' },
         { value: 'PLAN_TO_READ', label: 'Plan to Read' },
     ]
+
+    if (!isMounted) return null
 
     return (
         <div className="min-h-screen pb-24 md:pb-12">

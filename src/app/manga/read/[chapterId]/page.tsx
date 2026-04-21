@@ -24,6 +24,11 @@ function MangaReaderContent() {
     const [readingMode, setReadingMode] = useState<'vertical' | 'horizontal'>('vertical')
     const [currentPage, setCurrentPage] = useState(0)
     const [selectedChapter, setSelectedChapter] = useState<string>(chapterId)
+    const [isMounted, setIsMounted] = useState(false)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     // Reset current page when chapter changes
     useEffect(() => {
@@ -52,7 +57,8 @@ function MangaReaderContent() {
         const fetchPages = async () => {
             try {
                 setLoading(true)
-                const res = await api.get(`/manga/read/${chapterId}`)
+                const timestamp = new Date().getTime()
+                const res = await api.get(`/manga/read/${chapterId}?t=${timestamp}`)
                 if (res.data?.pages?.length > 0) {
                     setPages(res.data.pages)
                 } else if (Array.isArray(res.data) && res.data.length > 0) {
@@ -72,7 +78,8 @@ function MangaReaderContent() {
             if (!mangaId) return
             try {
                 setFetchingChapters(true)
-                const res = await api.get(`/manga/${mangaId}/read-chapters`)
+                const timestamp = new Date().getTime()
+                const res = await api.get(`/manga/${mangaId}/read-chapters?t=${timestamp}`)
                 if (res.data?.chapters) {
                     setChapters(res.data.chapters)
                 }
@@ -83,9 +90,11 @@ function MangaReaderContent() {
             }
         }
 
-        if (chapterId) fetchPages()
-        if (mangaId && chapters.length === 0) fetchChapters()
-    }, [chapterId, mangaId, chapters.length])
+        if (isMounted) {
+            if (chapterId) fetchPages()
+            if (mangaId && chapters.length === 0) fetchChapters()
+        }
+    }, [chapterId, mangaId, chapters.length, isMounted])
 
     const nextChapter = () => {
         const currentIndex = chapters.findIndex(c => c.id === chapterId)
@@ -127,6 +136,8 @@ function MangaReaderContent() {
             </div>
         )
     }
+
+    if (!isMounted) return null
 
     return (
         <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 fixed inset-0 z-[100] overflow-y-auto">
