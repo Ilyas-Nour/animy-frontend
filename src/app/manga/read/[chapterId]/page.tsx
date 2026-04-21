@@ -16,11 +16,21 @@ export default function MangaReaderPage() {
     const mangaId = searchParams.get('mangaId')
 
     const [pages, setPages] = useState<any[]>([])
+    const [chapters, setChapters] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [fetchingChapters, setFetchingChapters] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [showNav, setShowNav] = useState(true)
     const [readingMode, setReadingMode] = useState<'vertical' | 'horizontal'>('vertical')
     const [currentPage, setCurrentPage] = useState(0)
+    const [selectedChapter, setSelectedChapter] = useState<string>(chapterId)
+
+    // Reset current page when chapter changes
+    useEffect(() => {
+        setCurrentPage(0)
+        setSelectedChapter(chapterId)
+        window.scrollTo(0, 0)
+    }, [chapterId])
 
     useEffect(() => {
         let lastScrollY = window.scrollY
@@ -45,7 +55,7 @@ export default function MangaReaderPage() {
                 const res = await api.get(`/manga/read/${chapterId}`)
                 if (res.data?.pages?.length > 0) {
                     setPages(res.data.pages)
-                } else if (res.data?.length > 0) {
+                } else if (Array.isArray(res.data) && res.data.length > 0) {
                     setPages(res.data) 
                 } else {
                     setError('No pages found for this chapter.')
@@ -57,8 +67,43 @@ export default function MangaReaderPage() {
                 setLoading(false)
             }
         }
+
+        const fetchChapters = async () => {
+            if (!mangaId) return
+            try {
+                setFetchingChapters(true)
+                const res = await api.get(`/manga/${mangaId}/read-chapters`)
+                if (res.data?.chapters) {
+                    setChapters(res.data.chapters)
+                }
+            } catch (err) {
+                console.error('Failed to fetch chapters:', err)
+            } finally {
+                setFetchingChapters(false)
+            }
+        }
+
         if (chapterId) fetchPages()
-    }, [chapterId])
+        if (mangaId && chapters.length === 0) fetchChapters()
+    }, [chapterId, mangaId, chapters.length])
+
+    const nextChapter = () => {
+        const currentIndex = chapters.findIndex(c => c.id === chapterId)
+        // Usually index 0 is the latest chapter in many providers, but let's check sorting
+        // If sorting is desc, next chapter is at currentIndex - 1
+        if (currentIndex > 0) {
+            const nextId = chapters[currentIndex - 1].id
+            router.push(`/manga/read/${nextId}?mangaId=${mangaId}`)
+        }
+    }
+
+    const prevChapter = () => {
+        const currentIndex = chapters.findIndex(c => c.id === chapterId)
+        if (currentIndex !== -1 && currentIndex < chapters.length - 1) {
+            const prevId = chapters[currentIndex + 1].id
+            router.push(`/manga/read/${prevId}?mangaId=${mangaId}`)
+        }
+    }
 
     const toggleNav = () => setShowNav(!showNav)
 
@@ -91,32 +136,66 @@ export default function MangaReaderPage() {
             <AnimatePresence>
                 {showNav && (
                     <motion.div
-                        initial={{ y: '-100%' }}
-                        animate={{ y: 0 }}
-                        exit={{ y: '-100%' }}
+                        initial={{ y: '-100%', opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: '-100%', opacity: 0 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 p-4"
+                        className="fixed top-0 left-0 right-0 z-[60] bg-black/40 backdrop-blur-3xl border-b border-white/5 px-4 py-3"
                     >
-                        <div className="max-w-4xl mx-auto flex items-center justify-between">
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => mangaId ? router.push(`/manga/${mangaId}`) : router.back()}
-                                className="hover:bg-white/10 text-muted-foreground hover:text-white rounded-xl"
-                            >
-                                <ArrowLeft className="h-5 w-5 mr-2" />
-                                Back
-                            </Button>
+                        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => mangaId ? router.push(`/manga/${mangaId}`) : router.back()}
+                                    className="hover:bg-white/10 text-muted-foreground hover:text-white rounded-xl transition-all"
+                                >
+                                    <ArrowLeft className="h-5 w-5 md:mr-2" />
+                                    <span className="hidden md:inline">Back to Manga</span>
+                                </Button>
+
+                                <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
+
+                                {chapters.length > 0 && (
+                                    <select
+                                        value={chapterId}
+                                        onChange={(e) => router.push(`/manga/read/${e.target.value}?mangaId=${mangaId}`)}
+                                        className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-primary/50 max-w-[150px] md:max-w-[200px]"
+                                    >
+                                        {chapters.map((c) => (
+                                            <option key={c.id} value={c.id} className="bg-[#111]">
+                                                {c.title || `Chapter ${c.chapterNumber || ''}`}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
                             
                             <div className="flex items-center gap-2">
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() => setReadingMode(m => m === 'vertical' ? 'horizontal' : 'vertical')}
-                                    className="bg-white/5 hover:bg-white/10 border-white/10 rounded-xl px-4 font-bold"
-                                >
-                                    {readingMode === 'vertical' ? 'Scroll Mode' : 'Page Mode'}
-                                </Button>
+                                <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setReadingMode('vertical')}
+                                        className={cn(
+                                            "rounded-lg px-3 h-8 text-[10px] uppercase tracking-widest font-black transition-all",
+                                            readingMode === 'vertical' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-white"
+                                        )}
+                                    >
+                                        Scroll
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setReadingMode('horizontal')}
+                                        className={cn(
+                                            "rounded-lg px-3 h-8 text-[10px] uppercase tracking-widest font-black transition-all",
+                                            readingMode === 'horizontal' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-white"
+                                        )}
+                                    >
+                                        Page
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
@@ -132,19 +211,54 @@ export default function MangaReaderPage() {
                 onClick={toggleNav}
             >
                 {readingMode === 'vertical' ? (
-                    // Vertical Scroll Mode
                     <div className="max-w-3xl w-full flex flex-col items-center">
                         {pages.map((page, i) => (
-                            <div key={i} className="relative w-full min-h-[500px] flex items-center justify-center bg-white/5 mb-1 animate-in fade-in duration-700">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <div key={i} className="relative w-full min-h-[500px] flex items-center justify-center bg-white/5 mb-1 animate-in fade-in duration-700 overflow-hidden">
                                 <img
                                     src={page.img || page.url || page}
                                     alt={`Page ${page.page || i + 1}`}
-                                    className="w-full h-auto object-contain"
+                                    className="w-full h-auto object-contain z-10"
                                     loading={i < 3 ? "eager" : "lazy"}
                                 />
+                                <div className="absolute inset-0 flex items-center justify-center -z-0">
+                                    <Loader2 className="h-8 w-8 animate-spin text-white/10" />
+                                </div>
                             </div>
                         ))}
+
+                        {/* End of Chapter Navigation */}
+                        <div className="w-full py-20 px-4 flex flex-col items-center gap-8 border-t border-white/5 mt-10">
+                            <div className="text-center space-y-2">
+                                <h3 className="text-xl font-bold text-white/50 italic capitalize tracking-tighter">You've reached the end of the scroll</h3>
+                                <p className="text-sm text-muted-foreground font-medium">Continue your journey to the next chapter</p>
+                            </div>
+                            
+                            <div className="flex items-center gap-4 w-full max-w-md">
+                                <Button 
+                                    variant="outline" 
+                                    className="flex-1 h-16 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 font-black text-xs uppercase tracking-[0.2em]"
+                                    onClick={prevChapter}
+                                    disabled={chapters.findIndex(c => c.id === chapterId) === chapters.length - 1}
+                                >
+                                    Previous
+                                </Button>
+                                <Button 
+                                    className="flex-[2] h-16 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-primary/20"
+                                    onClick={nextChapter}
+                                    disabled={chapters.findIndex(c => c.id === chapterId) === 0}
+                                >
+                                    Next Chapter
+                                </Button>
+                            </div>
+                            
+                            <Button 
+                                variant="ghost" 
+                                onClick={() => router.push(`/manga/${mangaId}`)}
+                                className="text-muted-foreground hover:text-white uppercase text-[10px] font-bold tracking-[0.3em]"
+                            >
+                                Back to Details
+                            </Button>
+                        </div>
                     </div>
                 ) : (
                     // Horizontal Single Page Mode

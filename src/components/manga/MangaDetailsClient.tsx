@@ -214,32 +214,18 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
 
                             {/* Desktop-only Quick Actions */}
                             <CardContent className="p-4 space-y-3 hidden md:block">
-                                <AuthGuard
-                                    title="Favorite This Legend"
-                                    description="Unlock the ability to save your all-time favorite manga and showcase them on your premium profile."
-                                    fallback={
-                                        <Button
-                                            className="w-full gap-2 font-bold opacity-50"
-                                            variant="outline"
-                                        >
-                                            <Heart className="h-4 w-4" /> Add to Favorites
-                                        </Button>
-                                    }
-                                >
-                                    <Button
-                                        className="w-full gap-2 font-bold"
-                                        variant={isFavorited ? 'default' : 'outline'}
-                                        onClick={handleToggleFavorite}
-                                        disabled={actionLoading}
-                                    >
-                                        {actionLoading ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : (
-                                            <Heart className={cn("h-4 w-4", isFavorited && "fill-current text-red-500")} />
-                                        )}
-                                        {isFavorited ? 'Favorited' : 'Add to Favorites'}
-                                    </Button>
                                 </AuthGuard>
+                                
+                                {chapters.length > 0 && (
+                                    <Link 
+                                        href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}`}
+                                        className="block"
+                                    >
+                                        <Button className="w-full gap-2 font-black bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20">
+                                            <BookOpen className="h-4 w-4" /> Start Reading
+                                        </Button>
+                                    </Link>
+                                )}
 
                                 {isInMangaList ? (
                                     <div className="space-y-2">
@@ -468,8 +454,22 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="text-center py-8 text-muted-foreground bg-white/5 rounded-2xl border border-white/5 text-sm font-medium">
-                                        No readable chapters found for this title.
+                                    <div className="text-center py-12 px-4 bg-white/5 rounded-3xl border border-white/5 space-y-4">
+                                        <div className="mx-auto w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center">
+                                            <Layers className="h-8 w-8 text-muted-foreground opacity-20" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h3 className="font-bold text-white/40 italic uppercase tracking-tighter">No Readable Scrolls Found</h3>
+                                            <p className="text-xs text-muted-foreground max-w-[200px] mx-auto">The keepers of these scrolls are currently unreachable. Try again in a few moments.</p>
+                                        </div>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="h-9 px-6 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 font-bold text-[10px] uppercase tracking-widest"
+                                            onClick={() => window.location.reload()}
+                                        >
+                                            Refresh Gates
+                                        </Button>
                                     </div>
                                 )}
                             </section>
