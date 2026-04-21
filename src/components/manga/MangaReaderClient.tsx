@@ -232,6 +232,7 @@ function MangaReaderContent() {
                                     alt={`Page ${page.page || i + 1}`}
                                     className="w-full h-auto object-contain z-10"
                                     loading={i < 3 ? "eager" : "lazy"}
+                                    referrerPolicy="no-referrer"
                                 />
                                 <div className="absolute inset-0 flex items-center justify-center -z-0">
                                     <Loader2 className="h-8 w-8 animate-spin text-white/10" />
@@ -281,6 +282,7 @@ function MangaReaderContent() {
                             alt={`Page ${currentPage + 1}`}
                             className="max-w-full max-h-screen object-contain animate-in fade-in duration-300"
                             key={currentPage} 
+                            referrerPolicy="no-referrer"
                         />
                         
                         {/* Page Navigation Zones */}
