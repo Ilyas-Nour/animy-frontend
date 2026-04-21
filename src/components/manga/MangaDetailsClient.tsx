@@ -214,6 +214,31 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
 
                             {/* Desktop-only Quick Actions */}
                             <CardContent className="p-4 space-y-3 hidden md:block">
+                                <AuthGuard
+                                    title="Favorite This Legend"
+                                    description="Unlock the ability to save your all-time favorite manga and showcase them on your premium profile."
+                                    fallback={
+                                        <Button
+                                            className="w-full gap-2 font-bold opacity-50"
+                                            variant="outline"
+                                        >
+                                            <Heart className="h-4 w-4" /> Add to Favorites
+                                        </Button>
+                                    }
+                                >
+                                    <Button
+                                        className="w-full gap-2 font-bold"
+                                        variant={isFavorited ? 'default' : 'outline'}
+                                        onClick={handleToggleFavorite}
+                                        disabled={actionLoading}
+                                    >
+                                        {actionLoading ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Heart className={cn("h-4 w-4", isFavorited && "fill-current text-red-500")} />
+                                        )}
+                                        {isFavorited ? 'Favorited' : 'Add to Favorites'}
+                                    </Button>
                                 </AuthGuard>
                                 
                                 {chapters.length > 0 && (
