@@ -8,6 +8,75 @@ import api from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
+// Optimized Manga Page Component with Virtualization
+const MangaPage = ({ 
+    page, 
+    index, 
+    readingMode, 
+    isCurrentPage 
+}: { 
+    page: any, 
+    index: number, 
+    readingMode: 'vertical' | 'horizontal',
+    isCurrentPage?: boolean
+}) => {
+    const [loaded, setLoaded] = useState(false)
+    const [inView, setInView] = useState(false)
+    const ref = React.useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (readingMode === 'horizontal') {
+            if (isCurrentPage) setInView(true)
+            return
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setInView(true)
+                    observer.disconnect()
+                }
+            },
+            { rootMargin: '1200px' } // Load images when within ~2 screens of viewport
+        )
+
+        if (ref.current) observer.observe(ref.current)
+        return () => observer.disconnect()
+    }, [readingMode, isCurrentPage])
+
+    return (
+        <div 
+            ref={ref} 
+            className={cn(
+                "relative flex items-center justify-center bg-white/5 overflow-hidden transition-all duration-500",
+                readingMode === 'vertical' ? "w-full min-h-[400px] mb-1" : "w-full h-full"
+            )}
+        >
+            {(inView || isCurrentPage) && (
+                <>
+                    <img
+                        src={page.img || page.url || page}
+                        alt={`Page ${page.page || index + 1}`}
+                        className={cn(
+                            "w-full h-auto object-contain z-10 transition-all duration-700",
+                            loaded ? "opacity-100 scale-100" : "opacity-0 scale-95",
+                            readingMode === 'horizontal' && "max-h-full"
+                        )}
+                        onLoad={() => setLoaded(true)}
+                        referrerPolicy="no-referrer"
+                    />
+                    {!loaded && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center -z-0 gap-3">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary/20" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/10">Loading Scroll {index + 1}</span>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    )
+}
+
 function MangaReaderContent() {
     const params = useParams()
     const searchParams = useSearchParams()
@@ -172,7 +241,7 @@ function MangaReaderContent() {
 
     const toggleNav = () => setShowNav(!showNav)
 
-    if (loading) {
+    if (loading && pages.length === 0) {
         return (
             <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-white fixed inset-0 z-[100]">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -283,18 +352,12 @@ function MangaReaderContent() {
                 {readingMode === 'vertical' ? (
                     <div className="max-w-3xl w-full flex flex-col items-center">
                         {pages.map((page, i) => (
-                            <div key={i} className="relative w-full min-h-[500px] flex items-center justify-center bg-white/5 mb-1 animate-in fade-in duration-700 overflow-hidden">
-                                <img
-                                    src={page.img || page.url || page}
-                                    alt={`Page ${page.page || i + 1}`}
-                                    className="w-full h-auto object-contain z-10"
-                                    loading={i < 3 ? "eager" : "lazy"}
-                                    referrerPolicy="no-referrer"
-                                />
-                                <div className="absolute inset-0 flex items-center justify-center -z-0">
-                                    <Loader2 className="h-8 w-8 animate-spin text-white/10" />
-                                </div>
-                            </div>
+                            <MangaPage 
+                                key={`${chapterId}-p${i}`}
+                                page={page}
+                                index={i}
+                                readingMode="vertical"
+                            />
                         ))}
 
                         {/* End of Chapter Navigation */}
@@ -337,12 +400,11 @@ function MangaReaderContent() {
                         "relative w-full h-full flex items-center justify-center bg-black transition-all duration-300",
                         showNav ? "py-16 px-4" : "p-2"
                     )}>
-                        <img
-                            src={pages[currentPage]?.img || pages[currentPage]?.url || pages[currentPage]}
-                            alt={`Page ${currentPage + 1}`}
-                            className="max-w-full max-h-full object-contain animate-in fade-in duration-300"
-                            key={currentPage} 
-                            referrerPolicy="no-referrer"
+                        <MangaPage 
+                            page={pages[currentPage]}
+                            index={currentPage}
+                            readingMode="horizontal"
+                            isCurrentPage={true}
                         />
                         
                         {/* Page Navigation Zones */}
