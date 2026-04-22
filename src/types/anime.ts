@@ -2,6 +2,7 @@ export interface Anime {
   id: number
   anilistId?: number
   mal_id: number
+  idMal?: number
   url?: string
   images: {
     jpg: {

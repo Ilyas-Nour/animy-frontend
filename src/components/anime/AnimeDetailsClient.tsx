@@ -492,7 +492,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                     animeTitle={anime.title}
                                     animeTitleEnglish={anime.title_english}
                                     animePoster={anime.images?.jpg?.large_image_url}
-                                    malId={anime.mal_id}
+                                    malId={anime.idMal || anime.mal_id}
                                     totalEpisodes={anime.episodes || 0}
                                 />
                             </div>
