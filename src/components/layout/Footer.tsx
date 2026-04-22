@@ -175,20 +175,35 @@ export function Footer() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6"
+          className="mt-20 pt-10 border-t border-white/5 space-y-8"
         >
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-[13px] text-muted-foreground/60">
-            <span>© {currentYear} <span className="text-foreground/80 font-semibold tracking-tight">Animy</span></span>
-            <span className="hidden md:block h-1 w-1 rounded-full bg-white/10" />
-            <span className="flex items-center gap-1">
-              Developed by <Link href="https://github.com/Ilyas-Nour" target="_blank" className="text-foreground/80 hover:text-primary transition-colors font-medium">Ilyas Nour</Link>
-            </span>
+          {/* Legal Disclaimer & Content Notice */}
+          <div className="max-w-4xl mx-auto text-center space-y-4">
+            <p className="text-[11px] md:text-xs text-muted-foreground/40 leading-relaxed font-medium uppercase tracking-wider">
+              Animy does not store any files on its server. All contents are provided by non-affiliated third parties.
+              This platform acts as a metadata aggregator and streaming interface for publicly available content.
+            </p>
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] md:text-[11px] font-bold text-muted-foreground/30 uppercase tracking-[0.2em]">
+              <span>Socials: Discord, Telegram, X</span>
+              <span className="hidden md:block">|</span>
+              <span>Partners: MALSync, AniList, VidLink</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-8 text-[13px] font-medium text-muted-foreground/60">
-            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="/cookies" className="hover:text-foreground transition-colors">Cookies</Link>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 border-t border-white/[0.02]">
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-[13px] text-muted-foreground/60">
+              <span>© {currentYear} <span className="text-foreground/80 font-semibold tracking-tight">Animy</span>. All Rights Reserved.</span>
+              <span className="hidden md:block h-1 w-1 rounded-full bg-white/10" />
+              <span className="flex items-center gap-1">
+                Built by <Link href="https://github.com/Ilyas-Nour" target="_blank" className="text-foreground/80 hover:text-primary transition-colors font-medium">Ilyas Nour</Link>
+              </span>
+            </div>
+
+            <div className="flex items-center gap-8 text-[13px] font-medium text-muted-foreground/60">
+              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+              <Link href="/cookies" className="hover:text-foreground transition-colors">Cookies</Link>
+            </div>
           </div>
         </motion.div>
       </div>
