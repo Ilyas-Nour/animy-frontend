@@ -40,7 +40,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     <motion.div
                         initial={{ scale: 1.05 }}
                         animate={{ scale: 1 }}
-                        transition={{ duration: 12, ease: "easeOut" }}
+                        transition={{ duration: 15, ease: "easeOut" }}
                         className="absolute inset-0"
                     >
                         <Image
@@ -48,26 +48,33 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                             alt={active.title}
                             fill
                             className={cn(
-                                "object-cover object-center transition-all duration-1000",
-                                !active.bannerImage && "blur-2xl opacity-40 scale-110"
+                                "object-cover transition-all duration-1000",
+                                // If it's a banner, we favor the right side to keep characters visible
+                                active.bannerImage ? "object-[center_20%]" : "object-center",
+                                !active.bannerImage && "blur-3xl opacity-30 scale-125"
                             )}
                             priority
                         />
-                        {/* More premium gradient system */}
+                        
+                        {/* THE "ANIKAI" GRADIENT SYSTEM */}
+                        {/* 1. Primary Left-to-Right for text readability */}
                         <div 
                             className="absolute inset-0 z-10" 
                             style={{ 
-                                background: active.bannerImage 
-                                    ? 'linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background)/0.8) 40%, transparent 100%)'
-                                    : `linear-gradient(to right, hsl(var(--background)) 0%, ${active.color}33 100%)`
+                                background: 'linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background)/0.9) 20%, hsl(var(--background)/0.4) 50%, transparent 100%)'
                             }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
                         
-                        {/* Color-based backdrop for missing banners */}
+                        {/* 2. Bottom-to-Top to ground the content */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent z-10" />
+                        
+                        {/* 3. Subtle Vignette for depth */}
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] z-10" />
+
+                        {/* 4. Color-based backdrop for missing banners */}
                         {!active.bannerImage && (
                             <div 
-                                className="absolute inset-0 z-0 opacity-20"
+                                className="absolute inset-0 z-0 opacity-40"
                                 style={{ backgroundColor: active.color || 'var(--primary)' }}
                             />
                         )}
