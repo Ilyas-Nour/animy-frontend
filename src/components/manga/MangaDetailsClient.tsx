@@ -416,6 +416,22 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                                 </div>
                             </div>
 
+                            {chapters.length > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="flex justify-center md:justify-start"
+                                >
+                                    <Link href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}`}>
+                                        <Button className="h-14 px-10 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-orange-500/40 group transition-all hover:scale-105 active:scale-95">
+                                            <BookOpen className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform" />
+                                            Read Now
+                                        </Button>
+                                    </Link>
+                                </motion.div>
+                            )}
+
                             <div className="flex flex-wrap justify-center md:justify-start gap-2">
                                 {Array.isArray(manga.genres) && manga.genres.map((genre: any) => (
                                     <Badge key={genre.mal_id || genre.name} variant="secondary" className="px-3 py-1 bg-white/5 border-white/10 hover:bg-white/10">
@@ -523,83 +539,93 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                     exit={{ y: 100 }}
                     className="fixed bottom-[72px] left-4 right-4 z-[40] md:hidden"
                 >
-                    <div className="bg-background/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-2xl flex items-center gap-3">
-                        <div className="flex-1">
-                            {isInMangaList ? (
-                                <select
-                                    value={mangaListStatus}
-                                    onChange={(e) => handleUpdateStatus(e.target.value)}
-                                    className="w-full h-12 px-4 rounded-xl border border-white/10 bg-white/5 text-sm font-bold focus:ring-2 focus:ring-primary"
-                                >
-                                    {statusOptions.map(option => (
-                                        <option key={option.value} value={option.value} className="bg-background">
-                                            {option.label}
+                    <div className="bg-background/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-2xl flex flex-col gap-3">
+                        {chapters.length > 0 && (
+                            <Link href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}`} className="w-full">
+                                <Button className="w-full h-14 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest shadow-lg shadow-orange-500/20">
+                                    <BookOpen className="h-6 w-6 mr-2" /> Start Reading
+                                </Button>
+                            </Link>
+                        )}
+                        
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1">
+                                {isInMangaList ? (
+                                    <select
+                                        value={mangaListStatus}
+                                        onChange={(e) => handleUpdateStatus(e.target.value)}
+                                        className="w-full h-12 px-4 rounded-xl border border-white/10 bg-white/5 text-sm font-bold focus:ring-2 focus:ring-primary"
+                                    >
+                                        {statusOptions.map(option => (
+                                            <option key={option.value} value={option.value} className="bg-background">
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                        <option value="REMOVE" className="bg-destructive/10 text-destructive font-bold">
+                                            Remove from List
                                         </option>
-                                    ))}
-                                    <option value="REMOVE" className="bg-destructive/10 text-destructive font-bold">
-                                        Remove from List
-                                    </option>
-                                </select>
-                            ) : (
+                                    </select>
+                                ) : (
+                                    <AuthGuard
+                                        title="Track Your Reading"
+                                        description="Sign in to add this manga to your personal read list and track your progress through the scrolls."
+                                        fallback={
+                                            <div className="w-full h-12 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center opacity-50">
+                                                <Plus className="h-5 w-5 mr-2" />
+                                                <span className="font-bold">Add to List</span>
+                                            </div>
+                                        }
+                                    >
+                                        <Button
+                                            className="w-full h-12 rounded-xl font-bold text-sm shadow-lg shadow-primary/20"
+                                            onClick={() => handleUpdateStatus('PLAN_TO_READ')}
+                                            disabled={actionLoading}
+                                        >
+                                            {actionLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5 mr-2" />}
+                                            Add to List
+                                        </Button>
+                                    </AuthGuard>
+                                )}
+                            </div>
+
+                            <div className="flex gap-2">
                                 <AuthGuard
-                                    title="Track Your Reading"
-                                    description="Sign in to add this manga to your personal read list and track your progress through the scrolls."
+                                    title="Favorite This Legend"
+                                    description="Unlock the ability to save your all-time favorite manga and showcase them on your premium profile."
                                     fallback={
-                                        <div className="w-full h-12 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center opacity-50">
-                                            <Plus className="h-5 w-5 mr-2" />
-                                            <span className="font-bold">Add to Read List</span>
+                                        <div className="h-12 w-12 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center opacity-50">
+                                            <Heart className="h-6 w-6" />
                                         </div>
                                     }
                                 >
                                     <Button
-                                        className="w-full h-12 rounded-xl font-bold text-base shadow-lg shadow-primary/20"
-                                        onClick={() => handleUpdateStatus('PLAN_TO_READ')}
+                                        size="icon"
+                                        variant="outline"
+                                        className={cn(
+                                            "h-12 w-12 rounded-xl border-white/10 bg-white/5 shrink-0",
+                                            isFavorited && "bg-red-500/20 border-red-500/50 text-red-500"
+                                        )}
+                                        onClick={handleToggleFavorite}
                                         disabled={actionLoading}
                                     >
-                                        {actionLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5 mr-2" />}
-                                        Add to Read List
+                                        <Heart className={cn("h-6 w-6", isFavorited && "fill-current")} />
                                     </Button>
                                 </AuthGuard>
-                            )}
-                        </div>
 
-                        <div className="flex gap-2">
-                            <AuthGuard
-                                title="Favorite This Legend"
-                                description="Unlock the ability to save your all-time favorite manga and showcase them on your premium profile."
-                                fallback={
-                                    <div className="h-12 w-12 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center opacity-50">
-                                        <Heart className="h-6 w-6" />
-                                    </div>
-                                }
-                            >
-                                <Button
-                                    size="icon"
-                                    variant="outline"
-                                    className={cn(
-                                        "h-12 w-12 rounded-xl border-white/10 bg-white/5 shrink-0",
-                                        isFavorited && "bg-red-500/20 border-red-500/50 text-red-500"
-                                    )}
-                                    onClick={handleToggleFavorite}
-                                    disabled={actionLoading}
-                                >
-                                    <Heart className={cn("h-6 w-6", isFavorited && "fill-current")} />
-                                </Button>
-                            </AuthGuard>
-
-                            <ShareModal
-                                title={manga.title}
-                                description={manga.synopsis?.substring(0, 100)}
-                                image={manga.images?.webp?.image_url || manga.images?.jpg?.image_url}
-                                type="MANGA"
-                                id={manga.mal_id}
-                                path={`/manga/${manga.mal_id}`}
-                                trigger={
-                                    <Button size="icon" variant="outline" className="h-12 w-12 rounded-xl border-white/10 bg-white/5 shrink-0">
-                                        <Share2 className="h-6 w-6" />
-                                    </Button>
-                                }
-                            />
+                                <ShareModal
+                                    title={manga.title}
+                                    description={manga.synopsis?.substring(0, 100)}
+                                    image={manga.images?.webp?.image_url || manga.images?.jpg?.image_url}
+                                    type="MANGA"
+                                    id={manga.mal_id}
+                                    path={`/manga/${manga.mal_id}`}
+                                    trigger={
+                                        <Button size="icon" variant="outline" className="h-12 w-12 rounded-xl border-white/10 bg-white/5 shrink-0">
+                                            <Share2 className="h-6 w-6" />
+                                        </Button>
+                                    }
+                                />
+                            </div>
                         </div>
                     </div>
                 </motion.div>
