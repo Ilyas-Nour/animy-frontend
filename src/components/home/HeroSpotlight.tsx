@@ -36,24 +36,40 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     transition={{ duration: 1 }}
                     className="absolute inset-0"
                 >
-                    {/* Background with Parallax/Zoom Effect */}
                     <motion.div
-                        initial={{ scale: 1.1 }}
+                        initial={{ scale: 1.05 }}
                         animate={{ scale: 1 }}
-                        transition={{ duration: 10, ease: "linear" }}
+                        transition={{ duration: 12, ease: "easeOut" }}
                         className="absolute inset-0"
                     >
                         <Image
                             src={active.bannerImage || active.images.jpg.large_image_url}
                             alt={active.title}
                             fill
-                            className="object-cover object-center"
+                            className={cn(
+                                "object-cover object-center transition-all duration-1000",
+                                !active.bannerImage && "blur-2xl opacity-40 scale-110"
+                            )}
                             priority
                         />
                         {/* More premium gradient system */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent z-10" />
+                        <div 
+                            className="absolute inset-0 z-10" 
+                            style={{ 
+                                background: active.bannerImage 
+                                    ? 'linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background)/0.8) 40%, transparent 100%)'
+                                    : `linear-gradient(to right, hsl(var(--background)) 0%, ${active.color}33 100%)`
+                            }}
+                        />
                         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
-                        <div className="absolute inset-0 bg-black/30 z-0" />
+                        
+                        {/* Color-based backdrop for missing banners */}
+                        {!active.bannerImage && (
+                            <div 
+                                className="absolute inset-0 z-0 opacity-20"
+                                style={{ backgroundColor: active.color || 'var(--primary)' }}
+                            />
+                        )}
                     </motion.div>
 
                     {/* Content Layer */}

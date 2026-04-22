@@ -4,6 +4,7 @@ export interface Anime {
   mal_id: number
   idMal?: number
   bannerImage?: string
+  color?: string
   url?: string
   images: {
     jpg: {
