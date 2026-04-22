@@ -25,7 +25,8 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     const hlsRef = useRef<Hls | null>(null)
 
     useEffect(() => {
-        // Reset server when episode or provider changes
+        // Reset state when episode or provider changes
+        setSources(null)
         setActiveServer(provider === 'fallback' ? 'vidlink' : 'hianime')
     }, [episodeId, provider])
 
@@ -33,11 +34,14 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
         if (activeServer === 'hianime') {
             fetchSources()
         } else {
-            console.log(`Setting VidLink source for EP: ${episodeNumber}`)
-            setSources({
-                iframeUrl: `https://vidlink.pro/anime/${malId}/${episodeNumber}?primaryColor=6366f1`,
-                provider: 'vidlink'
-            })
+            // Only generate from props if we don't already have a resolved URL from the backend
+            if (!sources?.iframeUrl || !sources.iframeUrl.includes('vidlink.pro')) {
+                console.log(`Generating VidLink source from props for EP: ${episodeNumber}`)
+                setSources({
+                    iframeUrl: `https://vidlink.pro/anime/${malId}/${episodeNumber}?primaryColor=6366f1`,
+                    provider: 'vidlink'
+                })
+            }
             setLoading(false)
             setError(null)
         }
