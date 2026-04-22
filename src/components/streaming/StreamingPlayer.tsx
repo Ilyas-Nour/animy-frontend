@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Hls from 'hls.js'
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface StreamingPlayerProps {
     episodeId: string
