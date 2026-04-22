@@ -281,19 +281,19 @@ function MangaReaderContent() {
                     // Horizontal Single Page Mode
                     <div className={cn(
                         "relative w-full h-full flex items-center justify-center bg-black transition-all duration-300",
-                        showNav ? "pt-16 pb-20" : "p-2"
+                        showNav ? "py-16 px-4" : "p-2"
                     )}>
                         <img
                             src={pages[currentPage]?.img || pages[currentPage]?.url || pages[currentPage]}
                             alt={`Page ${currentPage + 1}`}
-                            className="max-w-full max-h-[100dvh] md:max-h-[98dvh] object-contain animate-in fade-in duration-300 p-2 md:p-4"
+                            className="max-w-full max-h-full object-contain animate-in fade-in duration-300"
                             key={currentPage} 
                             referrerPolicy="no-referrer"
                         />
                         
                         {/* Page Navigation Zones */}
                         <div 
-                            className="absolute left-0 top-0 bottom-0 w-1/3 cursor-pointer group" 
+                            className="absolute left-0 top-0 bottom-0 w-1/4 cursor-pointer group z-10" 
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (currentPage > 0) setCurrentPage(p => p - 1);
@@ -304,7 +304,7 @@ function MangaReaderContent() {
                             </div>
                         </div>
                         <div 
-                            className="absolute right-0 top-0 bottom-0 w-1/3 cursor-pointer group" 
+                            className="absolute right-0 top-0 bottom-0 w-1/4 cursor-pointer group z-10" 
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (currentPage < pages.length - 1) setCurrentPage(p => p + 1);
