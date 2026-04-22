@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react'
+import React, { useState, useEffect, Suspense, useCallback } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Loader2, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -100,21 +100,55 @@ function MangaReaderContent() {
         }
     }, [chapterId, mangaId, chapters.length, isMounted])
 
-    const nextChapter = () => {
+    const nextChapter = useCallback(() => {
         const currentIndex = chapters.findIndex(c => c.id === chapterId)
         if (currentIndex > 0) {
             const nextId = chapters[currentIndex - 1].id
             router.push(`/manga/read/${nextId}?mangaId=${mangaId}`)
         }
-    }
+    }, [chapters, chapterId, mangaId, router])
 
-    const prevChapter = () => {
+    const prevChapter = useCallback(() => {
         const currentIndex = chapters.findIndex(c => c.id === chapterId)
         if (currentIndex !== -1 && currentIndex < chapters.length - 1) {
             const prevId = chapters[currentIndex + 1].id
             router.push(`/manga/read/${prevId}?mangaId=${mangaId}`)
         }
-    }
+    }, [chapters, chapterId, mangaId, router])
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Handle Escape key
+            if (e.key === 'Escape') {
+                if (mangaId) {
+                    router.push(`/manga/${mangaId}`)
+                } else {
+                    router.back()
+                }
+                return
+            }
+
+            // Handle Arrow keys for paging (only in horizontal mode)
+            if (readingMode === 'horizontal') {
+                if (e.key === 'ArrowRight') {
+                    if (currentPage < pages.length - 1) {
+                        setCurrentPage(p => p + 1)
+                    } else {
+                        nextChapter()
+                    }
+                } else if (e.key === 'ArrowLeft') {
+                    if (currentPage > 0) {
+                        setCurrentPage(p => p - 1)
+                    } else {
+                        prevChapter()
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [readingMode, currentPage, pages.length, mangaId, router, nextChapter, prevChapter])
 
     const toggleNav = () => setShowNav(!showNav)
 
