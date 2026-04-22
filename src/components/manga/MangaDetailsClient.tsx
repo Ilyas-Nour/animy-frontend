@@ -36,6 +36,13 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
     const [chapters, setChapters] = useState<any[]>(initialChapters)
     const [chaptersLoading, setChaptersLoading] = useState(initialChapters.length === 0)
     const [isMounted, setIsMounted] = useState(false)
+    const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
+
+    const sortedChapters = [...chapters].sort((a, b) => {
+        const numA = parseFloat(a.chapterNumber) || 0
+        const numB = parseFloat(b.chapterNumber) || 0
+        return sortOrder === 'desc' ? numB - numA : numA - numB
+    })
 
     useEffect(() => {
         setIsMounted(true)
@@ -470,10 +477,23 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
 
                             {/* Chapters Section */}
                             <section className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
-                                <h2 className="text-2xl font-bold flex items-center gap-2">
-                                    <Layers className="h-6 w-6 text-primary" />
-                                    Chapters
-                                </h2>
+                                <div className="flex items-center justify-between gap-2">
+                                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                                        <Layers className="h-6 w-6 text-primary" />
+                                        Chapters
+                                    </h2>
+                                    {chapters.length > 0 && (
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+                                            className="hover:bg-white/10 gap-2 font-bold uppercase text-[10px] tracking-widest px-3"
+                                        >
+                                            {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
+                                            <TrendingUp className={cn("h-3 w-3", sortOrder === 'asc' && "rotate-180")} />
+                                        </Button>
+                                    )}
+                                </div>
                                 
                                 {chaptersLoading ? (
                                     <div className="flex justify-center py-8 bg-white/5 rounded-2xl border border-white/5">
@@ -482,7 +502,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                 ) : chapters.length > 0 ? (
                                     <div className="bg-white/5 rounded-2xl border border-white/5 overflow-hidden">
                                         <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2 space-y-1">
-                                            {chapters.map((chapter) => (
+                                            {sortedChapters.map((chapter) => (
                                                 <Link 
                                                     key={chapter.id} 
                                                     href={`/manga/read/${chapter.id}?mangaId=${manga.mal_id}&type=${manga.type}`}
