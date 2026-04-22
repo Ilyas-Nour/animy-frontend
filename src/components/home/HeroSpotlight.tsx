@@ -38,22 +38,22 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                 >
                     {/* Background with Parallax/Zoom Effect */}
                     <motion.div
-                        initial={{ scale: 1.1, filter: 'blur(10px)' }}
-                        animate={{ scale: 1, filter: 'blur(0px)' }}
-                        transition={{ duration: 8 }}
+                        initial={{ scale: 1.1 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 10, ease: "linear" }}
                         className="absolute inset-0"
                     >
                         <Image
-                            src={active.images.jpg.large_image_url}
+                            src={active.bannerImage || active.images.jpg.large_image_url}
                             alt={active.title}
                             fill
-                            className="object-cover"
+                            className="object-cover object-center"
                             priority
                         />
-                        {/* Complex Gradient Overlays */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent z-10" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/20 z-10" />
-                        <div className="absolute inset-0 bg-background/10 dark:bg-black/40 z-0" />
+                        {/* More premium gradient system */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent z-10" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
+                        <div className="absolute inset-0 bg-black/30 z-0" />
                     </motion.div>
 
                     {/* Content Layer */}
