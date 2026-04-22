@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Anime } from '@/types/anime'
+import { cn } from '@/lib/utils'
 
 interface HeroSpotlightProps {
     anime: Anime[]
