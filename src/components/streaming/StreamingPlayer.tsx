@@ -32,19 +32,21 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     }, [episodeId, provider])
 
     useEffect(() => {
-        if (activeServer === 'hianime') {
+        // We always try to fetch sources from the backend first.
+        // The backend is smart enough to resolve the MAL ID and return a VidLink URL
+        // if HiAnime fails or if we are in fallback mode.
+        if (!sources) {
             fetchSources()
-        } else {
-            // Only generate from props if we don't already have a resolved URL from the backend
-            if (!sources?.iframeUrl || !sources.iframeUrl.includes('vidlink.pro')) {
-                console.log(`Generating VidLink source from props for EP: ${episodeNumber}`)
-                setSources({
-                    iframeUrl: `https://vidlink.pro/anime/${malId}/${episodeNumber}?primaryColor=6366f1`,
-                    provider: 'vidlink'
-                })
-            }
-            setLoading(false)
-            setError(null)
+        }
+        
+        // If we already have sources and we are in vidlink mode, but sources don't have a vidlink URL,
+        // we can generate one from props as a last resort (but this should be rare now).
+        if (activeServer === 'vidlink' && sources && !sources.iframeUrl) {
+             setSources({
+                ...sources,
+                iframeUrl: `https://vidlink.pro/anime/${malId}/${episodeNumber}?primaryColor=6366f1`,
+                provider: 'vidlink'
+            })
         }
     }, [episodeId, activeServer, malId, episodeNumber])
 
@@ -73,6 +75,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             if (sourcesData.provider === 'fallback' || !sourcesData.sources || sourcesData.sources.length === 0) {
                 if (sourcesData.iframeUrl) {
                     setSources(sourcesData)
+                    setActiveServer('vidlink')
                     setLoading(false)
                 } else {
                     setActiveServer('vidlink')
@@ -161,13 +164,23 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     }
 
     const renderPlayer = () => {
-        // PRIORITIZE VidLink: If activeServer is vidlink, we should almost never show an error
+        // PRIORITIZE VidLink: If activeServer is vidlink, we should wait for sources to be ready
+        // so we can use the backend-resolved ID instead of guessing from props.
         if (activeServer === 'vidlink') {
-            const url = sources?.iframeUrl || `https://vidlink.pro/anime/${malId}/${episodeNumber}?primaryColor=6366f1`
+            if (!sources?.iframeUrl) {
+                return (
+                    <div className="aspect-video bg-black/50 rounded-xl flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-3">
+                            <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+                            <p className="text-white/60 text-sm">Resolving high-reliability stream...</p>
+                        </div>
+                    </div>
+                )
+            }
             return (
                 <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10 relative">
                     <iframe
-                        src={url}
+                        src={sources.iframeUrl}
                         className="w-full h-full"
                         allowFullScreen
                         allow="autoplay; encrypted-media"
