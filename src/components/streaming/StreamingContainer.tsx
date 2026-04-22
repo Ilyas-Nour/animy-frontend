@@ -26,77 +26,15 @@ export function StreamingContainer({
     const [mounted, setMounted] = useState(false)
     const [animeData, setAnimeData] = useState<any>(null)
     const [selectedEpisode, setSelectedEpisode] = useState<any>(null)
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false) // Not blocking anymore
     const [error, setError] = useState<string | null>(null)
-    const [isFallback, setIsFallback] = useState(false)
+    const [isFallback, setIsFallback] = useState(true) // Start as fallback for speed
 
     useEffect(() => {
         setMounted(true)
-    }, [])
-
-    useEffect(() => {
-        if (!mounted) return
-        fetchAnimeData()
-    }, [mounted, animeTitle])
-
-    const fetchAnimeData = async () => {
-        try {
-            setLoading(true)
-            setError(null)
-            setIsFallback(false)
-
-            console.log(`Searching for "${animeTitle}" (MAL: ${malId})`)
-
-            // Step 1: Use refined "find" endpoint for better matching
-            let searchPayload;
-            try {
-                const searchRes = await api.get(`/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`)
-                searchPayload = searchRes.data.data || searchRes.data
-            } catch (e) {
-                console.warn('Streaming search failed, trying fallback mode')
-                searchPayload = []
-            }
-
-            const results = Array.isArray(searchPayload) ? searchPayload : (searchPayload.results || [])
-
-            if (results.length === 0) {
-                // Fallback Mode: Generate episode list from metadata
-                generateFallbackData()
-                return
-            }
-
-            const animeId = results[0].id
-            console.log(`Found anime ID: ${animeId}`)
-
-            // Step 2: Get anime info with episodes
-            try {
-                const infoRes = await api.get(`/streaming/anime/${encodeURIComponent(animeId)}`)
-                const animeInfo = infoRes.data.data || infoRes.data
-
-                if (!animeInfo.episodes || animeInfo.episodes.length === 0) {
-                    throw new Error('No episodes found')
-                }
-
-                setAnimeData(animeInfo)
-                setSelectedEpisode(animeInfo.episodes[0])
-            } catch (e) {
-                console.warn('Anime info fetch failed, trying fallback mode')
-                generateFallbackData()
-            }
-
-        } catch (err: any) {
-            console.error('Error loading anime:', err)
-            setError(err.message || 'Failed to load anime data')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const generateFallbackData = () => {
-        console.log(`Generating fallback data for ${totalEpisodes} episodes`)
+        // Initialize immediately with metadata episodes
         const episodes = []
-        const count = totalEpisodes > 0 ? totalEpisodes : 1; // At least one episode
-        
+        const count = totalEpisodes > 0 ? totalEpisodes : 1
         for (let i = 1; i <= count; i++) {
             episodes.push({
                 id: i.toString(),
@@ -104,31 +42,65 @@ export function StreamingContainer({
                 title: `Episode ${i}`
             })
         }
-
-        setAnimeData({
+        const initialData = {
             provider: 'fallback',
             title: animeTitle,
             episodes: episodes
-        })
+        }
+        setAnimeData(initialData)
         setSelectedEpisode(episodes[0])
-        setIsFallback(true)
+        
+        // Then try to enrich in background
+        enrichAnimeData(initialData)
+    }, [totalEpisodes, animeTitle])
+
+    const enrichAnimeData = async (initialData: any) => {
+        try {
+            setLoading(true)
+            console.log(`Enriching data for "${animeTitle}" (MAL: ${malId})`)
+
+            // Try to find the anime on provider for better episode titles/IDs
+            let searchPayload;
+            try {
+                const searchRes = await api.get(`/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`)
+                searchPayload = searchRes.data.data || searchRes.data
+            } catch (e) {
+                searchPayload = []
+            }
+
+            const results = Array.isArray(searchPayload) ? searchPayload : (searchPayload.results || [])
+
+            if (results.length > 0) {
+                const animeId = results[0].id
+                const infoRes = await api.get(`/streaming/anime/${encodeURIComponent(animeId)}`)
+                const animeInfo = infoRes.data.data || infoRes.data
+
+                if (animeInfo.episodes && animeInfo.episodes.length > 0) {
+                    setAnimeData(animeInfo)
+                    setIsFallback(false)
+                    // Update selected episode if it's the first one and we haven't changed it
+                    if (selectedEpisode && selectedEpisode.id === '1') {
+                        setSelectedEpisode(animeInfo.episodes[0])
+                    }
+                }
+            }
+        } catch (err: any) {
+            console.warn('Enrichment failed:', err)
+            // Keep using initialData, it's fine
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const fetchAnimeData = () => {
+        // Manual retry if needed
+        if (animeData) enrichAnimeData(animeData)
     }
 
     if (!mounted) {
         return (
             <div className="w-full py-12 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-            </div>
-        )
-    }
-
-    if (loading) {
-        return (
-            <div className="w-full py-12">
-                <div className="flex flex-col items-center justify-center gap-4">
-                    <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-white/80">Connecting to streaming nodes...</p>
-                </div>
             </div>
         )
     }
