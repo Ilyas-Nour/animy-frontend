@@ -442,6 +442,28 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                             />
                         </section>
 
+                        {/* Streaming */}
+                        <section className="bg-background relative rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
+                            <div className="p-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <h2 className="text-2xl font-black flex items-center gap-3">
+                                    <span className="w-1.5 h-8 bg-primary rounded-full" />
+                                    Streaming
+                                </h2>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-white/5 px-4 py-2 rounded-full">
+                                    <Play className="h-4 w-4" /> Selected: <span className="text-primary font-bold">{anime.title}</span>
+                                </div>
+                            </div>
+                            <div className="p-2 md:p-6 lg:p-8">
+                                <StreamingContainer
+                                    animeTitle={anime.title}
+                                    animeTitleEnglish={anime.title_english}
+                                    animePoster={anime.images?.jpg?.large_image_url}
+                                    malId={anime.idMal || anime.mal_id}
+                                    totalEpisodes={anime.episodes || 0}
+                                />
+                            </div>
+                        </section>
+
                         {/* Relations */}
                         {anime.relations && anime.relations.length > 0 && (
                             <section>
@@ -474,28 +496,6 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                             {(!anime.characters || anime.characters.length === 0) && (
                                 <p className="text-muted-foreground italic">No character information available.</p>
                             )}
-                        </section>
-
-                        {/* Streaming */}
-                        <section className="bg-background relative rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
-                            <div className="p-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <h2 className="text-2xl font-black flex items-center gap-3">
-                                    <span className="w-1.5 h-8 bg-primary rounded-full" />
-                                    Streaming
-                                </h2>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-white/5 px-4 py-2 rounded-full">
-                                    <Play className="h-4 w-4" /> Selected: <span className="text-primary font-bold">{anime.title}</span>
-                                </div>
-                            </div>
-                            <div className="p-2 md:p-6 lg:p-8">
-                                <StreamingContainer
-                                    animeTitle={anime.title}
-                                    animeTitleEnglish={anime.title_english}
-                                    animePoster={anime.images?.jpg?.large_image_url}
-                                    malId={anime.idMal || anime.mal_id}
-                                    totalEpisodes={anime.episodes || 0}
-                                />
-                            </div>
                         </section>
 
                         {/* Trailer */}
