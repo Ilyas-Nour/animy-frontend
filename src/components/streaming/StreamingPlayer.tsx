@@ -33,7 +33,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
         if (activeServer === 'hianime') {
             fetchSources()
         } else {
-            // VidLink is just an iframe, no need to fetch sources from our API
+            console.log(`Setting VidLink source for EP: ${episodeNumber}`)
             setSources({
                 iframeUrl: `https://vidlink.pro/anime/${malId}/${episodeNumber}?primaryColor=6366f1`,
                 provider: 'vidlink'
@@ -41,7 +41,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             setLoading(false)
             setError(null)
         }
-    }, [episodeId, activeServer])
+    }, [episodeId, activeServer, malId, episodeNumber])
 
     const fetchSources = async () => {
         try {
@@ -57,8 +57,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             const res = await fetch(`/api/streaming/watch/${encodeURIComponent(episodeId)}${queryParams}`)
 
             if (!res.ok) {
-                // If HiAnime fetch fails, automatically switch to VidLink
-                console.warn('HiAnime sources failed, falling back to VidLink')
+                console.warn('HiAnime sources failed, switching to VidLink')
                 setActiveServer('vidlink')
                 return
             }
@@ -67,7 +66,6 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             const sourcesData = data.data?.sources ? data.data : data
 
             if (sourcesData.provider === 'fallback' || !sourcesData.sources || sourcesData.sources.length === 0) {
-                // Backend already returned a fallback or empty sources
                 if (sourcesData.iframeUrl) {
                     setSources(sourcesData)
                     setLoading(false)
@@ -78,10 +76,9 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             }
 
             setSources(sourcesData)
-
+            setError(null)
         } catch (err: any) {
             console.error('Error fetching sources:', err)
-            // On error, try to switch to VidLink instead of showing error screen
             setActiveServer('vidlink')
         } finally {
             setLoading(false)
@@ -109,11 +106,13 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             sources.sources[0]
 
         if (!videoSource) {
+            console.warn('No video source found, switching to VidLink')
             setActiveServer('vidlink')
             return
         }
 
         let videoUrl = videoSource.url
+        setError(null)
 
         if (Hls.isSupported() && (videoUrl.includes('.m3u8') || videoSource.isM3U8)) {
             if (hlsRef.current) {
@@ -157,6 +156,21 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     }
 
     const renderPlayer = () => {
+        // PRIORITIZE VidLink: If activeServer is vidlink, we should almost never show an error
+        if (activeServer === 'vidlink') {
+            const url = sources?.iframeUrl || `https://vidlink.pro/anime/${malId}/${episodeNumber}?primaryColor=6366f1`
+            return (
+                <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10 relative">
+                    <iframe
+                        src={url}
+                        className="w-full h-full"
+                        allowFullScreen
+                        allow="autoplay; encrypted-media"
+                    />
+                </div>
+            )
+        }
+
         if (loading) {
             return (
                 <div className="aspect-video bg-black/50 rounded-xl flex items-center justify-center">
@@ -174,20 +188,24 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
                     <div className="flex flex-col items-center gap-4 text-center px-4">
                         <AlertCircle className="w-12 h-12 text-red-500" />
                         <p className="text-white/80">{error}</p>
-                        <Button onClick={fetchSources} variant="outline" className="gap-2">
-                            <RefreshCw className="w-4 h-4" /> Retry
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button onClick={fetchSources} variant="outline" className="gap-2">
+                                <RefreshCw className="w-4 h-4" /> Retry
+                            </Button>
+                            <Button onClick={() => setActiveServer('vidlink')} variant="secondary">
+                                Switch to VidLink
+                            </Button>
+                        </div>
                     </div>
                 </div>
             )
         }
 
-        if (sources?.iframeUrl || activeServer === 'vidlink') {
-            const url = sources?.iframeUrl || `https://vidlink.pro/anime/${malId}/${episodeNumber}?primaryColor=6366f1`
+        if (sources?.iframeUrl) {
             return (
                 <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10 relative">
                     <iframe
-                        src={url}
+                        src={sources.iframeUrl}
                         className="w-full h-full"
                         allowFullScreen
                         allow="autoplay; encrypted-media"
