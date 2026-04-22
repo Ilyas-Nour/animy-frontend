@@ -23,17 +23,18 @@ import { cn } from '@/lib/utils'
 interface MangaDetailsClientProps {
     manga: Manga
     characters: any[]
+    initialChapters?: any[]
 }
 
-export default function MangaDetailsClient({ manga, characters }: MangaDetailsClientProps) {
+export default function MangaDetailsClient({ manga, characters, initialChapters = [] }: MangaDetailsClientProps) {
     const { isAuthenticated, user, updateUser } = useAuth()
     const [isInMangaList, setIsInMangaList] = useState(false)
     const [mangaListStatus, setMangaListStatus] = useState('PLAN_TO_READ')
     const [isFavorited, setIsFavorited] = useState(false)
     const [actionLoading, setActionLoading] = useState(false)
     const [scrolled, setScrolled] = useState(false)
-    const [chapters, setChapters] = useState<any[]>([])
-    const [chaptersLoading, setChaptersLoading] = useState(true)
+    const [chapters, setChapters] = useState<any[]>(initialChapters)
+    const [chaptersLoading, setChaptersLoading] = useState(initialChapters.length === 0)
     const [isMounted, setIsMounted] = useState(false)
 
     useEffect(() => {
@@ -57,9 +58,7 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
     useEffect(() => {
         const fetchChapters = async () => {
             try {
-                // Add timestamp to bypass cache
-                const timestamp = new Date().getTime()
-                const res = await api.get(`/manga/${manga.mal_id}/read-chapters?t=${timestamp}`)
+                const res = await api.get(`/manga/${manga.mal_id}/read-chapters`)
                 const chaptersData = res.data?.data?.chapters || res.data?.chapters
                 if (chaptersData) {
                     setChapters(chaptersData)

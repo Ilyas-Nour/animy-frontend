@@ -38,15 +38,32 @@ async function getCharacters(id: string) {
     }
 }
 
+async function getChapters(id: string) {
+    try {
+        const res = await fetch(`${JIKAN_API}/manga/${id}/read-chapters`, {
+            next: { revalidate: 3600 }
+        })
+        if (!res.ok) return []
+        const json = await res.json()
+        const chaptersData = json.data?.chapters || json.chapters
+        return Array.isArray(chaptersData) ? chaptersData : []
+    } catch (error) {
+        return []
+    }
+}
+
 export default async function MangaDetailPage({ params }: { params: { id: string } }) {
-    const manga = await getManga(params.id)
-    const characters = await getCharacters(params.id)
+    const [manga, characters, chapters] = await Promise.all([
+        getManga(params.id),
+        getCharacters(params.id),
+        getChapters(params.id)
+    ])
 
     if (!manga) {
         notFound()
     }
 
     return (
-        <MangaDetailsClient manga={manga} characters={characters} />
+        <MangaDetailsClient manga={manga} characters={characters} initialChapters={chapters} />
     )
 }
