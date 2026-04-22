@@ -279,7 +279,10 @@ function MangaReaderContent() {
                     </div>
                 ) : (
                     // Horizontal Single Page Mode
-                    <div className="relative w-full h-full flex items-center justify-center bg-black">
+                    <div className={cn(
+                        "relative w-full h-full flex items-center justify-center bg-black transition-all duration-300",
+                        showNav ? "pt-16 pb-20" : "p-2"
+                    )}>
                         <img
                             src={pages[currentPage]?.img || pages[currentPage]?.url || pages[currentPage]}
                             alt={`Page ${currentPage + 1}`}
