@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
             headers: {
                 'Accept': 'application/json',
             },
-            next: { revalidate: 3600 } // Cache for 1 hour
+            next: { revalidate: 0 } // Bypass cache to reflect fixes
         })
 
         if (!response.ok) {
