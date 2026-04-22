@@ -14,13 +14,15 @@ function MangaReaderContent() {
     const router = useRouter()
     const chapterId = params.chapterId as string
     const mangaId = searchParams.get('mangaId')
-
+    const mangaType = searchParams.get('type')
     const [pages, setPages] = useState<any[]>([])
     const [chapters, setChapters] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [fetchingChapters, setFetchingChapters] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [showNav, setShowNav] = useState(true)
+    
+    // Initialize reading mode from localStorage or based on manga type
     const [readingMode, setReadingMode] = useState<'vertical' | 'horizontal'>('vertical')
     const [currentPage, setCurrentPage] = useState(0)
     const [selectedChapter, setSelectedChapter] = useState<string>(chapterId)
@@ -28,7 +30,25 @@ function MangaReaderContent() {
 
     useEffect(() => {
         setIsMounted(true)
-    }, [])
+        
+        // Set initial mode from localStorage or type
+        const savedMode = localStorage.getItem('manga_reading_mode')
+        if (savedMode === 'vertical' || savedMode === 'horizontal') {
+            setReadingMode(savedMode as 'vertical' | 'horizontal')
+        } else if (mangaType) {
+            const lowerType = mangaType.toLowerCase()
+            if (lowerType === 'manhwa' || lowerType === 'manhua' || lowerType === 'webtoon') {
+                setReadingMode('vertical')
+            }
+        }
+    }, [mangaType])
+
+    // Save mode preference when it changes
+    useEffect(() => {
+        if (isMounted) {
+            localStorage.setItem('manga_reading_mode', readingMode)
+        }
+    }, [readingMode, isMounted])
 
     // Reset current page when chapter changes
     useEffect(() => {

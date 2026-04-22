@@ -255,7 +255,7 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                                 
                                 {chapters.length > 0 && (
                                     <Link 
-                                        href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}`}
+                                        href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}&type=${manga.type}`}
                                         className="block"
                                     >
                                         <Button className="w-full gap-2 font-black bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20">
@@ -423,7 +423,7 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                                     transition={{ delay: 0.3 }}
                                     className="flex justify-center md:justify-start"
                                 >
-                                    <Link href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}`}>
+                                    <Link href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}&type=${manga.type}`}>
                                         <Button className="h-14 px-10 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-orange-500/40 group transition-all hover:scale-105 active:scale-95">
                                             <BookOpen className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform" />
                                             Read Now
@@ -486,7 +486,7 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                                             {chapters.map((chapter) => (
                                                 <Link 
                                                     key={chapter.id} 
-                                                    href={`/manga/read/${chapter.id}?mangaId=${manga.mal_id}`}
+                                                    href={`/manga/read/${chapter.id}?mangaId=${manga.mal_id}&type=${manga.type}`}
                                                     className="flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors group"
                                                 >
                                                     <div>
@@ -541,7 +541,7 @@ export default function MangaDetailsClient({ manga, characters }: MangaDetailsCl
                 >
                     <div className="bg-background/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-2xl flex flex-col gap-3">
                         {chapters.length > 0 && (
-                            <Link href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}`} className="w-full">
+                            <Link href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}&type=${manga.type}`} className="w-full">
                                 <Button className="w-full h-14 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest shadow-lg shadow-orange-500/20">
                                     <BookOpen className="h-6 w-6 mr-2" /> Start Reading
                                 </Button>
