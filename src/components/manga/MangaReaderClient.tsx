@@ -144,7 +144,10 @@ function MangaReaderContent() {
     if (!isMounted) return null
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 fixed inset-0 z-[100] overflow-y-auto">
+        <div className={cn(
+            "min-h-screen bg-[#050505] text-white selection:bg-primary/30 fixed inset-0 z-[100]",
+            readingMode === 'vertical' ? "overflow-y-auto" : "overflow-hidden"
+        )}>
             {/* Top Navigation */}
             <AnimatePresence>
                 {showNav && (
@@ -280,7 +283,7 @@ function MangaReaderContent() {
                         <img
                             src={pages[currentPage]?.img || pages[currentPage]?.url || pages[currentPage]}
                             alt={`Page ${currentPage + 1}`}
-                            className="max-w-full max-h-screen object-contain animate-in fade-in duration-300"
+                            className="max-w-full max-h-[100dvh] md:max-h-[98dvh] object-contain animate-in fade-in duration-300 p-2 md:p-4"
                             key={currentPage} 
                             referrerPolicy="no-referrer"
                         />
