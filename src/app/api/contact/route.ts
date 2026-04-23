@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import axios from 'axios';
+
 
 // Initialize Resend only if API key exists (prevents build errors)
 const resend = process.env.RESEND_API_KEY
@@ -23,7 +23,11 @@ export async function POST(req: Request) {
         // Sync with Backend
         try {
             const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1') + '/contact';
-            await axios.post(apiUrl, body);
+            await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
         } catch (err: any) {
             console.error('Backend Sync Error:', err.message);
             // Continue even if backend sync fails - email is priority
