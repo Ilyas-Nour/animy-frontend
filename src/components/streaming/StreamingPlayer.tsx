@@ -184,6 +184,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
                         className="w-full h-full"
                         allowFullScreen
                         allow="autoplay; encrypted-media"
+                        referrerPolicy="no-referrer"
                     />
                 </div>
             )
@@ -227,6 +228,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
                         className="w-full h-full"
                         allowFullScreen
                         allow="autoplay; encrypted-media"
+                        referrerPolicy="no-referrer"
                     />
                 </div>
             )
