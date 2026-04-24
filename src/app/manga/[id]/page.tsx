@@ -1,11 +1,11 @@
 import { Manga } from '@/types/manga'
 import { notFound } from 'next/navigation'
-import dynamic from 'next/dynamic'
+import MangaDetailsClient from '@/components/manga/MangaDetailsClient'
 
-const MangaDetailsClient = dynamic(
-    () => import('@/components/manga/MangaDetailsClient'),
-    { ssr: false }
-)
+
+
+
+
 
 export const revalidate = 3600 // ISR: 1 hour
 
@@ -52,10 +52,11 @@ async function getChapters(id: string) {
     }
 }
 
-export default async function MangaDetailPage({ params }: { params: { id: string } }) {
+export default async function MangaDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const [manga, characters] = await Promise.all([
-        getManga(params.id),
-        getCharacters(params.id)
+        getManga(id),
+        getCharacters(id)
     ])
 
     if (!manga) {

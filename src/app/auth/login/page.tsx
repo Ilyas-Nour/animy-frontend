@@ -8,7 +8,7 @@ import { Mail, Lock, ArrowRight, Sparkles, Eye, EyeOff, Rocket } from 'lucide-re
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import axios from 'axios'
+import api from '@/lib/api'
 import { authService } from '@/lib/auth'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -88,7 +88,7 @@ export default function LoginPage() {
     if (!emailForVerification) return
     try {
       setIsLoading(true)
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/resend-verification`, { email: emailForVerification })
+      await api.post('/auth/resend-verification', { email: emailForVerification })
       setError(null) // Clear error
       setNeedsVerification(false) // Close modal
       // Optionally show success toast or message. using alert for now as rudimentary feedback or just close it.

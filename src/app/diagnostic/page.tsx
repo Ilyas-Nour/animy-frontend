@@ -21,15 +21,15 @@ export default function DiagnosticPage() {
                 tests.backendError = e.message
             }
 
-            // Test 2: Can axios reach it?
+            // Test 2: Can api wrapper reach it?
             try {
                 const res = await api.get('/anime/top?limit=1')
-                tests.axiosWorks = true
-                tests.axiosData = res.data
+                tests.apiWorks = true
+                tests.apiData = res.data
             } catch (e: any) {
-                tests.axiosWorks = false
-                tests.axiosError = e.message
-                tests.axiosResponse = e.response?.data
+                tests.apiWorks = false
+                tests.apiError = e.message
+                tests.apiResponse = e.response?.data
             }
 
             // Test 3: Can we get anime details?

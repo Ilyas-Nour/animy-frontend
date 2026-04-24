@@ -43,8 +43,9 @@ async function getCharacters(id: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const data = await getAnime(params.id)
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const data = await getAnime(id)
   if (!data || !data.data) {
     return {
       title: 'Anime Not Found | Animy',
@@ -61,14 +62,15 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
-export default async function AnimeDetailPage({ params }: { params: { id: string } }) {
-  const animeData = await getAnime(params.id)
+export default async function AnimeDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const animeData = await getAnime(id)
 
   if (!animeData || !animeData.data) {
     notFound()
   }
 
-  const charactersData = await getCharacters(params.id)
+  const charactersData = await getCharacters(id)
 
   const anime = {
     ...animeData.data,

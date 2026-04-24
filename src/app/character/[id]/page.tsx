@@ -26,8 +26,9 @@ async function getCharacter(id: string) {
     }
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-    const character = await getCharacter(params.id)
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const character = await getCharacter(id)
 
     if (!character) {
         return {
@@ -53,8 +54,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     }
 }
 
-export default async function CharacterDetailPage({ params }: { params: { id: string } }) {
-    const character = await getCharacter(params.id)
+export default async function CharacterDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const character = await getCharacter(id)
 
     if (!character) {
         notFound()

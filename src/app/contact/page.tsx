@@ -6,7 +6,7 @@ import { Mail, MessageSquare, Send, CheckCircle, Loader2, MapPin, Phone, Github,
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import axios from 'axios'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -41,12 +41,20 @@ export default function ContactPage() {
       setIsSubmitting(true)
       setError(null)
       // Call the Next.js API route (not the NestJS backend)
-      await axios.post('/api/contact', data)
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.message || 'Failed to send message')
+      }
       setIsSuccess(true)
       reset()
       setTimeout(() => setIsSuccess(false), 5000)
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to send message')
+      setError(err.message || 'Failed to send message')
     } finally {
       setIsSubmitting(false)
     }
