@@ -1,10 +1,10 @@
 export function getErrorMessage(error: unknown): string {
     console.log('[getErrorMessage] Input:', error);
     if (error instanceof Error) {
-        const axiosError = error as any;
-        // Axios Error
-        if (axiosError.response?.data?.message) {
-            let msg = axiosError.response.data.message;
+        const apiError = error as any;
+        // API Error
+        if (apiError.response?.data?.message) {
+            let msg = apiError.response.data.message;
             console.log('[getErrorMessage] Found response.data.message:', msg);
 
             // Recursive unwrap: sometimes NestJS wraps the error inside the message property
@@ -18,11 +18,11 @@ export function getErrorMessage(error: unknown): string {
         }
 
         // Check if data itself is the error object
-        if (axiosError.response?.data && typeof axiosError.response.data === 'object') {
-            const data = axiosError.response.data;
+        if (apiError.response?.data && typeof apiError.response.data === 'object') {
+            const data = apiError.response.data;
             if (data.message && typeof data.message === 'string') return data.message;
             // Generic fallback
-            return axiosError.message;
+            return apiError.message;
         }
 
         // Regular Error

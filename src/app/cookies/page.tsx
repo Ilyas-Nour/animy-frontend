@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ChevronLeft, Cookie, Check } from 'lucide-react'
-import { Switch } from '@/components/ui/switch'
 
 export default function CookiesPage() {
     const [preferences, setPreferences] = useState({
