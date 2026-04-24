@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
 
-
-// Initialize Resend only if API key exists (prevents build errors)
-const resend = process.env.RESEND_API_KEY
-    ? new Resend(process.env.RESEND_API_KEY)
-    : null;
+export const runtime = 'edge';
 
 export async function POST(req: Request) {
     try {
@@ -34,16 +29,22 @@ export async function POST(req: Request) {
         }
 
         // Check if Resend is configured
-        if (!resend) {
+        if (!process.env.RESEND_API_KEY) {
             console.warn('Resend API key not configured');
             return NextResponse.json({ message: 'Message received but email service not configured' });
         }
 
-        const data = await resend.emails.send({
-            from: 'Contact Form <onboarding@resend.dev>',
-            to: 'eliasnourelislam@gmail.com',
-            subject: `New Contact Form Submission: ${subject || 'No Subject'}`,
-            html: `
+        const resendResponse = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                from: 'Contact Form <onboarding@resend.dev>',
+                to: 'eliasnourelislam@gmail.com',
+                subject: `New Contact Form Submission: ${subject || 'No Subject'}`,
+                html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>New Message from ${name}</h2>
           <p><strong>Email:</strong> ${email}</p>
@@ -52,11 +53,14 @@ export async function POST(req: Request) {
           <p style="white-space: pre-wrap;">${message}</p>
         </div>
       `,
-            replyTo: email,
+                reply_to: email,
+            })
         });
 
-        if (data.error) {
-            return NextResponse.json({ message: data.error.message }, { status: 400 });
+        const data = await resendResponse.json();
+
+        if (!resendResponse.ok) {
+            return NextResponse.json({ message: data.message || 'Error sending email' }, { status: 400 });
         }
 
         return NextResponse.json({ message: 'Email sent successfully', data });

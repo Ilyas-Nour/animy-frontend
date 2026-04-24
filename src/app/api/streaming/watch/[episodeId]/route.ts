@@ -5,9 +5,9 @@ const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/ap
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { episodeId: string } }
+    { params }: { params: Promise<{ episodeId: string }> }
 ) {
-    const { episodeId } = params
+    const { episodeId } = await params
     const provider = request.nextUrl.searchParams.get('provider')
     const malId = request.nextUrl.searchParams.get('malId')
     const ep = request.nextUrl.searchParams.get('ep')

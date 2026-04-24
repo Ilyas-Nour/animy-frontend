@@ -4,13 +4,13 @@ const JIKAN_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { year: string; season: string } }
+    { params }: { params: Promise<{ year: string; season: string }> }
 ) {
     const { searchParams } = new URL(request.url)
     const page = searchParams.get('page') || '1'
     const limit = searchParams.get('limit') || '24'
 
-    const { year, season } = params
+    const { year, season } = await params
 
     try {
         const url = `${JIKAN_API}/seasons/${year}/${season}?page=${page}&limit=${limit}`
