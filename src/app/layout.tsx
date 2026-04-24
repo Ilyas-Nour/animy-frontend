@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import ClientLayoutWrapper from './ClientLayoutWrapper'
 
-export const runtime = 'edge';
+
 
 // const inter = Inter({ subsets: ['latin'] })
 
