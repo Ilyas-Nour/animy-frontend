@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { Manga } from '@/types/manga'
 import { notFound } from 'next/navigation'
 import MangaDetailsClient from '@/components/manga/MangaDetailsClient'

@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import type { Metadata } from 'next'
 import { AnimeDetailsClient } from '@/components/anime/AnimeDetailsClient'
 import { notFound } from 'next/navigation'
