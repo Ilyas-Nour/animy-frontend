@@ -1,5 +1,6 @@
-export const runtime = 'edge';
 'use client'
+
+export const runtime = 'edge';
 
 import MangaReaderClient from '@/components/manga/MangaReaderClient'
 
