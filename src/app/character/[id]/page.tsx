@@ -1,17 +1,14 @@
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 import type { Metadata } from 'next'
 import { CharacterDetailsClient } from '@/components/characters/CharacterDetailsClient'
 import { notFound } from 'next/navigation'
 
-export const revalidate = 86400 // ISR: Revalidate every 24 hours (character data changes less often)
-
 async function getCharacter(id: string) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
     try {
-        const res = await fetch(`${apiUrl}/characters/${id}`, {
-            next: { revalidate: 86400 }
-        })
+        const res = await fetch(`${apiUrl}/characters/${id}`)
 
         if (!res.ok) {
             if (res.status === 404) return null
@@ -19,7 +16,6 @@ async function getCharacter(id: string) {
         }
 
         const json = await res.json()
-        // Backend returns { data: ... } structure now
         return json.data || json
     } catch (error) {
         console.error('Fetch error:', error)
