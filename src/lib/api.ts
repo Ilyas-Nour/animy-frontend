@@ -46,8 +46,9 @@ async function fetchWithInterceptor(url: string, options: RequestOptions = {}) {
 
   const response = await fetch(finalUrl, config);
 
-  if (!response.ok) {
-    if (response.status === 401) {
+    if (!response.ok) {
+      console.error(`[API ERROR] ${response.status} - ${finalUrl}`);
+      if (response.status === 401) {
       console.warn('[API] Unauthorized (401):', `${API_URL}${url}`);
     }
     
