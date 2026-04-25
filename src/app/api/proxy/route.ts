@@ -2,42 +2,88 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const targetUrl = searchParams.get('url');
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1';
 
-  if (!targetUrl) {
-    return NextResponse.json({ error: 'Missing target URL' }, { status: 400 });
+export async function GET(request: NextRequest) {
+  return handleRequest(request);
+}
+
+export async function POST(request: NextRequest) {
+  return handleRequest(request);
+}
+
+export async function PUT(request: NextRequest) {
+  return handleRequest(request);
+}
+
+export async function PATCH(request: NextRequest) {
+  return handleRequest(request);
+}
+
+export async function DELETE(request: NextRequest) {
+  return handleRequest(request);
+}
+
+async function handleRequest(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const targetPath = searchParams.get('url');
+
+  if (!targetPath) {
+    return NextResponse.json({ error: 'Missing target URL parameter' }, { status: 400 });
   }
 
+  // Remove the url param from searchParams to forward the rest
+  const forwardedParams = new URLSearchParams(searchParams);
+  forwardedParams.delete('url');
+
+  const queryString = forwardedParams.toString();
+  const finalUrl = `${BACKEND_URL}${targetPath}${queryString ? `?${queryString}` : ''}`;
+
+  console.log(`[PROXY] ${request.method} ${finalUrl}`);
+
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1';
-    // Append the target path to the backend URL
-    const finalUrl = `${backendUrl}${targetUrl}`;
-
-    console.log(`[PROXY] Fetching: ${finalUrl}`);
-
-    const response = await fetch(finalUrl, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      },
-      next: { revalidate: 3600 }
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[PROXY ERROR] ${response.status}: ${errorText}`);
-      return NextResponse.json(
-        { error: 'Backend response failed', status: response.status },
-        { status: response.status }
-      );
+    const headers = new Headers(request.headers);
+    // Remove host and other potentially problematic headers
+    headers.delete('host');
+    headers.delete('connection');
+    headers.delete('origin');
+    headers.delete('referer');
+    
+    // Ensure we have a clean content-type if not present
+    if (!headers.has('content-type') && request.method !== 'GET' && request.method !== 'DELETE') {
+      headers.set('content-type', 'application/json');
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const fetchOptions: RequestInit = {
+      method: request.method,
+      headers: headers,
+    };
+
+    // Forward body for non-GET/HEAD requests
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      const body = await request.arrayBuffer();
+      if (body.byteLength > 0) {
+        fetchOptions.body = body;
+      }
+    }
+
+    const response = await fetch(finalUrl, fetchOptions);
+    
+    // Get response body as array buffer to handle various content types (json, binary, etc.)
+    const responseBody = await response.arrayBuffer();
+
+    const responseHeaders = new Headers(response.headers);
+    // Remove headers that might cause issues when forwarded
+    responseHeaders.delete('content-encoding');
+    responseHeaders.delete('transfer-encoding');
+
+    return new NextResponse(responseBody, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: responseHeaders,
+    });
   } catch (error: any) {
-    console.error(`[PROXY CRASH] ${error.message}`);
+    console.error(`[PROXY CRASH] ${request.method} ${finalUrl}:`, error);
     return NextResponse.json(
       { error: 'Proxy failed to connect to backend', details: error.message },
       { status: 500 }

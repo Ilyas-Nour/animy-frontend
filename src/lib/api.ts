@@ -30,27 +30,46 @@ async function fetchWithInterceptor(url: string, options: RequestOptions = {}) {
     config.body = options.data;
   }
 
-  let finalUrl = `${API_URL}${url}`;
-  if (options.params) {
-    const searchParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(options.params)) {
-      if (value !== undefined && value !== null) {
-        searchParams.append(key, String(value));
+  // CORS Bypassing Strategy:
+  // If we are in the browser, route through our local API proxy to avoid CORS blocks from Hugging Face.
+  // If we are on the server (SSR/Edge), we can talk to the backend directly.
+  const isBrowser = typeof window !== 'undefined';
+  let finalUrl = '';
+  
+  if (isBrowser) {
+    // Route through local proxy: /api/proxy?url=/endpoint&param=val
+    const proxyUrl = new URL('/api/proxy', window.location.origin);
+    proxyUrl.searchParams.set('url', url);
+    
+    if (options.params) {
+      for (const [key, value] of Object.entries(options.params)) {
+        if (value !== undefined && value !== null) {
+          proxyUrl.searchParams.append(key, String(value));
+        }
       }
     }
-    const queryString = searchParams.toString();
-    if (queryString) {
-      finalUrl += (finalUrl.includes('?') ? '&' : '?') + queryString;
+    finalUrl = proxyUrl.toString();
+  } else {
+    // Direct backend call for server-side requests
+    finalUrl = `${API_URL}${url}`;
+    if (options.params) {
+      const searchParams = new URLSearchParams();
+      for (const [key, value] of Object.entries(options.params)) {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      }
+      const queryString = searchParams.toString();
+      if (queryString) {
+        finalUrl += (finalUrl.includes('?') ? '&' : '?') + queryString;
+      }
     }
   }
 
   const response = await fetch(finalUrl, config);
 
-    if (!response.ok) {
-      console.error(`[API ERROR] ${response.status} - ${finalUrl}`);
-      if (response.status === 401) {
-      console.warn('[API] Unauthorized (401):', `${API_URL}${url}`);
-    }
+  if (!response.ok) {
+    console.error(`[API ERROR] ${response.status} - ${finalUrl}`);
     
     let errorData;
     try {
@@ -59,17 +78,15 @@ async function fetchWithInterceptor(url: string, options: RequestOptions = {}) {
       errorData = { message: response.statusText };
     }
     
-    // Mimic axios error structure
     const error: any = new Error(errorData.message || response.statusText);
     error.response = {
       status: response.status,
       data: errorData,
-      config: { url: `${API_URL}${url}` }
+      config: { url: finalUrl }
     };
     throw error;
   }
 
-  // Handle 204 No Content
   if (response.status === 204) {
     return { data: null, status: response.status };
   }
