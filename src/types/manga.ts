@@ -40,6 +40,8 @@ export interface Manga {
     explicit_genres: Genre[];
     themes: Genre[];
     demographics: Genre[];
+    relations?: any[];
+    recommendations?: any[];
 }
 
 export interface Author {
