@@ -10,7 +10,7 @@ import MangaDetailsClient from '@/components/manga/MangaDetailsClient'
 
 export const revalidate = 3600 // ISR: 1 hour
 
-const JIKAN_API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
+const JIKAN_API = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
 async function getManga(id: string) {
     try {

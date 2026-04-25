@@ -86,7 +86,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         const wsUrl = process.env.NEXT_PUBLIC_API_URL
             ? process.env.NEXT_PUBLIC_API_URL.replace('/api/v1', '')
-            : 'http://localhost:3001';
+            : 'https://ilyvs-animy-backend.hf.space';
 
         const newSocket = io(wsUrl, {
             path: '/socket.io',

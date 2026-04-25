@@ -61,7 +61,7 @@ export const getAvatarUrl = (url?: string | null) => {
   if (url.startsWith('http') || url.startsWith('data:')) return url
 
   const cleanUrl = url.replace(/\\/g, '/')
-  let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+  let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space'
 
   // Strip /api/v1 suffix for static assets as they are served from root
   if (apiUrl.endsWith('/api/v1')) {

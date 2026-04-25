@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation'
 export const revalidate = 86400 // ISR: Revalidate every 24 hours (character data changes less often)
 
 async function getCharacter(id: string) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
     try {
         const res = await fetch(`${apiUrl}/characters/${id}`, {
             next: { revalidate: 86400 }

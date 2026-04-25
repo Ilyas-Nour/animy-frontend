@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'Animy Team' }],
   creator: 'Animy',
   publisher: 'Animy',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://animy-frontend.pages.dev'),
   alternates: {
     canonical: '/',
   },

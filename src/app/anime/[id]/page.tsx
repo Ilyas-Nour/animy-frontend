@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation'
 export const revalidate = 3600 // ISR: Revalidate every 1 hour
 
 // Use backend API URL (default to localhost:3001/api/v1 if not set)
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
 async function getAnime(id: string) {
   try {
