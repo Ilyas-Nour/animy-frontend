@@ -1,5 +1,5 @@
 name = "animy-frontend"
-compatibility_date = "2024-04-23"
+compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
@@ -7,3 +7,4 @@ pages_build_output_dir = ".vercel/output/static"
 NEXT_PUBLIC_APP_URL = "https://animy-frontend.pages.dev"
 NEXT_PUBLIC_SITE_URL = "https://animy-frontend.pages.dev"
 NEXT_PUBLIC_API_URL = "https://ilyvs-animy-backend.hf.space/api/v1"
+RESEND_API_KEY = "re_igxgUqsZ_NYBXfPEWhAp6fYMA12BEbK6s"
