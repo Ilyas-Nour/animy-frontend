@@ -62,25 +62,14 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
+    // Chapters are already fetched on the server and passed via initialChapters.
+    // We only need to update the loading state if we have them.
     useEffect(() => {
-        const fetchChapters = async () => {
-            try {
-                const res = await api.get(`/manga/${manga.mal_id}/read-chapters`)
-                const chaptersData = res.data?.data?.chapters || res.data?.chapters
-                if (chaptersData) {
-                    setChapters(chaptersData)
-                }
-            } catch (error) {
-                console.error('Failed to fetch chapters:', error)
-            } finally {
-                setChaptersLoading(false)
-            }
+        if (initialChapters && initialChapters.length > 0) {
+            setChapters(initialChapters)
+            setChaptersLoading(false)
         }
-        
-        if (isMounted) {
-            fetchChapters()
-        }
-    }, [manga.mal_id, isMounted])
+    }, [initialChapters])
 
     const checkStatus = async () => {
         try {

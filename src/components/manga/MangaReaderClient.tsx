@@ -147,9 +147,16 @@ function MangaReaderContent() {
             try {
                 setLoading(true)
                 const timestamp = new Date().getTime()
-                const res = await api.get(`/manga/read/${chapterId}?t=${timestamp}`)
-                const pagesData = res.data?.data?.pages || res.data?.pages
-                const rawData = Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : [])
+                // Use our internal proxy to bypass CORS and improve reliability
+                const res = await fetch(`/api/proxy?url=/manga/read/${chapterId}&t=${timestamp}`)
+                
+                if (!res.ok) {
+                    throw new Error(`Server returned ${res.status}`)
+                }
+                
+                const json = await res.json()
+                const pagesData = json.data?.pages || json.pages
+                const rawData = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : [])
                 
                 if (pagesData && pagesData.length > 0) {
                     setPages(pagesData)
@@ -160,7 +167,7 @@ function MangaReaderContent() {
                 }
             } catch (err) {
                 console.error(err)
-                setError('Failed to load chapter pages. The provider might be unavailable.')
+                setError('Failed to load chapter pages. The provider might be unavailable or the backend is crashing.')
             } finally {
                 setLoading(false)
             }
@@ -171,8 +178,12 @@ function MangaReaderContent() {
             try {
                 setFetchingChapters(true)
                 const timestamp = new Date().getTime()
-                const res = await api.get(`/manga/${mangaId}/read-chapters?t=${timestamp}`)
-                const chaptersData = res.data?.data?.chapters || res.data?.chapters
+                const res = await fetch(`/api/proxy?url=/manga/${mangaId}/read-chapters&t=${timestamp}`)
+                
+                if (!res.ok) return
+
+                const json = await res.json()
+                const chaptersData = json.data?.chapters || json.chapters
                 if (chaptersData) {
                     setChapters(chaptersData)
                 }
