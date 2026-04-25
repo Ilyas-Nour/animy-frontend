@@ -21,62 +21,6 @@ async function getAnimeFull(id: string) {
   }
 }
 
-// Data Transformation Mappers
-const mapCharacters = (characters: any[] = []) => {
-  return characters.map(char => ({
-    role: char.role,
-    node: {
-      id: char.character.mal_id,
-      name: { full: char.character.name },
-      image: { large: char.character.images?.jpg?.image_url }
-    },
-    voiceActors: (char.voice_actors || []).map((va: any) => ({
-      id: va.person.mal_id,
-      name: { full: va.person.name },
-      image: { large: va.person.images?.jpg?.image_url }
-    }))
-  }))
-}
-
-const mapStaff = (staff: any[] = []) => {
-  return staff.map(s => ({
-    role: s.positions?.join(', ') || 'Staff',
-    node: {
-      id: s.person.mal_id,
-      name: { full: s.person.name },
-      image: { large: s.person.images?.jpg?.image_url }
-    }
-  }))
-}
-
-const mapRelations = (relations: any[] = []) => {
-  const result: any[] = []
-  relations.forEach(rel => {
-    (rel.entry || []).forEach((entry: any) => {
-      result.push({
-        relationType: rel.relation,
-        node: {
-          id: entry.mal_id,
-          idMal: entry.mal_id,
-          type: entry.type,
-          title: { romaji: entry.name, english: entry.name },
-          coverImage: { large: `https://cdn.myanimelist.net/images/anime/${entry.mal_id % 100}/${entry.mal_id}.jpg` } // Jikan doesn't provide relation images in /full, we attempt a fallback or accept placeholders
-        }
-      })
-    })
-  })
-  return result
-}
-
-const mapRecommendations = (recs: any[] = []) => {
-  return recs.map(rec => ({
-    mediaRecommendation: {
-      id: rec.entry.mal_id,
-      title: { romaji: rec.entry.title, english: rec.entry.title },
-      coverImage: { large: rec.entry.images?.jpg?.large_image_url || rec.entry.images?.jpg?.image_url }
-    }
-  }))
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -94,19 +38,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function AnimeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const rawAnime = await getAnimeFull(id)
+  const anime = await getAnimeFull(id)
 
-  if (!rawAnime) {
+  if (!anime) {
     notFound()
-  }
-
-  // Transform Jikan data into the AniList-like structure the UI expects
-  const anime = {
-    ...rawAnime,
-    characters: mapCharacters(rawAnime.characters),
-    staff: mapStaff(rawAnime.staff),
-    relations: mapRelations(rawAnime.relations),
-    recommendations: mapRecommendations(rawAnime.recommendations)
   }
 
   return (
