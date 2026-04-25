@@ -6,12 +6,12 @@ import MangaDetailsClient from '@/components/manga/MangaDetailsClient'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
-async function getManga(id: string) {
+async function getMangaFull(id: string) {
     try {
         const res = await fetch(`${API_URL}/manga/${id}/full`)
         if (!res.ok) return null
         const json = await res.json()
-        return json.data as Manga
+        return json.data
     } catch (error) {
         return null
     }
@@ -33,7 +33,6 @@ async function getChapters(id: string) {
         const res = await fetch(`${API_URL}/manga/${id}/read-chapters`)
         if (!res.ok) return []
         const json = await res.json()
-        // API returns data: { chapters: [...] }
         const chaptersData = json.data?.chapters || json.chapters || []
         return Array.isArray(chaptersData) ? chaptersData : []
     } catch (error) {
@@ -46,14 +45,22 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
     const { id } = await params;
     
     // Fetch all data in parallel for speed
-    const [manga, characters, chapters] = await Promise.all([
-        getManga(id),
+    const [rawManga, characters, chapters] = await Promise.all([
+        getMangaFull(id),
         getCharacters(id),
         getChapters(id)
     ])
 
-    if (!manga) {
+    if (!rawManga) {
         notFound()
+    }
+
+    // Enrich manga with sub-data for components
+    const manga = {
+        ...rawManga,
+        relations: rawManga.relations || [],
+        recommendations: rawManga.recommendations || [],
+        external: rawManga.external || []
     }
 
     return (

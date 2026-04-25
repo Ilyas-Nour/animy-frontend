@@ -4,54 +4,84 @@ import type { Metadata } from 'next'
 import { AnimeDetailsClient } from '@/components/anime/AnimeDetailsClient'
 import { notFound } from 'next/navigation'
 
-// Use backend API URL (default to localhost:3001/api/v1 if not set)
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
-async function getAnime(id: string) {
+async function getAnimeFull(id: string) {
   try {
-    // Fetch from our backend to leverage caching and centralized logic
-    const res = await fetch(`${API_URL}/anime/${id}`, {
-      next: { revalidate: 3600 }
-    })
-
+    const res = await fetch(`${API_URL}/anime/${id}/full`)
     if (!res.ok) {
       if (res.status === 404) return null
       throw new Error('Failed to fetch anime')
     }
-
     const json = await res.json()
-    // Backend returns wrapped response { success: true, data: AnimeObject }
-    // We return { data: AnimeObject } to match expected structure
-    return { data: json.data }
+    return json.data
   } catch (error) {
     console.error('Fetch error:', error)
     return null
   }
 }
 
-async function getCharacters(id: string) {
-  try {
-    const res = await fetch(`${API_URL}/anime/${id}/characters`, {
-      next: { revalidate: 3600 }
+// Data Transformation Mappers
+const mapCharacters = (characters: any[] = []) => {
+  return characters.map(char => ({
+    role: char.role,
+    node: {
+      id: char.character.mal_id,
+      name: { full: char.character.name },
+      image: { large: char.character.images?.jpg?.image_url }
+    },
+    voiceActors: (char.voice_actors || []).map((va: any) => ({
+      id: va.person.mal_id,
+      name: { full: va.person.name },
+      image: { large: va.person.images?.jpg?.image_url }
+    }))
+  }))
+}
+
+const mapStaff = (staff: any[] = []) => {
+  return staff.map(s => ({
+    role: s.positions?.join(', ') || 'Staff',
+    node: {
+      id: s.person.mal_id,
+      name: { full: s.person.name },
+      image: { large: s.person.images?.jpg?.image_url }
+    }
+  }))
+}
+
+const mapRelations = (relations: any[] = []) => {
+  const result: any[] = []
+  relations.forEach(rel => {
+    (rel.entry || []).forEach((entry: any) => {
+      result.push({
+        relationType: rel.relation,
+        node: {
+          id: entry.mal_id,
+          idMal: entry.mal_id,
+          type: entry.type,
+          title: { romaji: entry.name, english: entry.name },
+          coverImage: { large: `https://cdn.myanimelist.net/images/anime/${entry.mal_id % 100}/${entry.mal_id}.jpg` } // Jikan doesn't provide relation images in /full, we attempt a fallback or accept placeholders
+        }
+      })
     })
-    if (!res.ok) return { data: [] }
-    const json = await res.json()
-    // API Route returns { data: [...] }
-    return { data: json.data || [] }
-  } catch (error) {
-    return { data: [] }
-  }
+  })
+  return result
+}
+
+const mapRecommendations = (recs: any[] = []) => {
+  return recs.map(rec => ({
+    mediaRecommendation: {
+      id: rec.entry.mal_id,
+      title: { romaji: rec.entry.title, english: rec.entry.title },
+      coverImage: { large: rec.entry.images?.jpg?.large_image_url || rec.entry.images?.jpg?.image_url }
+    }
+  }))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const data = await getAnime(id)
-  if (!data || !data.data) {
-    return {
-      title: 'Anime Not Found | Animy',
-    }
-  }
-  const anime = data.data
+  const anime = await getAnimeFull(id)
+  if (!anime) return { title: 'Anime Not Found | Animy' }
   return {
     title: `${anime.title} | Animy`,
     description: anime.synopsis?.slice(0, 160) || 'Anime details',
@@ -64,19 +94,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function AnimeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const animeData = await getAnime(id)
+  const rawAnime = await getAnimeFull(id)
 
-  if (!animeData || !animeData.data) {
+  if (!rawAnime) {
     notFound()
   }
 
-  const charactersData = await getCharacters(id)
-
+  // Transform Jikan data into the AniList-like structure the UI expects
   const anime = {
-    ...animeData.data,
-    characters: (charactersData.data && charactersData.data.length > 0)
-      ? charactersData.data
-      : (animeData.data.characters || [])
+    ...rawAnime,
+    characters: mapCharacters(rawAnime.characters),
+    staff: mapStaff(rawAnime.staff),
+    relations: mapRelations(rawAnime.relations),
+    recommendations: mapRecommendations(rawAnime.recommendations)
   }
 
   return (

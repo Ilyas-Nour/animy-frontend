@@ -534,6 +534,59 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                     </div>
                                 )}
                             </section>
+
+                            {/* Relations Section */}
+                            {manga.relations && manga.relations.length > 0 && (
+                                <section className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+                                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                                        <Layers className="h-6 w-6 text-primary" />
+                                        Relations
+                                    </h2>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {manga.relations.map((rel: any, i: number) => (
+                                            <div key={i} className="flex flex-col gap-2 p-4 bg-white/5 rounded-2xl border border-white/5">
+                                                <span className="text-[10px] uppercase font-black tracking-widest text-primary">{rel.relation}</span>
+                                                <div className="flex flex-col gap-1">
+                                                    {rel.entry.map((entry: any) => (
+                                                        <Link 
+                                                            key={entry.mal_id} 
+                                                            href={`/${entry.type}/${entry.mal_id}`}
+                                                            className="text-sm font-bold hover:text-primary transition-colors line-clamp-1"
+                                                        >
+                                                            {entry.name}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* Recommendations Section */}
+                            {manga.recommendations && manga.recommendations.length > 0 && (
+                                <section className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-600">
+                                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                                        <Star className="h-6 w-6 text-primary" />
+                                        Recommended
+                                    </h2>
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                                        {manga.recommendations.slice(0, 10).map((rec: any) => (
+                                            <Link key={rec.entry.mal_id} href={`/manga/${rec.entry.mal_id}`} className="group space-y-2">
+                                                <div className="relative aspect-[2/3] rounded-xl overflow-hidden border border-white/5">
+                                                    <Image 
+                                                        src={rec.entry.images?.webp?.image_url || rec.entry.images?.jpg?.image_url || ''} 
+                                                        alt={rec.entry.title}
+                                                        fill
+                                                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    />
+                                                </div>
+                                                <h3 className="text-xs font-bold line-clamp-2 group-hover:text-primary transition-colors">{rec.entry.title}</h3>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
                         </div>
                     </div>
                 </div>
