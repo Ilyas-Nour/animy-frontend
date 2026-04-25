@@ -58,9 +58,10 @@ export default function UserMangaListPage() {
 
             <MangaListGrid 
                 items={filteredList} 
-                isOwner={false}
+                onRemove={() => {}}
                 emptyTitle="No Scrolls Found"
                 emptyMessage="This user hasn't added any manga to their collection yet."
+                emptyIcon={BookOpen}
             />
         </div>
     )

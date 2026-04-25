@@ -10,7 +10,7 @@ import { PlayCircle, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import api from '@/lib/api'
-import { AnimeListGrid } from '@/components/dashboard/AnimeListGrid'
+import { WatchlistGrid } from '@/components/dashboard/WatchlistGrid'
 import { Loading } from '@/components/common/Loading'
 
 export default function UserAnimeListPage() {
@@ -56,11 +56,12 @@ export default function UserAnimeListPage() {
                 </div>
             </div>
 
-            <AnimeListGrid 
+            <WatchlistGrid 
                 items={filteredList} 
-                isOwner={false}
+                onRemove={() => {}}
                 emptyTitle="Empty Collection"
                 emptyMessage="This user hasn't added any anime to their collection yet."
+                emptyIcon={PlayCircle}
             />
         </div>
     )
