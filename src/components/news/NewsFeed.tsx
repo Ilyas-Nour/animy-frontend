@@ -8,7 +8,6 @@ import api from '@/lib/api'
 import { toast } from 'sonner'
 import Image from 'next/image'
 import { CommentSection } from './CommentSection'
-import { fetchRedditPosts } from '@/actions/news'
 import { useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 import { ShareNewsModal } from './ShareNewsModal'
@@ -47,13 +46,15 @@ export function NewsFeed() {
     useEffect(() => {
         const fetchNews = async () => {
             try {
-                // Use Server Action to bypass CORS and ensure consistent matching
-                const validPosts = await fetchRedditPosts()
-
-                console.log('[NewsFeed] Posts from Server Action:', validPosts)
+                // Use standard API route to bypass Cloudflare 405 issues with Server Actions
+                const response = await fetch('/api/news')
+                if (!response.ok) throw new Error('Failed to fetch news')
+                
+                const validPosts = await response.json()
+                console.log('[NewsFeed] Posts from API:', validPosts)
                 setNews(validPosts)
             } catch (error) {
-                console.error("Failed to fetch news via Server Action", error)
+                console.error("Failed to fetch news", error)
             } finally {
                 setIsLoading(false)
             }
