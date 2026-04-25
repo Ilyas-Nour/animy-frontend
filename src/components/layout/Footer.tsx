@@ -183,11 +183,6 @@ export function Footer() {
               Animy does not store any files on its server. All contents are provided by non-affiliated third parties.
               This platform acts as a metadata aggregator and streaming interface for publicly available content.
             </p>
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] md:text-[11px] font-bold text-muted-foreground/30 uppercase tracking-[0.2em]">
-              <span>Socials: Discord, Telegram, X</span>
-              <span className="hidden md:block">|</span>
-              <span>Partners: MALSync, AniList, VidLink</span>
-            </div>
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 border-t border-white/[0.02]">
