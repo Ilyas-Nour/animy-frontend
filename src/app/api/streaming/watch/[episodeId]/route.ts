@@ -14,11 +14,16 @@ export async function GET(
     const ep = request.nextUrl.searchParams.get('ep')
 
     try {
+        // Calculate the frontend proxy URL (Cloudflare Edge)
+        const protocol = request.nextUrl.protocol
+        const host = request.nextUrl.host
+        const frontendProxy = `${protocol}//${host}/api/streaming/proxy`
+
         // Call backend streaming endpoint
-        // encoding episodeId is crucial as it might contain slashes/special chars
         let queryParams = `?provider=${encodeURIComponent(provider || 'hianime')}`
         if (malId) queryParams += `&malId=${encodeURIComponent(malId)}`
         if (ep) queryParams += `&ep=${encodeURIComponent(ep)}`
+        queryParams += `&proxyBaseUrl=${encodeURIComponent(frontendProxy)}`
 
         const url = `${BACKEND_API}/streaming/episode/${encodeURIComponent(episodeId)}${queryParams}`
 
