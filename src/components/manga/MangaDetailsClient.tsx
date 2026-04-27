@@ -58,21 +58,37 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
 
             try {
                 setChaptersLoading(true)
-                const res = await fetch(`/api/manga/${manga.mal_id}/chapters`)
+                // Add a timeout signal to prevent indefinite hanging
+                const controller = new AbortController()
+                const timeoutId = setTimeout(() => controller.abort(), 25000) // 25s timeout
+
+                const res = await fetch(`/api/manga/${manga.mal_id}/chapters`, {
+                    signal: controller.signal
+                })
+                clearTimeout(timeoutId)
+
                 if (res.ok) {
                     const json = await res.json()
                     const chaptersData = json.data?.chapters || json.chapters || []
                     setChapters(Array.isArray(chaptersData) ? chaptersData : [])
+                } else {
+                    console.error('Backend returned error:', res.status)
+                    setChapters([])
                 }
-            } catch (error) {
-                console.error('Failed to fetch chapters:', error)
+            } catch (error: any) {
+                if (error.name === 'AbortError') {
+                    console.warn('Chapter fetch timed out')
+                } else {
+                    console.error('Failed to fetch chapters:', error)
+                }
+                setChapters([])
             } finally {
                 setChaptersLoading(false)
             }
         }
 
         fetchChapters()
-    }, [manga.mal_id, initialChapters])
+    }, [manga.mal_id])
 
     useEffect(() => {
         if (isAuthenticated) {
