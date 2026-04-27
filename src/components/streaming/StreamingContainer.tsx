@@ -56,7 +56,7 @@ export function StreamingContainer({
     const [iframeLoaded, setIframeLoaded] = useState(false)
     const [iframeKey, setIframeKey] = useState(0)
 
-    const externalSearchUrl = `https://allanime.to/search?q=${encodeURIComponent(animeTitle)}`
+    const externalSearchUrl = `https://animekai.to/search?keyword=${encodeURIComponent(animeTitle)}`
 
     useEffect(() => { setMounted(true) }, [])
 
@@ -118,7 +118,7 @@ export function StreamingContainer({
         setIframeLoaded(false)
         try {
             const res = await api.get(
-                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=hianime&malId=${malId}&ep=${ep.number}`
+                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=animekai&malId=${malId}&ep=${ep.number}`
             )
             const data = res.data.data || res.data
             setStreamData(data)
