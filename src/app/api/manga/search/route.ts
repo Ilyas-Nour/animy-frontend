@@ -49,31 +49,31 @@ export async function GET(request: NextRequest) {
                                 large
                                 medium
                             }
-                            description
-                            format
-                            chapters
-                            volumes
-                            status
-                            averageScore
-                            popularity
-                            genres
-                            startDate {
-                                year
-                            }
-                        }
-                    }
-                }
-            `
+        // Use direct AniList GraphQL fetch for public lists and home page sections
+        if (!query || query.length < 2 || status === 'publishing' || orderBy === 'popularity') {
+            console.log('Using direct AniList fetch for manga list')
+            const variables: any = {
+                page: Number(searchParams.get('page')) || 1,
+                perPage: Number(searchParams.get('limit')) || 20,
+                sort: orderBy === 'popularity' ? ['POPULARITY_DESC'] : ['TRENDING_DESC', 'POPULARITY_DESC']
+            }
 
-            const aniRes = await fetch(ANILIST_ENDPOINT, {
+            if (status === 'publishing') {
+                variables.status = 'RELEASING'
+            }
+
+            const anilistRes = await fetch('https://graphql.anilist.co', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ query, variables }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query: ANILIST_QUERIES.SEARCH_MANGA,
+                    variables
+                }),
                 next: { revalidate: 3600 }
             })
 
-            if (aniRes.ok) {
-                const aniJson = await aniRes.json()
+            if (anilistRes.ok) {
+                const aniJson = await anilistRes.json()
                 const data = aniJson.data.Page.media.map((m: any) => ({
                     mal_id: m.id,
                     title: m.title.romaji || m.title.english || m.title.native,
