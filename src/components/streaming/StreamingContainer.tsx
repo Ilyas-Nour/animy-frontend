@@ -95,6 +95,23 @@ export function StreamingContainer({
             setSelectedEp(episodes[0])
         } catch (e: any) {
             setHiError(e.message || 'Mesh Offline')
+            // FALLBACK: Use the MAL/AniList ID directly as the anime identifier
+            const animeId = String(malId)
+            try {
+                const infoRes = await api.get(`/streaming/anime/${encodeURIComponent(animeId)}`)
+                const info = infoRes.data.data || infoRes.data
+                if (info?.episodes?.length) {
+                    const episodes: Episode[] = info.episodes.map((ep: any) => ({
+                        id: ep.id || ep.episodeId,
+                        number: ep.number || ep.episodeNumber || 1,
+                        title: ep.title,
+                    }))
+                    setHiEpisodes(episodes)
+                    setSelectedEp(episodes[0])
+                    return
+                }
+            } catch (e2) {}
+
             const basicEps = Array.from({ length: Math.max(totalEpisodes, 1) }, (_, i) => ({
                 id: String(i + 1),
                 number: i + 1,
