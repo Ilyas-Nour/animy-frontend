@@ -118,7 +118,7 @@ export function StreamingContainer({
         setIframeLoaded(false)
         try {
             const res = await api.get(
-                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=zoro&malId=${malId}&ep=${ep.number}`
+                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=hianime&malId=${malId}&ep=${ep.number}`
             )
             const data = res.data.data || res.data
             setStreamData(data)
