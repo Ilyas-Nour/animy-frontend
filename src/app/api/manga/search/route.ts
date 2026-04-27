@@ -79,9 +79,10 @@ export async function GET(request: NextRequest) {
 
             if (anilistRes.ok) {
                 const aniJson = await anilistRes.json()
-                if (aniJson.data?.Page?.media) {
+                if (aniJson.data?.Page?.media && aniJson.data.Page.media.length > 0) {
                     const data = aniJson.data.Page.media.map((m: any) => ({
-                        mal_id: m.id,
+                        mal_id: m.idMal || m.id,
+                        ani_id: m.id,
                         title: m.title.romaji || m.title.english || m.title.native,
                         title_english: m.title.english,
                         title_japanese: m.title.native,
@@ -109,6 +110,7 @@ export async function GET(request: NextRequest) {
                     })
                 }
             }
+            console.warn('AniList direct fetch returned no data, falling back to backend')
         }
 
         // Fallback to Backend API for complex queries
