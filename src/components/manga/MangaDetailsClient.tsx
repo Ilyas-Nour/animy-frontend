@@ -49,6 +49,32 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
     }, [])
 
     useEffect(() => {
+        const fetchChapters = async () => {
+            if (initialChapters.length > 0) {
+                setChapters(initialChapters)
+                setChaptersLoading(false)
+                return
+            }
+
+            try {
+                setChaptersLoading(true)
+                const res = await fetch(`/api/manga/${manga.mal_id}/chapters`)
+                if (res.ok) {
+                    const json = await res.json()
+                    const chaptersData = json.data?.chapters || json.chapters || []
+                    setChapters(Array.isArray(chaptersData) ? chaptersData : [])
+                }
+            } catch (error) {
+                console.error('Failed to fetch chapters:', error)
+            } finally {
+                setChaptersLoading(false)
+            }
+        }
+
+        fetchChapters()
+    }, [manga.mal_id, initialChapters])
+
+    useEffect(() => {
         if (isAuthenticated) {
             checkStatus()
         }
@@ -61,15 +87,6 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
-
-    // Chapters are already fetched on the server and passed via initialChapters.
-    // We only need to update the loading state if we have them.
-    useEffect(() => {
-        if (initialChapters && initialChapters.length > 0) {
-            setChapters(initialChapters)
-            setChaptersLoading(false)
-        }
-    }, [initialChapters])
 
     const checkStatus = async () => {
         try {

@@ -44,11 +44,10 @@ async function getChapters(id: string) {
 export default async function MangaDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     
-    // Fetch all data in parallel for speed
-    const [rawManga, characters, chapters] = await Promise.all([
+    // Fetch core data in parallel for speed, but leave chapters for the client
+    const [rawManga, characters] = await Promise.all([
         getMangaFull(id),
-        getCharacters(id),
-        getChapters(id)
+        getCharacters(id)
     ])
 
     if (!rawManga) {
@@ -67,7 +66,6 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
         <MangaDetailsClient 
             manga={manga} 
             characters={characters} 
-            initialChapters={chapters} 
         />
     )
 }
