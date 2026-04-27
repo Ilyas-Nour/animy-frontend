@@ -7,6 +7,7 @@ import { Loader2, Wifi, AlertCircle, ExternalLink, ChevronLeft, ChevronRight, Re
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import api from '@/lib/api'
+import ArtPlayer from './ArtPlayer'
 
 interface StreamingContainerProps {
     animeTitle: string
@@ -43,8 +44,6 @@ export function StreamingContainer({
     tmdbId,
 }: StreamingContainerProps) {
     const [mounted, setMounted] = useState(false)
-    const videoRef = useRef<HTMLVideoElement>(null)
-    const hlsRef = useRef<Hls | null>(null)
 
     // State
     const [hiEpisodes, setHiEpisodes] = useState<Episode[]>([])
@@ -142,38 +141,6 @@ export function StreamingContainer({
         setActiveServer(server)
         setIframeLoaded(false)
         setIframeKey(k => k + 1)
-
-        // Reset HLS if switching
-        if (hlsRef.current) {
-            hlsRef.current.destroy()
-            hlsRef.current = null
-        }
-
-        // Initialize Native HLS if needed
-        if (server.isNative && server.sources && server.sources.length > 0) {
-            setTimeout(() => {
-                const video = videoRef.current
-                if (!video) return
-                const hlsUrl = server.sources![0].url
-
-                if (Hls.isSupported()) {
-                    const hls = new Hls()
-                    hls.loadSource(hlsUrl)
-                    hls.attachMedia(video)
-                    hlsRef.current = hls
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                        video.play().catch(() => {})
-                        setIframeLoaded(true)
-                    })
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = hlsUrl
-                    video.addEventListener('loadedmetadata', () => {
-                        video.play().catch(() => {})
-                        setIframeLoaded(true)
-                    })
-                }
-            }, 100)
-        }
     }
 
     const currentEpNumber = selectedEp?.number ?? 1
@@ -263,12 +230,12 @@ export function StreamingContainer({
                 )}
 
                 {/* Hybrid Player Engine */}
-                {activeServer?.isNative ? (
-                    <video
-                        ref={videoRef}
-                        controls
-                        className="w-full h-full"
+                {activeServer?.isNative && activeServer.sources?.[0]?.url ? (
+                    <ArtPlayer
+                        url={activeServer.sources[0].url}
                         poster={animePoster}
+                        className="w-full h-full"
+                        onReady={() => setIframeLoaded(true)}
                     />
                 ) : activeServer?.url && (
                     <iframe
