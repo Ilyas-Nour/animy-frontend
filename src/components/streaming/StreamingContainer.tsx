@@ -58,7 +58,7 @@ export function StreamingContainer({
     const [iframeLoaded, setIframeLoaded] = useState(false)
     const [iframeKey, setIframeKey] = useState(0)
 
-    const hiAnimeSearchUrl = `https://hianime.to/search?keyword=${encodeURIComponent(animeTitleEnglish || animeTitle)}`
+    const hiAnimeSearchUrl = `https://hianime.sx/search?keyword=${encodeURIComponent(animeTitle)}`
 
     useEffect(() => { setMounted(true) }, [])
 
@@ -123,7 +123,7 @@ export function StreamingContainer({
         setIframeLoaded(false)
         try {
             const res = await api.get(
-                `/streaming/watch/${encodeURIComponent(ep.id)}?provider=hianime&malId=${malId}&ep=${ep.number}`
+                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=hianime&malId=${malId}&ep=${ep.number}`
             )
             const data = res.data.data || res.data
             
