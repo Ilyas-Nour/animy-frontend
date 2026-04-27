@@ -56,7 +56,7 @@ export function StreamingContainer({
     const [iframeLoaded, setIframeLoaded] = useState(false)
     const [iframeKey, setIframeKey] = useState(0)
 
-    const gogoUrl = `https://gogoanime.hu/search.html?keyword=${encodeURIComponent(animeTitle)}`
+    const externalSearchUrl = `https://allanime.to/search?q=${encodeURIComponent(animeTitle)}`
 
     useEffect(() => { setMounted(true) }, [])
 
@@ -201,7 +201,7 @@ export function StreamingContainer({
                             : 'text-indigo-400 border-indigo-500/20 bg-indigo-500/10'
                 )}>
                     <Wifi className="w-3 h-3" />
-                    {hiLoading ? 'Locating Node...' : hiError ? 'Mesh Offline' : 'Mesh Online'}
+                    {hiLoading ? 'Syncing Mesh...' : hiError ? 'Mesh Offline' : 'Resilience Mesh v2 Online'}
                 </div>
 
                 <div className="flex-1 flex flex-wrap gap-2">
@@ -221,7 +221,7 @@ export function StreamingContainer({
                     ))}
                 </div>
 
-                <a href={gogoUrl} target="_blank" rel="noopener noreferrer"
+                <a href={externalSearchUrl} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-[10px] text-indigo-400/70 hover:text-indigo-300 transition-colors font-bold uppercase tracking-widest">
                     <ExternalLink className="w-3 h-3" /> External
                 </a>
@@ -239,7 +239,7 @@ export function StreamingContainer({
                              <div className="absolute inset-0 w-12 h-12 rounded-full border-t-2 border-indigo-500 animate-spin" />
                         </div>
                         <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-                            Initializing Multi-Mesh Stream...
+                            Engaging Resilience Mesh v2...
                         </p>
                     </div>
                 )}
