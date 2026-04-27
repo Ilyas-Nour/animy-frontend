@@ -56,7 +56,7 @@ export function StreamingContainer({
     const [iframeLoaded, setIframeLoaded] = useState(false)
     const [iframeKey, setIframeKey] = useState(0)
 
-    const gogoUrl = `https://gogoanime3.co/search.html?keyword=${encodeURIComponent(animeTitle)}`
+    const gogoUrl = `https://gogoanime.hu/search.html?keyword=${encodeURIComponent(animeTitle)}`
 
     useEffect(() => { setMounted(true) }, [])
 
