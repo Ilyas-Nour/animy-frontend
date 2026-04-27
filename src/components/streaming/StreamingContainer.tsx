@@ -58,7 +58,7 @@ export function StreamingContainer({
     const [iframeLoaded, setIframeLoaded] = useState(false)
     const [iframeKey, setIframeKey] = useState(0)
 
-    const hiAnimeSearchUrl = `https://hianime.sx/search?keyword=${encodeURIComponent(animeTitle)}`
+    const hiAnimeSearchUrl = `https://gogoanime3.co/search.html?keyword=${encodeURIComponent(animeTitle)}`
 
     useEffect(() => { setMounted(true) }, [])
 
@@ -79,13 +79,13 @@ export function StreamingContainer({
                 ? searchRes.data.data
                 : searchRes.data.data?.results || searchRes.data.results || []
 
-            if (!results.length) throw new Error('Not found on HiAnime')
+            if (!results.length) throw new Error('No Nodes Active')
 
             const animeId = results[0].id
             const infoRes = await api.get(`/streaming/anime/${encodeURIComponent(animeId)}`)
             const info = infoRes.data.data || infoRes.data
 
-            if (!info?.episodes?.length) throw new Error('No episodes found')
+            if (!info?.episodes?.length) throw new Error('No Data Stream')
 
             const episodes: Episode[] = info.episodes.map((ep: any) => ({
                 id: ep.id || ep.episodeId,
@@ -97,7 +97,7 @@ export function StreamingContainer({
             setHiEpisodes(episodes)
             setSelectedEp(episodes[0])
         } catch (e: any) {
-            setHiError(e.message || 'HiAnime unavailable')
+            setHiError(e.message || 'Mesh Offline')
             // Fall back to basic list if search fails
             const basicEps = Array.from({ length: Math.max(totalEpisodes, 1) }, (_, i) => ({
                 id: String(i + 1),
