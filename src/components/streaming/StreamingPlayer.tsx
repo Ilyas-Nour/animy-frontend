@@ -21,41 +21,28 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [retryCount, setRetryCount] = useState(0)
-    const [activeServer, setActiveServer] = useState<ServerType>(provider === 'fallback' ? 'vidlink' : 'hianime')
+    const [activeServer, setActiveServer] = useState<any>(null)
+    const [availableServers, setAvailableServers] = useState<any[]>([])
     const videoRef = useRef<HTMLVideoElement>(null)
     const hlsRef = useRef<Hls | null>(null)
 
     useEffect(() => {
-        // Reset state when episode or provider changes
+        // Reset state when episode changes
         setSources(null)
-        setActiveServer(provider === 'fallback' ? 'vidlink' : 'hianime')
-    }, [episodeId, provider])
+        setAvailableServers([])
+        setActiveServer(null)
+    }, [episodeId])
 
     useEffect(() => {
-        // We always try to fetch sources from the backend first.
-        // The backend is smart enough to resolve the MAL ID and return a VidLink URL
-        // if HiAnime fails or if we are in fallback mode.
         if (!sources) {
             fetchSources()
         }
-        
-        // If we already have sources and we are in vidlink mode, but sources don't have a vidlink URL,
-        // we can generate one from props as a last resort (but this should be rare now).
-        if (activeServer === 'vidlink' && sources && !sources.iframeUrl) {
-             setSources({
-                ...sources,
-                iframeUrl: `https://vidlink.pro/anime/${malId}/${episodeNumber}?primaryColor=6366f1`,
-                provider: 'vidlink'
-            })
-        }
-    }, [episodeId, activeServer, malId, episodeNumber])
+    }, [episodeId, sources])
 
     const fetchSources = async () => {
         try {
             setLoading(true)
             setError(null)
-
-            console.log(`Fetching HiAnime sources for episode: ${episodeId}`)
 
             let queryParams = `?provider=hianime`
             if (malId) queryParams += `&malId=${malId}`
@@ -64,37 +51,31 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             const res = await fetch(`/api/streaming/watch/${encodeURIComponent(episodeId)}${queryParams}`)
 
             if (!res.ok) {
-                console.warn('HiAnime sources failed, switching to VidLink')
-                setActiveServer('vidlink')
+                setError('Failed to fetch streaming signals')
                 return
             }
 
             const data = await res.json()
             const sourcesData = data.data?.sources ? data.data : data
-
-            if (sourcesData.provider === 'fallback' || !sourcesData.sources || sourcesData.sources.length === 0) {
-                if (sourcesData.iframeUrl) {
-                    setSources(sourcesData)
-                    setActiveServer('vidlink')
-                    setLoading(false)
-                } else {
-                    setActiveServer('vidlink')
-                }
-                return
-            }
-
+            
             setSources(sourcesData)
-            setError(null)
+            
+            if (sourcesData.servers && sourcesData.servers.length > 0) {
+                setAvailableServers(sourcesData.servers)
+                // Set HiAnime as default if available, otherwise first server
+                const defaultServer = sourcesData.servers.find((s: any) => s.provider === 'hianime') || sourcesData.servers[0]
+                setActiveServer(defaultServer)
+            }
         } catch (err: any) {
             console.error('Error fetching sources:', err)
-            setActiveServer('vidlink')
+            setError('Synchronization lost. Signal failed.')
         } finally {
             setLoading(false)
         }
     }
 
     useEffect(() => {
-        if (activeServer !== 'hianime' || !sources || !videoRef.current || sources.iframeUrl) return
+        if (!activeServer || activeServer.provider !== 'hianime' || !sources || !videoRef.current || sources.iframeUrl) return
 
         initializePlayer()
 
@@ -114,8 +95,6 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             sources.sources[0]
 
         if (!videoSource) {
-            console.warn('No video source found, switching to VidLink')
-            setActiveServer('vidlink')
             return
         }
 
@@ -123,9 +102,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
         setError(null)
 
         if (Hls.isSupported() && (videoUrl.includes('.m3u8') || videoSource.isM3U8)) {
-            if (hlsRef.current) {
-                hlsRef.current.destroy()
-            }
+            if (hlsRef.current) hlsRef.current.destroy()
 
             const hls = new Hls({
                 capLevelToPlayerSize: true,
@@ -147,16 +124,11 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
                         setRetryCount(prev => prev + 1)
                         hls.destroy()
                         setTimeout(() => initializePlayer(), 1000)
-                    } else {
-                        setActiveServer('vidlink')
                     }
                 }
             })
 
             hlsRef.current = hls
-        } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
-            videoRef.current.src = videoUrl
-            videoRef.current.play().catch(console.error)
         } else {
             videoRef.current.src = videoUrl
             videoRef.current.play().catch(console.error)
@@ -164,67 +136,41 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     }
 
     const renderPlayer = () => {
-        // PRIORITIZE VidLink: If activeServer is vidlink, we should wait for sources to be ready
-        // so we can use the backend-resolved ID instead of guessing from props.
-        if (activeServer === 'vidlink') {
-            if (!sources?.iframeUrl) {
-                return (
-                    <div className="aspect-video bg-black/50 rounded-xl flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-3">
-                            <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
-                            <p className="text-white/60 text-sm">Resolving high-reliability stream...</p>
-                        </div>
-                    </div>
-                )
-            }
-            return (
-                <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10 relative">
-                    <iframe
-                        src={sources.iframeUrl}
-                        className="w-full h-full"
-                        allowFullScreen
-                        allow="autoplay; encrypted-media"
-                        referrerPolicy="no-referrer"
-                    />
-                </div>
-            )
-        }
-
         if (loading) {
             return (
-                <div className="aspect-video bg-black/50 rounded-xl flex items-center justify-center">
+                <div className="aspect-video bg-black/50 rounded-xl flex items-center justify-center border border-white/5">
                     <div className="flex flex-col items-center gap-3">
                         <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
-                        <p className="text-white/60 text-sm">Loading {activeServer} player...</p>
+                        <p className="text-white/60 text-[10px] font-black uppercase tracking-widest">Scanning frequencies...</p>
                     </div>
                 </div>
             )
         }
 
-        if (error) {
+        if (error || !activeServer) {
             return (
-                <div className="aspect-video bg-black/50 rounded-xl flex items-center justify-center">
+                <div className="aspect-video bg-black/50 rounded-xl flex items-center justify-center border border-white/5">
                     <div className="flex flex-col items-center gap-4 text-center px-4">
-                        <AlertCircle className="w-12 h-12 text-red-500" />
-                        <p className="text-white/80">{error}</p>
-                        <div className="flex gap-2">
-                            <Button onClick={fetchSources} variant="outline" className="gap-2">
-                                <RefreshCw className="w-4 h-4" /> Retry
-                            </Button>
-                            <Button onClick={() => setActiveServer('vidlink')} variant="secondary">
-                                Switch to VidLink
-                            </Button>
-                        </div>
+                        <AlertCircle className="w-12 h-12 text-rose-500/50" />
+                        <p className="text-white/40 text-xs font-bold uppercase tracking-tight">{error || 'No compatible server found'}</p>
+                        <Button onClick={fetchSources} variant="outline" className="gap-2 border-white/10 hover:bg-white/5">
+                            <RefreshCw className="w-4 h-4" /> Re-sync
+                        </Button>
                     </div>
                 </div>
             )
         }
 
-        if (sources?.iframeUrl) {
+        // Handle Iframe Servers (VidLink, Vidsrc, etc)
+        if (activeServer.url || activeServer.provider !== 'hianime') {
+            const iframeUrl = activeServer.url || (activeServer.provider === 'vidlink' ? sources.iframeUrl : null)
+            
+            if (!iframeUrl) return null
+
             return (
-                <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10 relative">
+                <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10 relative shadow-2xl">
                     <iframe
-                        src={sources.iframeUrl}
+                        src={iframeUrl}
                         className="w-full h-full"
                         allowFullScreen
                         allow="autoplay; encrypted-media"
@@ -234,8 +180,9 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             )
         }
 
+        // Handle Native HLS (HiAnime)
         return (
-            <div className="aspect-video bg-black rounded-xl overflow-hidden relative">
+            <div className="aspect-video bg-black rounded-xl overflow-hidden relative border border-white/10 shadow-2xl">
                 <video
                     ref={videoRef}
                     className="w-full h-full"
@@ -248,32 +195,31 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             {/* Server Selection */}
-            <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-white/60 mr-2">Servers:</span>
-                <Button
-                    size="sm"
-                    variant={activeServer === 'hianime' ? 'default' : 'outline'}
-                    onClick={() => setActiveServer('hianime')}
-                    className={cn(
-                        "text-xs h-8 px-3",
-                        activeServer === 'hianime' ? "bg-indigo-600 hover:bg-indigo-700" : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
-                    )}
-                >
-                    HiAnime (Native)
-                </Button>
-                <Button
-                    size="sm"
-                    variant={activeServer === 'vidlink' ? 'default' : 'outline'}
-                    onClick={() => setActiveServer('vidlink')}
-                    className={cn(
-                        "text-xs h-8 px-3",
-                        activeServer === 'vidlink' ? "bg-indigo-600 hover:bg-indigo-700" : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
-                    )}
-                >
-                    VidLink (Stable)
-                </Button>
+            <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Transmission Nodes</span>
+                    <div className="flex-1 h-px bg-white/5" />
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                    {availableServers.map((server, idx) => (
+                        <Button
+                            key={`${server.provider}-${idx}`}
+                            size="sm"
+                            variant={activeServer?.name === server.name ? 'default' : 'outline'}
+                            onClick={() => setActiveServer(server)}
+                            className={cn(
+                                "text-[10px] h-9 px-4 font-black uppercase tracking-widest transition-all rounded-xl border",
+                                activeServer?.name === server.name 
+                                    ? "bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20 scale-[1.02]" 
+                                    : "bg-white/5 border-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                            )}
+                        >
+                            {server.name}
+                        </Button>
+                    ))}
+                </div>
             </div>
 
             {/* Video Container */}
@@ -281,11 +227,13 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
                 {renderPlayer()}
                 
                 {/* Server Badge Overlay */}
-                <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <div className="px-3 py-1 bg-black/80 backdrop-blur-md rounded-full text-[10px] uppercase font-bold tracking-wider text-indigo-400 border border-indigo-500/30">
-                        {activeServer === 'vidlink' ? 'High Reliability' : 'High Speed'}
+                {activeServer && (
+                    <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                        <div className="px-4 py-1.5 bg-black/80 backdrop-blur-xl rounded-full text-[9px] uppercase font-black tracking-[0.2em] text-indigo-400 border border-indigo-500/30 shadow-2xl">
+                            {activeServer.provider === 'hianime' ? 'Direct Node' : 'Satellite Link'}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     )
