@@ -120,6 +120,10 @@ function NewsCard({ item, index, targetPostId }: { item: NewsItem, index: number
     }, [item.id, user])
 
     const handleLike = async () => {
+        if (!user) {
+            toast.error('Please sign in to react to signals');
+            return;
+        }
         const wasLiked = stats.isLiked
         setStats(prev => ({
             ...prev,

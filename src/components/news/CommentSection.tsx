@@ -111,6 +111,10 @@ export function CommentSection({ newsId }: { newsId: string }) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (!user) {
+            toast.error('Please sign in to join the discussion');
+            return;
+        }
         if (!newComment.trim()) return
 
         try {
