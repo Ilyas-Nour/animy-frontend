@@ -26,8 +26,10 @@ interface Episode {
 
 interface Server {
     name: string
-    url: string
+    url?: string
+    sources?: Array<{ url: string; quality: string; isM3U8: boolean }>
     provider: string
+    isNative?: boolean
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
@@ -39,26 +41,22 @@ export function StreamingContainer({
     totalEpisodes = 0,
 }: StreamingContainerProps) {
     const [mounted, setMounted] = useState(false)
+    const videoRef = useRef<HTMLVideoElement>(null)
+    const hlsRef = useRef<Hls | null>(null)
 
-    // HiAnime state
+    // State
     const [hiEpisodes, setHiEpisodes] = useState<Episode[]>([])
     const [hiLoading, setHiLoading] = useState(true)
     const [hiError, setHiError] = useState<string | null>(null)
-
-    // Selected episode
     const [selectedEp, setSelectedEp] = useState<Episode | null>(null)
-
-    // Streaming data from backend
     const [streamData, setStreamData] = useState<any>(null)
     const [streamLoading, setStreamLoading] = useState(false)
     const [streamError, setStreamError] = useState<string | null>(null)
-
-    // Active server (picked from streamData.servers)
     const [activeServer, setActiveServer] = useState<Server | null>(null)
     const [iframeLoaded, setIframeLoaded] = useState(false)
     const [iframeKey, setIframeKey] = useState(0)
 
-    const hiAnimeSearchUrl = `https://gogoanime3.co/search.html?keyword=${encodeURIComponent(animeTitle)}`
+    const gogoUrl = `https://gogoanime3.co/search.html?keyword=${encodeURIComponent(animeTitle)}`
 
     useEffect(() => { setMounted(true) }, [])
 
@@ -75,9 +73,7 @@ export function StreamingContainer({
             const searchRes = await api.get(
                 `/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`
             )
-            const results = Array.isArray(searchRes.data.data)
-                ? searchRes.data.data
-                : searchRes.data.data?.results || searchRes.data.results || []
+            const results = Array.isArray(searchRes.data.data) ? searchRes.data.data : searchRes.data.data?.results || []
 
             if (!results.length) throw new Error('No Nodes Active')
 
@@ -98,7 +94,6 @@ export function StreamingContainer({
             setSelectedEp(episodes[0])
         } catch (e: any) {
             setHiError(e.message || 'Mesh Offline')
-            // Fall back to basic list if search fails
             const basicEps = Array.from({ length: Math.max(totalEpisodes, 1) }, (_, i) => ({
                 id: String(i + 1),
                 number: i + 1,
@@ -123,19 +118,16 @@ export function StreamingContainer({
         setIframeLoaded(false)
         try {
             const res = await api.get(
-                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=hianime&malId=${malId}&ep=${ep.number}`
+                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=zoro&malId=${malId}&ep=${ep.number}`
             )
             const data = res.data.data || res.data
-            
             setStreamData(data)
             
-            // Pick HiAnime as primary if available, else first available
-            const primary = data.servers?.find((s: any) => s.provider === 'hianime') || data.servers?.[0]
+            const primary = data.servers?.[0]
             if (primary) {
-                setActiveServer(primary)
-                setIframeKey(k => k + 1)
+                switchServer(primary)
             } else {
-                throw new Error('No servers available')
+                throw new Error('No Nodes Available')
             }
         } catch (e: any) {
             setStreamError(e.message)
@@ -148,6 +140,38 @@ export function StreamingContainer({
         setActiveServer(server)
         setIframeLoaded(false)
         setIframeKey(k => k + 1)
+
+        // Reset HLS if switching
+        if (hlsRef.current) {
+            hlsRef.current.destroy()
+            hlsRef.current = null
+        }
+
+        // Initialize Native HLS if needed
+        if (server.isNative && server.sources && server.sources.length > 0) {
+            setTimeout(() => {
+                const video = videoRef.current
+                if (!video) return
+                const hlsUrl = server.sources![0].url
+
+                if (Hls.isSupported()) {
+                    const hls = new Hls()
+                    hls.loadSource(hlsUrl)
+                    hls.attachMedia(video)
+                    hlsRef.current = hls
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        video.play().catch(() => {})
+                        setIframeLoaded(true)
+                    })
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = hlsUrl
+                    video.addEventListener('loadedmetadata', () => {
+                        video.play().catch(() => {})
+                        setIframeLoaded(true)
+                    })
+                }
+            }, 100)
+        }
     }
 
     const currentEpNumber = selectedEp?.number ?? 1
@@ -168,7 +192,6 @@ export function StreamingContainer({
 
     return (
         <div className="space-y-5">
-
             {/* ── Server Bar ── */}
             <div className="flex flex-wrap items-center gap-2">
                 <div className={cn(
@@ -188,7 +211,7 @@ export function StreamingContainer({
                             onClick={() => switchServer(s)}
                             className={cn(
                                 'h-8 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-200',
-                                activeServer?.url === s.url
+                                activeServer === s
                                     ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20 scale-[1.02]'
                                     : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white'
                             )}
@@ -198,7 +221,7 @@ export function StreamingContainer({
                     ))}
                 </div>
 
-                <a href={hiAnimeSearchUrl} target="_blank" rel="noopener noreferrer"
+                <a href={gogoUrl} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-[10px] text-indigo-400/70 hover:text-indigo-300 transition-colors font-bold uppercase tracking-widest">
                     <ExternalLink className="w-3 h-3" /> External
                 </a>
@@ -216,7 +239,7 @@ export function StreamingContainer({
                              <div className="absolute inset-0 w-12 h-12 rounded-full border-t-2 border-indigo-500 animate-spin" />
                         </div>
                         <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-                            Initializing Stream...
+                            Initializing Multi-Mesh Stream...
                         </p>
                     </div>
                 )}
@@ -226,7 +249,7 @@ export function StreamingContainer({
                         <AlertCircle className="w-12 h-12 text-red-500/30" />
                         <div className="space-y-1">
                             <p className="text-white font-bold">Node Connection Failed</p>
-                            <p className="text-white/40 text-xs">The selected server is currently unresponsive. Try another one.</p>
+                            <p className="text-white/40 text-xs">The selected server is currently unresponsive. Try another mirror.</p>
                         </div>
                         <Button variant="outline" size="sm" onClick={() => selectedEp && fetchStreamSources(selectedEp)} className="mt-2 border-white/10">
                             <RefreshCw className="w-3.5 h-3.5 mr-2" /> Retry Node
@@ -234,8 +257,15 @@ export function StreamingContainer({
                     </div>
                 )}
 
-                {/* The Player Iframe */}
-                {activeServer && (
+                {/* Hybrid Player Engine */}
+                {activeServer?.isNative ? (
+                    <video
+                        ref={videoRef}
+                        controls
+                        className="w-full h-full"
+                        poster={animePoster}
+                    />
+                ) : activeServer?.url && (
                     <iframe
                         key={`${activeServer.url}-${iframeKey}`}
                         src={activeServer.url}
@@ -247,7 +277,6 @@ export function StreamingContainer({
                     />
                 )}
 
-                {/* Overlay Badge */}
                 <div className="absolute top-4 left-4 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <div className="px-3 py-1.5 bg-black/60 backdrop-blur-xl rounded-2xl text-[9px] uppercase font-black tracking-[0.2em] text-indigo-400 border border-white/10">
                         {activeServer?.name || 'Loading'}
@@ -268,22 +297,10 @@ export function StreamingContainer({
                 </div>
 
                 <div className="flex gap-2 shrink-0">
-                    <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        disabled={currentEpNumber <= 1} 
-                        onClick={prevEp}
-                        className="h-9 w-9 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 text-white/70"
-                    >
+                    <Button size="sm" variant="ghost" disabled={currentEpNumber <= 1} onClick={prevEp} className="h-9 w-9 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 text-white/70">
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
-                    <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        disabled={currentEpNumber >= hiEpisodes.length} 
-                        onClick={nextEp}
-                        className="h-9 w-9 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 text-white/70"
-                    >
+                    <Button size="sm" variant="ghost" disabled={currentEpNumber >= hiEpisodes.length} onClick={nextEp} className="h-9 w-9 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 text-white/70">
                         <ChevronRight className="w-4 h-4" />
                     </Button>
                 </div>
@@ -297,12 +314,7 @@ export function StreamingContainer({
                         <div className="h-px flex-1 bg-white/5" />
                         <span className="text-[10px] font-bold text-white/20 tracking-tighter">{hiEpisodes.length} total</span>
                     </div>
-                    <EpisodeGrid
-                        episodes={hiEpisodes}
-                        currentEpisode={currentEpNumber}
-                        onEpisodeSelect={(ep) => setSelectedEp(ep)}
-                        fallbackImage={animePoster}
-                    />
+                    <EpisodeGrid episodes={hiEpisodes} currentEpisode={currentEpNumber} onEpisodeSelect={(ep) => setSelectedEp(ep)} fallbackImage={animePoster} />
                 </div>
             )}
         </div>
