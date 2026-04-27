@@ -56,16 +56,18 @@ export async function GET(request: NextRequest) {
 
     try {
         // Optimization: For Home Page sections or simple lists, fetch directly from AniList
-        if (!q || q.length < 2 || status === 'publishing' || order_by === 'popularity') {
+        if (!q || q.length < 2 || status === 'publishing' || order_by === 'popularity' || order_by === 'trending') {
             const variables: any = {
                 page,
-                perPage: limit,
-                sort: order_by === 'popularity' ? ['POPULARITY_DESC'] : ['TRENDING_DESC', 'POPULARITY_DESC']
+                perPage: limit > 50 ? 50 : limit,
+                sort: order_by === 'popularity' ? 'POPULARITY_DESC' : 'TRENDING_DESC'
             }
 
-            if (status === 'publishing') {
+            if (status === 'publishing' || status === 'releasing') {
                 variables.status = 'RELEASING'
             }
+
+            console.log('Fetching from AniList with variables:', JSON.stringify(variables))
 
             const anilistRes = await fetch('https://graphql.anilist.co', {
                 method: 'POST',

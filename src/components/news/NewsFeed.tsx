@@ -99,6 +99,7 @@ function NewsCard({ item, index, targetPostId }: { item: NewsItem, index: number
     useEffect(() => {
         const fetchEngagement = async () => {
             try {
+                // Only try to fetch user-specific data if we have a user
                 const url = `/news-engagement/${item.id}${user ? `?userId=${user.id}` : ''}`
                 const res = await api.get(url)
                 const data = res.data.data
@@ -108,8 +109,11 @@ function NewsCard({ item, index, targetPostId }: { item: NewsItem, index: number
                     views: data.views || 0,
                     isLiked: data.isLiked || false
                 })
-            } catch (error) {
-                console.error("Failed to fetch engagement stats", error)
+            } catch (error: any) {
+                // Silence 401s for guests
+                if (error.response?.status !== 401) {
+                    console.error("Failed to fetch engagement stats", error)
+                }
             }
         }
         fetchEngagement()
