@@ -510,6 +510,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                         src={`https://www.youtube.com/embed/${anime.trailer.youtube_id}?autoplay=0&modestbranding=1&rel=0`}
                                         title={`${anime.title} Trailer`}
                                         className="w-full h-full"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                         allowFullScreen
                                     />
                                 </div>
