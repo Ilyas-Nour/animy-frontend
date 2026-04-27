@@ -507,7 +507,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                 </h2>
                                 <div className="aspect-video w-full rounded-3xl overflow-hidden shadow-2xl border border-white/10">
                                     <iframe
-                                        src={`https://www.youtube.com/embed/${anime.trailer.youtube_id}?autoplay=0&modestbranding=1&rel=0&origin=${typeof window !== 'undefined' ? window.location.origin : 'https://animy.xyz'}`}
+                                        src={`https://www.youtube-nocookie.com/embed/${anime.trailer.youtube_id}?autoplay=0&modestbranding=1&rel=0&color=white`}
                                         title={`${anime.title} Trailer`}
                                         className="w-full h-full border-0"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

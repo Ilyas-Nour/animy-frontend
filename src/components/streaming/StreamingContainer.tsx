@@ -1,11 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { StreamingPlayer } from './StreamingPlayer'
 import { EpisodeGrid } from './EpisodeGrid'
-import { Loader2, AlertCircle, Wifi } from 'lucide-react'
+import { Loader2, Wifi } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import api from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 interface StreamingContainerProps {
@@ -14,157 +12,192 @@ interface StreamingContainerProps {
     animePoster?: string
     malId: number
     totalEpisodes?: number
+    anilistId?: number
 }
+
+interface Server {
+    id: string
+    name: string
+    label: string
+    getUrl: (malId: number, ep: number) => string
+}
+
+const SERVERS: Server[] = [
+    {
+        id: 'vidlink',
+        name: 'VidLink',
+        label: 'Server 1 (Stable)',
+        getUrl: (malId, ep) => `https://vidlink.pro/anime/${malId}/${ep}?primaryColor=6366f1&secondaryColor=a855f7&iconColor=ffffff&autoplay=true`,
+    },
+    {
+        id: 'vidsrc',
+        name: 'VidSrc.to',
+        label: 'Server 2 (Fast)',
+        getUrl: (malId, ep) => `https://vidsrc.to/embed/anime/${malId}/${ep}`,
+    },
+    {
+        id: 'vidsrc2',
+        name: 'VidSrc.me',
+        label: 'Server 3 (Alt)',
+        getUrl: (malId, ep) => `https://vidsrc.me/embed/anime?mal=${malId}&episode=${ep}`,
+    },
+    {
+        id: 'animepahe',
+        name: 'AnimePahe',
+        label: 'Server 4 (HD)',
+        getUrl: (malId, ep) => `https://animepahe.ru/embed/${malId}/${ep}`,
+    },
+]
 
 export function StreamingContainer({
     animeTitle,
     animeTitleEnglish,
     animePoster,
     malId,
-    totalEpisodes = 0
+    totalEpisodes = 0,
+    anilistId,
 }: StreamingContainerProps) {
     const [mounted, setMounted] = useState(false)
-    const [animeData, setAnimeData] = useState<any>(null)
-    const [selectedEpisode, setSelectedEpisode] = useState<any>(null)
-    const [loading, setLoading] = useState(false) // Not blocking anymore
-    const [error, setError] = useState<string | null>(null)
-    const [isFallback, setIsFallback] = useState(true) // Start as fallback for speed
+    const [selectedEpisode, setSelectedEpisode] = useState(1)
+    const [activeServer, setActiveServer] = useState<Server>(SERVERS[0])
+    const [iframeKey, setIframeKey] = useState(0) // Force reload iframe on server/ep change
+    const [iframeLoading, setIframeLoading] = useState(true)
 
     useEffect(() => {
         setMounted(true)
-        // Initialize immediately with metadata episodes
-        const episodes = []
-        const count = totalEpisodes > 0 ? totalEpisodes : 1
-        for (let i = 1; i <= count; i++) {
-            episodes.push({
-                id: i.toString(),
-                number: i,
-                title: `Episode ${i}`
-            })
-        }
-        const initialData = {
-            provider: 'fallback',
-            title: animeTitle,
-            episodes: episodes
-        }
-        setAnimeData(initialData)
-        setSelectedEpisode(episodes[0])
-        
-        // Then try to enrich in background
-        enrichAnimeData(initialData)
-    }, [totalEpisodes, animeTitle])
+    }, [])
 
-    const enrichAnimeData = async (initialData: any) => {
-        try {
-            setLoading(true)
-            console.log(`Enriching data for "${animeTitle}" (MAL: ${malId})`)
+    // When episode or server changes, reload iframe
+    useEffect(() => {
+        setIframeLoading(true)
+        setIframeKey(prev => prev + 1)
+    }, [selectedEpisode, activeServer])
 
-            // Try to find the anime on provider for better episode titles/IDs
-            let searchPayload;
-            try {
-                const searchRes = await api.get(`/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`)
-                searchPayload = searchRes.data.data || searchRes.data
-            } catch (e) {
-                searchPayload = []
-            }
+    const episodes = Array.from({ length: Math.max(totalEpisodes, 1) }, (_, i) => ({
+        id: String(i + 1),
+        number: i + 1,
+        title: `Episode ${i + 1}`,
+    }))
 
-            const results = Array.isArray(searchPayload) ? searchPayload : (searchPayload.results || [])
-
-            if (results.length > 0) {
-                const animeId = results[0].id
-                const infoRes = await api.get(`/streaming/anime/${encodeURIComponent(animeId)}`)
-                const animeInfo = infoRes.data.data || infoRes.data
-
-                if (animeInfo.episodes && animeInfo.episodes.length > 0) {
-                    setAnimeData(animeInfo)
-                    setIsFallback(false)
-                    // Update selected episode if it's the first one and we haven't changed it
-                    if (selectedEpisode && selectedEpisode.id === '1') {
-                        setSelectedEpisode(animeInfo.episodes[0])
-                    }
-                }
-            }
-        } catch (err: any) {
-            console.warn('Enrichment failed:', err)
-            // Keep using initialData, it's fine
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const fetchAnimeData = () => {
-        // Manual retry if needed
-        if (animeData) enrichAnimeData(animeData)
+    const handleEpisodeSelect = (ep: any) => {
+        setSelectedEpisode(ep.number)
     }
 
     if (!mounted) {
         return (
-            <div className="w-full py-12 flex items-center justify-center">
+            <div className="w-full py-16 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
             </div>
         )
     }
 
-    if (error || !animeData) {
+    if (!malId) {
         return (
-            <div className="w-full py-12">
-                <div className="flex flex-col items-center justify-center gap-4 text-center">
-                    <AlertCircle className="w-16 h-16 text-red-500" />
-                    <div className="max-w-md">
-                        <p className="text-white/80 mb-2 font-bold">Streaming Unavailable</p>
-                        <p className="text-white/60 text-sm mb-6">{error}</p>
-                        <Button
-                            onClick={fetchAnimeData}
-                            variant="outline"
-                            className="bg-white/5 border-white/10 hover:bg-white/10 text-white"
-                        >
-                            Retry Connection
-                        </Button>
-                    </div>
-                </div>
+            <div className="w-full py-12 flex items-center justify-center">
+                <p className="text-white/50 text-sm">Streaming unavailable — MAL ID missing.</p>
             </div>
         )
     }
 
+    const iframeUrl = activeServer.getUrl(malId, selectedEpisode)
+
     return (
-        <div className="space-y-6">
-            {/* Status Indicator */}
-            <div className={cn(
-                "flex items-center gap-2 text-sm px-4 py-2 rounded-lg border",
-                isFallback 
-                    ? "text-amber-400 bg-amber-500/10 border-amber-500/20" 
-                    : "text-green-400 bg-green-500/10 border-green-500/20"
-            )}>
-                <Wifi className="w-4 h-4" />
-                <span>{isFallback ? 'High Reliability Mode (VidLink)' : 'Connected to Primary Stream Nodes'}</span>
-            </div>
-
-            {/* Video Player */}
-            {selectedEpisode && (
-                <StreamingPlayer
-                    episodeId={selectedEpisode.id}
-                    episodeNumber={selectedEpisode.number}
-                    poster={animePoster}
-                    provider={animeData.provider}
-                    malId={malId}
-                />
-            )}
-
-            {/* Episode List */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-white">
-                        Episodes ({animeData.episodes?.length || 0})
-                    </h3>
+        <div className="space-y-4">
+            {/* Server selector */}
+            <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-xs text-white/40 uppercase tracking-widest font-black">
+                    <Wifi className="w-3.5 h-3.5 text-indigo-400" />
+                    Transmission Nodes
                 </div>
-
-                <EpisodeGrid
-                    episodes={animeData.episodes || []}
-                    currentEpisode={selectedEpisode?.number}
-                    onEpisodeSelect={setSelectedEpisode}
-                    fallbackImage={animePoster}
-                />
+                <div className="flex flex-wrap gap-2">
+                    {SERVERS.map((server) => (
+                        <Button
+                            key={server.id}
+                            size="sm"
+                            variant={activeServer.id === server.id ? 'default' : 'outline'}
+                            onClick={() => setActiveServer(server)}
+                            className={cn(
+                                'text-[11px] h-9 px-4 font-black uppercase tracking-widest transition-all rounded-xl border',
+                                activeServer.id === server.id
+                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20 scale-[1.02]'
+                                    : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white'
+                            )}
+                        >
+                            {server.name}
+                        </Button>
+                    ))}
+                </div>
             </div>
+
+            {/* Video player */}
+            <div className="relative aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                {iframeLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-10">
+                        <div className="flex flex-col items-center gap-3">
+                            <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+                            <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">
+                                Connecting to {activeServer.name}...
+                            </p>
+                        </div>
+                    </div>
+                )}
+                <iframe
+                    key={`${activeServer.id}-${selectedEpisode}-${iframeKey}`}
+                    src={iframeUrl}
+                    className="w-full h-full border-0"
+                    allowFullScreen
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    onLoad={() => setIframeLoading(false)}
+                />
+                {/* Server badge */}
+                <div className="absolute top-3 right-3 px-3 py-1 bg-black/70 backdrop-blur-md rounded-full text-[9px] uppercase font-black tracking-widest text-indigo-300 border border-indigo-500/20 pointer-events-none">
+                    {activeServer.label}
+                </div>
+            </div>
+
+            {/* Episode info bar */}
+            <div className="flex items-center justify-between px-1">
+                <p className="text-sm text-white/60">
+                    Now watching: <span className="text-white font-bold">Episode {selectedEpisode}</span>
+                    {animeTitle && <span className="text-white/40"> — {animeTitle}</span>}
+                </p>
+                <div className="flex gap-2">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={selectedEpisode <= 1}
+                        onClick={() => setSelectedEpisode(prev => Math.max(1, prev - 1))}
+                        className="text-xs border-white/10 bg-white/5 hover:bg-white/10 h-8 px-3"
+                    >
+                        ← Prev
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={selectedEpisode >= episodes.length}
+                        onClick={() => setSelectedEpisode(prev => Math.min(episodes.length, prev + 1))}
+                        className="text-xs border-white/10 bg-white/5 hover:bg-white/10 h-8 px-3"
+                    >
+                        Next →
+                    </Button>
+                </div>
+            </div>
+
+            {/* Episode Grid */}
+            {episodes.length > 1 && (
+                <div className="space-y-3">
+                    <h3 className="text-base font-black text-white/80 uppercase tracking-widest text-xs">
+                        Episodes ({episodes.length})
+                    </h3>
+                    <EpisodeGrid
+                        episodes={episodes}
+                        currentEpisode={selectedEpisode}
+                        onEpisodeSelect={handleEpisodeSelect}
+                        fallbackImage={animePoster}
+                    />
+                </div>
+            )}
         </div>
     )
 }
