@@ -14,6 +14,7 @@ interface StreamingContainerProps {
     animePoster?: string
     malId: number
     totalEpisodes?: number
+    tmdbId?: string | number
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -39,6 +40,7 @@ export function StreamingContainer({
     animePoster,
     malId,
     totalEpisodes = 0,
+    tmdbId,
 }: StreamingContainerProps) {
     const [mounted, setMounted] = useState(false)
     const videoRef = useRef<HTMLVideoElement>(null)
@@ -118,7 +120,7 @@ export function StreamingContainer({
         setIframeLoaded(false)
         try {
             const res = await api.get(
-                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=animekai&malId=${malId}&ep=${ep.number}`
+                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=animepahe&malId=${malId}&ep=${ep.number}&tmdbId=${tmdbId || ''}`
             )
             const data = res.data.data || res.data
             setStreamData(data)
