@@ -74,9 +74,12 @@ export function StreamingContainer({
             const searchRes = await api.get(
                 `/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`
             )
-            const results = Array.isArray(searchRes.data.data) ? searchRes.data.data : searchRes.data.data?.results || []
+            
+            // v8.3 Handle both array and single-object responses
+            const rawData = searchRes.data.data || searchRes.data
+            const results = Array.isArray(rawData) ? rawData : rawData.results ? rawData.results : [rawData]
 
-            if (!results.length) throw new Error('No Nodes Active')
+            if (!results.length || !results[0].id) throw new Error('No Nodes Active')
 
             const animeId = results[0].id
             const infoRes = await api.get(`/streaming/anime/${encodeURIComponent(animeId)}`)
@@ -94,31 +97,18 @@ export function StreamingContainer({
             setHiEpisodes(episodes)
             setSelectedEp(episodes[0])
         } catch (e: any) {
-            setHiError(e.message || 'Mesh Offline')
-            // FALLBACK: Use the MAL/AniList ID directly as the anime identifier
-            const animeId = String(malId)
-            try {
-                const infoRes = await api.get(`/streaming/anime/${encodeURIComponent(animeId)}`)
-                const info = infoRes.data.data || infoRes.data
-                if (info?.episodes?.length) {
-                    const episodes: Episode[] = info.episodes.map((ep: any) => ({
-                        id: ep.id || ep.episodeId,
-                        number: ep.number || ep.episodeNumber || 1,
-                        title: ep.title,
-                    }))
-                    setHiEpisodes(episodes)
-                    setSelectedEp(episodes[0])
-                    return
-                }
-            } catch (e2) {}
+            console.warn('Mesh Discovery failed, using fallback:', e.message)
+            setHiError(null)
 
-            const basicEps = Array.from({ length: Math.max(totalEpisodes, 1) }, (_, i) => ({
+            const count = totalEpisodes > 0 ? totalEpisodes : 1
+            const virtualEpisodes: Episode[] = Array.from({ length: count }, (_, i) => ({
                 id: String(i + 1),
                 number: i + 1,
                 title: `Episode ${i + 1}`,
             }))
-            setHiEpisodes(basicEps)
-            setSelectedEp(basicEps[0])
+
+            setHiEpisodes(virtualEpisodes)
+            setSelectedEp(virtualEpisodes[0])
         } finally {
             setHiLoading(false)
         }
