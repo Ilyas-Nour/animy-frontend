@@ -175,7 +175,7 @@ export function Footer() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mt-20 pt-10 border-t border-white/5 space-y-8"
+          className="mt-10 pt-6 border-t border-white/5 space-y-4"
         >
           {/* Legal Disclaimer & Content Notice */}
           <div className="max-w-4xl mx-auto text-center space-y-4">
@@ -185,7 +185,7 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-8 border-t border-white/[0.02]">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-4 border-t border-white/[0.02]">
             <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-[13px] text-muted-foreground/60">
               <span>© {currentYear} <span className="text-foreground/80 font-semibold tracking-tight">Animy</span>. All Rights Reserved.</span>
               <span className="hidden md:block h-1 w-1 rounded-full bg-white/10" />
