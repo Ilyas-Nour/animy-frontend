@@ -136,7 +136,7 @@ export function StreamingContainer({
         setIframeLoaded(false)
         try {
             const res = await api.get(
-                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=animepahe&malId=${malId}&ep=${ep.number}&tmdbId=${tmdbId || ''}`
+                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=animepahe&malId=${malId}&ep=${ep.number}&tmdbId=${tmdbId || ''}&title=${encodeURIComponent(animeTitle)}`
             )
             const data = res.data.data || res.data
             setStreamData(data)
