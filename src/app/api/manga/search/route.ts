@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
             const variables: any = {
                 page,
                 perPage: limit > 50 ? 50 : limit,
-                sort: order_by === 'popularity' ? 'POPULARITY_DESC' : 'TRENDING_DESC'
+                sort: order_by === 'popularity' ? ['POPULARITY_DESC'] : ['TRENDING_DESC']
             }
 
             if (status === 'publishing' || status === 'releasing') {
