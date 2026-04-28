@@ -187,7 +187,7 @@ export function StreamingContainer({
                             : 'text-indigo-400 border-indigo-500/20 bg-indigo-500/10'
                 )}>
                     <Wifi className="w-3 h-3" />
-                    {hiLoading ? 'Syncing Mesh...' : hiError ? 'Mesh Offline' : 'Resilience Mesh v7.8 Online (Clean)'}
+                    {hiLoading ? 'Syncing Mesh...' : hiError ? 'Mesh Offline' : 'Resilience Mesh v7.9 Online (Universal)'}
                 </div>
 
                 <div className="flex-1 flex flex-wrap gap-2">
@@ -225,10 +225,10 @@ export function StreamingContainer({
                              <div className="absolute inset-0 w-12 h-12 rounded-full border-t-2 border-indigo-500 animate-spin" />
                         </div>
                         <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-                            Engaging Resilience Mesh v7.8...
+                            Engaging Resilience Mesh v7.9...
                         </p>
                         <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest">
-                            Surgical Clean Active
+                            Universal ID Bridge Active
                         </p>
                     </div>
                 )}
