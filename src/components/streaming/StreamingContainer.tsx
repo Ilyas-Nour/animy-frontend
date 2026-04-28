@@ -187,7 +187,7 @@ export function StreamingContainer({
                             : 'text-indigo-400 border-indigo-500/20 bg-indigo-500/10'
                 )}>
                     <Wifi className="w-3 h-3" />
-                    {hiLoading ? 'Syncing Mesh...' : hiError ? 'Mesh Offline' : 'Resilience Mesh v7.3 Online'}
+                    {hiLoading ? 'Syncing Mesh...' : hiError ? 'Mesh Offline' : 'Resilience Mesh v7.6 Online'}
                 </div>
 
                 <div className="flex-1 flex flex-wrap gap-2">
@@ -225,10 +225,10 @@ export function StreamingContainer({
                              <div className="absolute inset-0 w-12 h-12 rounded-full border-t-2 border-indigo-500 animate-spin" />
                         </div>
                         <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-                            Engaging Resilience Mesh v7.3...
+                            Engaging Resilience Mesh v7.6...
                         </p>
                         <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest">
-                            Auto-failover in progress
+                            Deep-Resolve Active
                         </p>
                     </div>
                 )}
@@ -238,7 +238,7 @@ export function StreamingContainer({
                         <AlertCircle className="w-12 h-12 text-red-500/30" />
                         <div className="space-y-1">
                             <p className="text-white font-bold">Node Connection Failed</p>
-                            <p className="text-white/40 text-xs">The selected server is currently unresponsive. Try another mirror.</p>
+                            <p className="text-white/40 text-xs">Deep-Resolve failed to find active links. Try another mirror.</p>
                         </div>
                         <Button variant="outline" size="sm" onClick={() => selectedEp && fetchStreamSources(selectedEp)} className="mt-2 border-white/10">
                             <RefreshCw className="w-3.5 h-3.5 mr-2" /> Retry Node
