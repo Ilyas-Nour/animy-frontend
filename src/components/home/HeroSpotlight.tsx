@@ -38,26 +38,54 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     className="absolute inset-0"
                 >
                     <motion.div
-                        initial={{ scale: 1.05 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 15, ease: "easeOut" }}
                         className="absolute inset-0"
                     >
-                        <Image
-                            src={active.bannerImage || active.images.jpg.large_image_url}
-                            alt={active.title}
-                            fill
-                            className={cn(
-                                "object-cover transition-all duration-1000",
-                                // If it's a banner, we favor the right side to keep characters visible
-                                active.bannerImage ? "object-[center_20%]" : "object-center",
-                                !active.bannerImage && "blur-3xl opacity-30 scale-125"
+                        {/* LAYERED BACKGROUND SYSTEM */}
+                        <div className="absolute top-0 left-0 w-full h-[60vh] md:h-[70vh] z-0 overflow-hidden">
+                            {/* 1. Atmosphere Layer (Blurred base) */}
+                            <Image
+                                src={active.bannerImage || active.images.jpg.large_image_url}
+                                alt=""
+                                fill
+                                className="object-cover blur-[80px] opacity-40 scale-110"
+                                priority
+                            />
+                            
+                            {/* 2. Primary Content Layer (Limited height to prevent zoom) */}
+                            {active.bannerImage ? (
+                                <Image
+                                    src={active.bannerImage}
+                                    alt={active.title}
+                                    fill
+                                    className="object-cover object-[center_25%]"
+                                    priority
+                                    quality={100}
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-[#0a0a0a] flex items-center justify-center overflow-hidden">
+                                    <Image
+                                        src="https://images.alphacoders.com/605/605592.png" 
+                                        alt=""
+                                        fill
+                                        className="object-cover opacity-20"
+                                    />
+                                    {/* Poster fallback (contained, not zoomed) */}
+                                    <div className="relative w-full h-full opacity-40 blur-xl">
+                                         <Image
+                                            src={active.images.jpg.large_image_url}
+                                            alt=""
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                </div>
                             )}
-                            priority
-                        />
+                            
+                            {/* Deep Fade for the height-limited image */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
+                        </div>
                         
-                        {/* THE "ANIKAI" GRADIENT SYSTEM */}
-                        {/* 1. Primary Left-to-Right for text readability */}
+                        {/* THE "ANIKAI" GRADIENT SYSTEM (Full coverage) */}
                         <div 
                             className="absolute inset-0 z-10" 
                             style={{ 
@@ -65,19 +93,8 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                             }}
                         />
                         
-                        {/* 2. Bottom-to-Top to ground the content */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent z-10" />
-                        
-                        {/* 3. Subtle Vignette for depth */}
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] z-10" />
-
-                        {/* 4. Color-based backdrop for missing banners */}
-                        {!active.bannerImage && (
-                            <div 
-                                className="absolute inset-0 z-0 opacity-40"
-                                style={{ backgroundColor: active.color || 'var(--primary)' }}
-                            />
-                        )}
+                        {/* Final ground fade */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10" />
                     </motion.div>
 
                     {/* Content Layer */}

@@ -162,3 +162,63 @@ export interface AnimeSearchResponse {
   data: Anime[]
   pagination: Pagination
 }
+
+export interface Person {
+  id: number;
+  name: {
+    full: string;
+    native?: string;
+    alternative?: string[];
+  };
+  image: {
+    large: string;
+    medium: string;
+  };
+  description?: string;
+  gender?: string;
+  dateOfBirth?: {
+    year?: number;
+    month?: number;
+    day?: number;
+  };
+  homeTown?: string;
+  languageV2?: string;
+  primaryOccupations?: string[];
+  characterMedia?: {
+    edges: Array<{
+      characterRole: string;
+      node: {
+        id: number;
+        title: {
+          romaji: string;
+        };
+        coverImage: {
+          medium: string;
+        };
+      };
+      characterNode: {
+        id: number;
+        name: {
+          full: string;
+        };
+        image: {
+          medium: string;
+        };
+      };
+    }>;
+  };
+  staffMedia?: {
+    edges: Array<{
+      staffRole: string;
+      node: {
+        id: number;
+        title: {
+          romaji: string;
+        };
+        coverImage: {
+          medium: string;
+        };
+      };
+    }>;
+  };
+}
