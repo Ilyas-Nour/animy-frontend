@@ -507,12 +507,13 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                 </h2>
                                 <div className="aspect-video w-full rounded-3xl overflow-hidden shadow-2xl border border-white/10">
                                     <iframe
-                                        src={`${(anime.trailer.embed_url || `https://www.youtube.com/embed/${anime.trailer.youtube_id}`).replace('youtube.com', 'youtube-nocookie.com')}?enablejsapi=1${typeof window !== 'undefined' ? `&origin=${window.location.origin}` : ''}`}
+                                        src={`${(anime.trailer.embed_url || `https://www.youtube.com/embed/${anime.trailer.youtube_id}`).replace('youtube.com', 'youtube-nocookie.com')}?enablejsapi=1${typeof window !== 'undefined' ? `&origin=${encodeURIComponent(window.location.origin)}&widget_referrer=${encodeURIComponent(window.location.href)}` : ''}`}
                                         title={`${anime.title} Trailer`}
                                         className="w-full h-full border-0"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        referrerPolicy="strict-origin-when-cross-origin"
                                         allowFullScreen
-                                    />
+                                     />
                                 </div>
                             </section>
                         )}
