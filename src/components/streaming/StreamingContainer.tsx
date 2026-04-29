@@ -245,6 +245,27 @@ export function StreamingContainer({
                         className="w-full h-full"
                         onReady={() => setIframeLoaded(true)}
                     />
+                ) : (activeServer?.provider === 'external' || activeServer?.name?.includes('Direct')) ? (
+                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#0a0a0b] gap-6 px-6 text-center">
+                        <div className="w-20 h-20 rounded-full bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                             <ExternalLink className="w-10 h-10 text-indigo-500" />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-black text-white uppercase tracking-tighter">Secure Portal Ready</h3>
+                            <p className="text-white/40 text-xs max-w-xs mx-auto">
+                                This provider ({activeServer.name}) requires a direct secure connection to play.
+                            </p>
+                        </div>
+                        <Button 
+                            onClick={() => {
+                                window.open(activeServer.url, '_blank', 'noopener,noreferrer');
+                                setIframeLoaded(true);
+                            }}
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 h-12 rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-500/20"
+                        >
+                            Launch Secure Player
+                        </Button>
+                    </div>
                 ) : activeServer?.url && (
                     <iframe
                         key={`${activeServer.url}-${iframeKey}`}
