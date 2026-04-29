@@ -499,7 +499,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                         </section>
 
                         {/* Trailer */}
-                        {anime.trailer?.youtube_id && (
+                        {(anime.trailer?.youtube_id || anime.trailer?.embed_url) && (
                             <section>
                                 <h2 className="text-2xl font-black mb-6 flex items-center gap-3">
                                     <span className="w-1.5 h-8 bg-primary rounded-full" />
