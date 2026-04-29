@@ -52,8 +52,12 @@ export default function ArtPlayer({ url, poster, className, headers, onReady }: 
               xhrSetup: function (xhr) {
                 if (headers) {
                   Object.entries(headers).forEach(([key, value]) => {
-                    xhr.setRequestHeader(key, value)
-                  })
+                    // Filter out forbidden headers that cause CORS blocks in browser
+                    const forbidden = ['user-agent', 'referer', 'origin', 'host', 'cookie'];
+                    if (!forbidden.includes(key.toLowerCase())) {
+                      xhr.setRequestHeader(key, value);
+                    }
+                  });
                 }
               }
             })
