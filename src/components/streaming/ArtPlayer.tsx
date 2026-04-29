@@ -49,10 +49,17 @@ export default function ArtPlayer({ url, poster, className, headers, onReady }: 
         m3u8: function (video: HTMLMediaElement, url: string) {
           if (Hls.isSupported()) {
             const hls = new Hls({
-              xhrSetup: function (xhr) {
+              xhrSetup: function (xhr, url) {
+                // Apply CORS Proxy for known blocked domains
+                let finalUrl = url;
+                if (url.includes('krussdomi.com') || url.includes('ms-cdn') || url.includes('kwik')) {
+                  finalUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                  xhr.open('GET', finalUrl, true);
+                }
+
                 if (headers) {
                   Object.entries(headers).forEach(([key, value]) => {
-                    // Filter out forbidden headers that cause CORS blocks in browser
+                    // Filter out forbidden headers
                     const forbidden = ['user-agent', 'referer', 'origin', 'host', 'cookie'];
                     if (!forbidden.includes(key.toLowerCase())) {
                       xhr.setRequestHeader(key, value);
