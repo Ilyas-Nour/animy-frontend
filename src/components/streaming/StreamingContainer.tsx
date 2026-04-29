@@ -177,7 +177,7 @@ export function StreamingContainer({
                             : 'text-indigo-400 border-indigo-500/20 bg-indigo-500/10'
                 )}>
                     <Wifi className="w-3 h-3" />
-                    {hiLoading ? 'Syncing Mesh...' : hiError ? 'Mesh Offline' : 'Resilience Mesh v8.2 Online (Final Revival)'}
+                    {hiLoading ? 'Syncing Mesh...' : hiError ? 'Mesh Offline' : 'Resilience Mesh v8.9 Online (Final Revival)'}
                 </div>
 
                 <div className="flex-1 flex flex-wrap gap-2">
@@ -215,7 +215,7 @@ export function StreamingContainer({
                              <div className="absolute inset-0 w-12 h-12 rounded-full border-t-2 border-indigo-500 animate-spin" />
                         </div>
                         <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-                            Engaging Resilience Mesh v8.2...
+                            Engaging Resilience Mesh v8.9...
                         </p>
                         <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest">
                             Discovery Revival Active
@@ -241,6 +241,7 @@ export function StreamingContainer({
                     <ArtPlayer
                         url={activeServer.sources[0].url}
                         poster={animePoster}
+                        headers={streamData?.headers}
                         className="w-full h-full"
                         onReady={() => setIframeLoaded(true)}
                     />
@@ -251,7 +252,7 @@ export function StreamingContainer({
                         className="w-full h-full border-0"
                         allowFullScreen
                         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                        referrerPolicy="no-referrer-when-downgrade"
+                        referrerPolicy="no-referrer"
                         onLoad={() => setIframeLoaded(true)}
                     />
                 )}

@@ -8,10 +8,11 @@ interface ArtPlayerProps {
   url: string
   poster?: string
   className?: string
+  headers?: Record<string, string>
   onReady?: (art: Artplayer) => void
 }
 
-export default function ArtPlayer({ url, poster, className, onReady }: ArtPlayerProps) {
+export default function ArtPlayer({ url, poster, className, headers, onReady }: ArtPlayerProps) {
   const artRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -47,7 +48,15 @@ export default function ArtPlayer({ url, poster, className, onReady }: ArtPlayer
       customType: {
         m3u8: function (video: HTMLMediaElement, url: string) {
           if (Hls.isSupported()) {
-            const hls = new Hls()
+            const hls = new Hls({
+              xhrSetup: function (xhr) {
+                if (headers) {
+                  Object.entries(headers).forEach(([key, value]) => {
+                    xhr.setRequestHeader(key, value)
+                  })
+                }
+              }
+            })
             hls.loadSource(url)
             hls.attachMedia(video)
           } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
