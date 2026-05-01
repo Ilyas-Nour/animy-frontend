@@ -48,29 +48,20 @@ export default function ArtPlayer({ url, poster, className, headers, onReady }: 
       customType: {
         m3u8: function (video: HTMLMediaElement, url: string) {
           if (Hls.isSupported()) {
+            // All .m3u8 URLs are already pre-proxied by the backend.
+            // No CORS workaround needed — load directly.
             const hls = new Hls({
-              xhrSetup: function (xhr, url) {
-                // Apply CORS Proxy for known blocked domains
-                let finalUrl = url;
-                if (url.includes('krussdomi.com') || url.includes('ms-cdn') || url.includes('kwik')) {
-                  finalUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                  xhr.open('GET', finalUrl, true);
-                }
-
-                if (headers) {
-                  Object.entries(headers).forEach(([key, value]) => {
-                    // Filter out forbidden headers
-                    const forbidden = ['user-agent', 'referer', 'origin', 'host', 'cookie'];
-                    if (!forbidden.includes(key.toLowerCase())) {
-                      xhr.setRequestHeader(key, value);
-                    }
-                  });
-                }
-              }
+              maxBufferLength: 30,
+              enableWorker: true,
+              capLevelToPlayerSize: true,
             })
             hls.loadSource(url)
             hls.attachMedia(video)
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+              video.play().catch(() => {})
+            })
           } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // Native HLS (Safari)
             video.src = url
           }
         },
