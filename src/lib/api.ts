@@ -91,8 +91,15 @@ async function fetchWithInterceptor(url: string, options: RequestOptions = {}) {
     return { data: null, status: response.status };
   }
 
-  const data = await response.json();
-  return { data, status: response.status };
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    const data = await response.json();
+    return { data, status: response.status };
+  }
+
+  // If not JSON, return the raw text or an error
+  const text = await response.text();
+  return { data: text as any, status: response.status };
 }
 
 export const api = {
