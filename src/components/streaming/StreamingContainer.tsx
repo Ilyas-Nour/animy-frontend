@@ -71,13 +71,15 @@ export function StreamingContainer({
         setHiLoading(true)
         setHiError(null)
         try {
-            const searchRes = await api.get(
-                `/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`
-            )
-            
-            // v8.3 Handle both array and single-object responses
-            const rawData = searchRes.data.data || searchRes.data
-            const results = Array.isArray(rawData) ? rawData : rawData.results ? rawData.results : [rawData]
+            // v11.0 Aggressive Mesh Discovery with 4s timeout
+            const results = await Promise.race([
+                api.get(`/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`)
+                    .then(res => {
+                        const rawData = res.data.data || res.data
+                        return Array.isArray(rawData) ? rawData : rawData.results ? rawData.results : [rawData]
+                    }),
+                new Promise<any[]>((_, reject) => setTimeout(() => reject(new Error('Mesh Timeout')), 4000))
+            ])
 
             if (!results.length || !results[0].id) throw new Error('No Nodes Active')
 
@@ -97,12 +99,13 @@ export function StreamingContainer({
             setHiEpisodes(episodes)
             setSelectedEp(episodes[0])
         } catch (e: any) {
-            console.warn('Mesh Discovery failed, using fallback:', e.message)
-            setHiError(null)
-
+            console.warn('Mesh Discovery failed or timed out, using Nuclear Fallback:', e.message)
+            
+            // Nuclear Fallback: Use MAL ID directly as the stream ID
+            // This works because our v11 backend handles malId in the episode stream endpoint
             const count = totalEpisodes > 0 ? totalEpisodes : 1
             const virtualEpisodes: Episode[] = Array.from({ length: count }, (_, i) => ({
-                id: String(i + 1),
+                id: String(malId), // Use malId as the episode container ID
                 number: i + 1,
                 title: `Episode ${i + 1}`,
             }))
@@ -177,7 +180,7 @@ export function StreamingContainer({
                             : 'text-indigo-400 border-indigo-500/20 bg-indigo-500/10'
                 )}>
                     <Wifi className="w-3 h-3" />
-                    {hiLoading ? 'Syncing Mesh...' : hiError ? 'Mesh Offline' : 'Resilience Mesh v8.9 Online (Final Revival)'}
+                    {hiLoading ? 'Syncing Mesh...' : hiError ? 'Mesh Offline' : 'Resilience Mesh v11.0 Online (Nuclear Restoration)'}
                 </div>
 
                 <div className="flex-1 flex flex-wrap gap-2">
@@ -215,10 +218,10 @@ export function StreamingContainer({
                              <div className="absolute inset-0 w-12 h-12 rounded-full border-t-2 border-indigo-500 animate-spin" />
                         </div>
                         <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-                            Engaging Resilience Mesh v8.9...
+                            Engaging Resilience Mesh v11.0...
                         </p>
                         <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest">
-                            Discovery Revival Active
+                            Nuclear Discovery Bridge Active
                         </p>
                     </div>
                 )}
@@ -228,7 +231,7 @@ export function StreamingContainer({
                         <AlertCircle className="w-12 h-12 text-red-500/30" />
                         <div className="space-y-1">
                             <p className="text-white font-bold">Node Connection Failed</p>
-                            <p className="text-white/40 text-xs">True-ID Bridge failed to resolve the stream. Try another mirror.</p>
+                            <p className="text-white/40 text-xs">Direct MAL-ID Bridge failed to resolve the stream. Try another mirror.</p>
                         </div>
                         <Button variant="outline" size="sm" onClick={() => selectedEp && fetchStreamSources(selectedEp)} className="mt-2 border-white/10">
                             <RefreshCw className="w-3.5 h-3.5 mr-2" /> Retry Node
