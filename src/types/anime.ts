@@ -3,6 +3,7 @@ export interface Anime {
   anilistId?: number
   mal_id: number
   idMal?: number
+  tmdbId?: string
   bannerImage?: string
   color?: string
   url?: string
