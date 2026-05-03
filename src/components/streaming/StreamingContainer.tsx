@@ -74,7 +74,7 @@ export function StreamingContainer({
         setHiError(null)
         
         findAndLoadEpisodes()
-    }, [mounted, animeTitle, malId]) // Included malId
+    }, [mounted, animeTitle, malId, tmdbId]) // Included malId and tmdbId
 
     const findAndLoadEpisodes = async () => {
         setHiLoading(true)
