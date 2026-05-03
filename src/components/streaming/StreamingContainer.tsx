@@ -64,8 +64,17 @@ export function StreamingContainer({
     // ── Phase 1: Load Episodes ───────────────────────────────────────────────
     useEffect(() => {
         if (!mounted || !animeTitle) return
+        
+        // v11.1 Reset state on ID/Title change to prevent state leaks
+        setHiEpisodes([])
+        setSelectedEp(null)
+        setStreamData(null)
+        setActiveServer(null)
+        setStreamError(null)
+        setHiError(null)
+        
         findAndLoadEpisodes()
-    }, [mounted, animeTitle])
+    }, [mounted, animeTitle, malId]) // Included malId
 
     const findAndLoadEpisodes = async () => {
         setHiLoading(true)
