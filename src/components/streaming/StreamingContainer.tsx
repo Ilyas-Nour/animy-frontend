@@ -3,7 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Hls from 'hls.js'
 import { EpisodeGrid } from './EpisodeGrid'
-import { Loader2, Wifi, AlertCircle, ExternalLink, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react'
+import { 
+    Tv, ChevronLeft, ChevronRight, Info, ExternalLink, 
+    Wifi, AlertCircle, Play, Loader2, Maximize, 
+    Settings, Subtitles, RefreshCcw 
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import api from '@/lib/api'
@@ -199,14 +203,23 @@ export function StreamingContainer({
             {/* ── Server Bar ── */}
             <div className="flex flex-wrap items-center gap-2">
                 <div className={cn(
-                    'flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border',
+                    'flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border transition-colors',
                     hiLoading ? 'text-yellow-400 border-yellow-500/20 bg-yellow-500/10'
-                        : hiError ? 'text-red-400 border-red-500/20 bg-red-500/10'
-                            : 'text-indigo-400 border-indigo-500/20 bg-indigo-500/10'
+                        : hiError ? 'text-orange-400 border-orange-500/20 bg-orange-500/10'
+                            : 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
                 )}>
-                    <Wifi className="w-3 h-3" />
-                    {hiLoading ? 'Syncing Mesh...' : hiError ? 'Mesh Offline' : 'Resilience Mesh v11.0 Online (Nuclear Restoration)'}
+                    <Wifi className={cn("w-3 h-3", hiLoading && "animate-pulse")} />
+                    {hiLoading ? 'Syncing Nuclear Mesh...' : hiError ? 'Restoration Active (Fallback Mode)' : 'Nuclear Mesh v11.1 Online'}
                 </div>
+
+                <button 
+                    onClick={() => findAndLoadEpisodes()}
+                    disabled={hiLoading}
+                    className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white/50 hover:text-white transition-all active:scale-95 disabled:opacity-50"
+                    title="Force Nuclear Refresh"
+                >
+                    <RefreshCcw className={cn("w-3.5 h-3.5", hiLoading && "animate-spin")} />
+                </button>
 
                 <div className="flex-1 flex flex-wrap gap-2">
                     {streamData?.servers?.map((s: Server, idx: number) => (
@@ -322,7 +335,7 @@ export function StreamingContainer({
                         className="w-full h-full border-0"
                         allowFullScreen
                         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                        referrerPolicy="no-referrer"
+                        referrerPolicy="no-referrer-when-downgrade"
                         onLoad={() => setIframeLoaded(true)}
                     />
                 )}
