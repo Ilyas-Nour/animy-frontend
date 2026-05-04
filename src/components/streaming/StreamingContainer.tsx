@@ -52,31 +52,30 @@ export function StreamingContainer({
     const [hiError, setHiError] = useState<string | null>(null)
     const [selectedEp, setSelectedEp] = useState<Episode | null>(null)
     const [streamData, setStreamData] = useState<any>(null)
-    const [streamLoading, setStreamLoading] = useState(false)
-    const [streamError, setStreamError] = useState<string | null>(null)
-    const [activeServer, setActiveServer] = useState<Server | null>(null)
-    const [iframeLoaded, setIframeLoaded] = useState(false)
-    const [iframeKey, setIframeKey] = useState(0)
+      const lastLoadedRef = useRef<string | null>(null)
 
     const externalSearchUrl = `https://anikai.to/browser?keyword=${encodeURIComponent(animeTitle)}`
+    const gogoSearchUrl = `https://gogoanime.hy/?s=${encodeURIComponent(animeTitle)}`
 
     useEffect(() => { setMounted(true) }, [])
 
     // ── Phase 1: Load Episodes ───────────────────────────────────────────────
     const findAndLoadEpisodes = useCallback(async () => {
-        if (!animeTitle) return
+        if (!animeTitle || lastLoadedRef.current === `${animeTitle}-${malId}`) return
+        
+        lastLoadedRef.current = `${animeTitle}-${malId}`
         setHiLoading(true)
         setHiError(null)
         
         try {
-            console.debug(`Mesh Discovery Phase 1: "${animeTitle}"`)
+            console.debug(`Mesh Discovery Phase 1: "${animeTitle}" (AL: ${malId})`)
             const results = await Promise.race([
                 api.get(`/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`)
                     .then(res => {
                         const rawData = res.data.data || res.data
                         return Array.isArray(rawData) ? rawData : rawData.results ? rawData.results : [rawData]
                     }),
-                new Promise<any[]>((_, reject) => setTimeout(() => reject(new Error('Mesh Timeout')), 5000))
+                new Promise<any[]>((_, reject) => setTimeout(() => reject(new Error('Mesh Timeout')), 8000))
             ])
 
             if (!results.length || !results[0].id) throw new Error('No Nodes Active')
@@ -84,7 +83,7 @@ export function StreamingContainer({
             const animeId = results[0].id
             const infoRes = await Promise.race([
                 api.get(`/streaming/anime/${encodeURIComponent(animeId)}`),
-                new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Metadata Timeout')), 5000))
+                new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Metadata Timeout')), 8000))
             ])
             const info = infoRes.data.data || infoRes.data
 
@@ -123,15 +122,19 @@ export function StreamingContainer({
     useEffect(() => {
         if (!mounted || !animeTitle) return
         
-        setHiEpisodes([])
-        setSelectedEp(null)
-        setStreamData(null)
-        setActiveServer(null)
-        setStreamError(null)
-        setHiError(null)
+        // Reset state only if it's a new anime
+        if (lastLoadedRef.current !== `${animeTitle}-${malId}`) {
+            setHiEpisodes([])
+            setSelectedEp(null)
+            setStreamData(null)
+            setActiveServer(null)
+            setStreamError(null)
+            setHiError(null)
+            setIframeLoaded(false)
+        }
         
         findAndLoadEpisodes()
-    }, [mounted, animeTitle, findAndLoadEpisodes])
+    }, [mounted, animeTitle, malId, findAndLoadEpisodes])
 
     // ── Phase 2: Fetch Streaming Links ───────────────────────────────────────
     const fetchStreamSources = useCallback(async (ep: Episode) => {
@@ -216,10 +219,16 @@ export function StreamingContainer({
                     ))}
                 </div>
 
-                <a href={externalSearchUrl} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-[10px] text-indigo-400/70 hover:text-indigo-300 transition-colors font-bold uppercase tracking-widest">
-                    <ExternalLink className="w-3 h-3" /> External
-                </a>
+                <div className="flex items-center gap-3">
+                    <a href={externalSearchUrl} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-[10px] text-indigo-400/70 hover:text-indigo-300 transition-colors font-bold uppercase tracking-widest">
+                        <ExternalLink className="w-3 h-3" /> Anikai
+                    </a>
+                    <a href={gogoSearchUrl} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-[10px] text-orange-400/70 hover:text-orange-300 transition-colors font-bold uppercase tracking-widest">
+                        <ExternalLink className="w-3 h-3" /> Gogo
+                    </a>
+                </div>
             </div>
 
             {/* ── Video Player ── */}
