@@ -56,6 +56,7 @@ export function StreamingContainer({
 
     const externalSearchUrl = `https://anikai.to/browser?keyword=${encodeURIComponent(animeTitle)}`
     const gogoSearchUrl = `https://gogoanime.hy/?s=${encodeURIComponent(animeTitle)}`
+    const anifySearchUrl = `https://anify.to/search?searchText=${encodeURIComponent(animeTitle)}`
 
     useEffect(() => { setMounted(true) }, [])
 
@@ -227,6 +228,10 @@ export function StreamingContainer({
                     <a href={gogoSearchUrl} target="_blank" rel="noopener noreferrer"
                         className="flex items-center gap-1.5 text-[10px] text-orange-400/70 hover:text-orange-300 transition-colors font-bold uppercase tracking-widest">
                         <ExternalLink className="w-3 h-3" /> Gogo
+                    </a>
+                    <a href={anifySearchUrl} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-[10px] text-emerald-400/70 hover:text-emerald-300 transition-colors font-bold uppercase tracking-widest">
+                        <ExternalLink className="w-3 h-3" /> Anify
                     </a>
                 </div>
             </div>
