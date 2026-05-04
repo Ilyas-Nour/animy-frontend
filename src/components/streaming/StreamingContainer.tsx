@@ -30,6 +30,7 @@ interface Server {
     name: string
     url?: string
     sources?: Array<{ url: string; quality: string; isM3U8: boolean }>
+    subtitles?: Array<{ url: string; lang: string; label: string }>
     provider: string
     isNative?: boolean
 }
