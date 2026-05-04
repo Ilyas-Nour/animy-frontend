@@ -54,9 +54,13 @@ async function handleRequest(request: NextRequest) {
       headers.set('content-type', 'application/json');
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     const fetchOptions: RequestInit = {
       method: request.method,
       headers: headers,
+      signal: controller.signal,
     };
 
     // Forward body for non-GET/HEAD requests
@@ -68,6 +72,7 @@ async function handleRequest(request: NextRequest) {
     }
 
     const response = await fetch(finalUrl, fetchOptions);
+    clearTimeout(timeoutId);
     
     // Get response body as array buffer to handle various content types (json, binary, etc.)
     const responseBody = await response.arrayBuffer();
@@ -83,10 +88,17 @@ async function handleRequest(request: NextRequest) {
       headers: responseHeaders,
     });
   } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.warn(`[PROXY TIMEOUT] ${request.method} ${finalUrl} timed out after 15s`);
+      return NextResponse.json(
+        { error: 'Backend request timed out', details: 'The server took too long to respond' },
+        { status: 504 }
+      );
+    }
     console.error(`[PROXY CRASH] ${request.method} ${finalUrl}:`, error);
     return NextResponse.json(
       { error: 'Proxy failed to connect to backend', details: error.message },
-      { status: 500 }
+      { status: 502 }
     );
   }
 }

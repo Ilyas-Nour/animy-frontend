@@ -9,20 +9,30 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit') || '20'
 
     try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 15000)
+
         const response = await fetch(`${BACKEND_API}/anime/top?filter=${filter}&limit=${limit}`, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 3600 }
+            next: { revalidate: 3600 },
+            signal: controller.signal
         })
 
+        clearTimeout(timeoutId)
+
         if (!response.ok) {
-            throw new Error(`Backend API error: ${response.status}`)
+            console.error(`[PROXY ERROR] Top anime backend status: ${response.status}`)
+            return NextResponse.json({ data: [] }, { status: 200 })
         }
 
         const data = await response.json()
-        // Backend already returns { data: [...] } in Jikan-compatible format
         return NextResponse.json(data)
     } catch (error: any) {
-        console.error('[PROXY CRASH] Top anime proxy fetch failed:', error)
+        if (error.name === 'AbortError') {
+            console.warn('[PROXY TIMEOUT] Top anime fetch timed out after 15s')
+        } else {
+            console.error('[PROXY CRASH] Top anime proxy fetch failed:', error)
+        }
         return NextResponse.json({ data: [] }, { status: 200 })
     }
 }

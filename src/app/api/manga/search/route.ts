@@ -14,24 +14,30 @@ export async function GET(request: NextRequest) {
     const page = searchParams.get('page') || '1'
 
     try {
-        // Always proxy to Backend API
-        let url = `${BACKEND_API}/manga?q=${q}&type=${type}&status=${status}&order_by=${order_by}&sort=${sort}&limit=${limit}&page=${page}`
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 12000)
 
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },
             next: { revalidate: 3600 },
-            signal: AbortSignal.timeout(10000)
+            signal: controller.signal
         })
 
+        clearTimeout(timeoutId)
+
         if (!response.ok) {
-            throw new Error(`Backend error: ${response.status}`)
+            console.error(`[PROXY ERROR] Manga search backend status: ${response.status}`)
+            return NextResponse.json({ data: [] }, { status: 200 })
         }
 
         const data = await response.json()
         return NextResponse.json(data)
-
     } catch (error: any) {
-        console.error('Manga search proxy error:', error)
-        return NextResponse.json({ error: error.message, data: [] }, { status: 500 })
+        if (error.name === 'AbortError') {
+            console.warn('[PROXY TIMEOUT] Manga search timed out after 12s')
+        } else {
+            console.error('[PROXY CRASH] Manga search proxy error:', error)
+        }
+        return NextResponse.json({ data: [] }, { status: 200 })
     }
 }

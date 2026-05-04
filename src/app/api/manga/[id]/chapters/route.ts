@@ -10,19 +10,30 @@ export async function GET(
     const { id } = await params
 
     try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 25000)
+
         const response = await fetch(`${BACKEND_API}/manga/${id}/read-chapters`, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 3600 }
+            next: { revalidate: 3600 },
+            signal: controller.signal
         })
 
+        clearTimeout(timeoutId)
+
         if (!response.ok) {
-            throw new Error(`Backend error: ${response.status}`)
+            console.error(`[PROXY ERROR] Manga chapters backend status: ${response.status}`)
+            return NextResponse.json({ data: { chapters: [] } }, { status: 200 })
         }
 
         const data = await response.json()
         return NextResponse.json(data)
     } catch (error: any) {
-        console.error('Manga chapters error:', error)
-        return NextResponse.json({ error: error.message, data: { chapters: [] } }, { status: 500 })
+        if (error.name === 'AbortError') {
+            console.warn('[PROXY TIMEOUT] Manga chapters fetch timed out after 25s')
+        } else {
+            console.error('Manga chapters error:', error)
+        }
+        return NextResponse.json({ data: { chapters: [] } }, { status: 200 })
     }
 }
