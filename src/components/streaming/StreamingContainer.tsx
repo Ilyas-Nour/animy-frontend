@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Hls from 'hls.js'
 import { EpisodeGrid } from './EpisodeGrid'
 import { Loader2, Wifi, AlertCircle, ExternalLink, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react'
@@ -63,25 +63,10 @@ export function StreamingContainer({
     useEffect(() => { setMounted(true) }, [])
 
     // ── Phase 1: Load Episodes ───────────────────────────────────────────────
-    useEffect(() => {
-        if (!mounted || !animeTitle) return
-        
-        // v11.1 Reset state on ID/Title change to prevent state leaks
-        setHiEpisodes([])
-        setSelectedEp(null)
-        setStreamData(null)
-        setActiveServer(null)
-        setStreamError(null)
-        setHiError(null)
-        
-        findAndLoadEpisodes()
-    }, [mounted, animeTitle, malId, tmdbId]) // Included malId and tmdbId
-
-    const findAndLoadEpisodes = async () => {
+    const findAndLoadEpisodes = useCallback(async () => {
         setHiLoading(true)
         setHiError(null)
         try {
-            // v11.0 Aggressive Mesh Discovery with 4s timeout
             const results = await Promise.race([
                 api.get(`/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`)
                     .then(res => {
@@ -111,11 +96,9 @@ export function StreamingContainer({
         } catch (e: any) {
             console.warn('Mesh Discovery failed or timed out, using Nuclear Fallback:', e.message)
             
-            // Nuclear Fallback: Use MAL ID directly as the stream ID
-            // This works because our v11 backend handles malId in the episode stream endpoint
             const count = totalEpisodes > 0 ? totalEpisodes : 1
             const virtualEpisodes: Episode[] = Array.from({ length: count }, (_, i) => ({
-                id: String(malId), // Use malId as the episode container ID
+                id: String(malId),
                 number: i + 1,
                 title: `Episode ${i + 1}`,
             }))
@@ -125,15 +108,23 @@ export function StreamingContainer({
         } finally {
             setHiLoading(false)
         }
-    }
+    }, [animeTitle, animeTitleEnglish, malId, totalEpisodes])
+
+    useEffect(() => {
+        if (!mounted || !animeTitle) return
+        
+        setHiEpisodes([])
+        setSelectedEp(null)
+        setStreamData(null)
+        setActiveServer(null)
+        setStreamError(null)
+        setHiError(null)
+        
+        findAndLoadEpisodes()
+    }, [mounted, animeTitle, findAndLoadEpisodes])
 
     // ── Phase 2: Fetch Streaming Links ───────────────────────────────────────
-    useEffect(() => {
-        if (!selectedEp) return
-        fetchStreamSources(selectedEp)
-    }, [selectedEp])
-
-    const fetchStreamSources = async (ep: Episode) => {
+    const fetchStreamSources = useCallback(async (ep: Episode) => {
         setStreamLoading(true)
         setStreamError(null)
         setIframeLoaded(false)
@@ -155,7 +146,12 @@ export function StreamingContainer({
         } finally {
             setStreamLoading(false)
         }
-    }
+    }, [animeTitle, malId, tmdbId])
+
+    useEffect(() => {
+        if (!selectedEp) return
+        fetchStreamSources(selectedEp)
+    }, [selectedEp, fetchStreamSources])
 
     const switchServer = (server: Server) => {
         setActiveServer(server)

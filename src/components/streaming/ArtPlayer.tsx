@@ -107,7 +107,7 @@ export default function ArtPlayer({ url, poster, className, subtitles, onEnded, 
         art.destroy(false)
       }
     }
-  }, [url, poster, subtitles])
+  }, [url, poster, subtitles, onEnded, onReady])
 
   return <div ref={artRef} className={className}></div>
 }
