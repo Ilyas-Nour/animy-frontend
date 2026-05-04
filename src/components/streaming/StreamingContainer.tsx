@@ -58,28 +58,34 @@ export function StreamingContainer({
     const [iframeLoaded, setIframeLoaded] = useState(false)
     const [iframeKey, setIframeKey] = useState(0)
 
-    const externalSearchUrl = `https://animekai.to/search?keyword=${encodeURIComponent(animeTitle)}`
+    const externalSearchUrl = `https://anikai.to/browser?keyword=${encodeURIComponent(animeTitle)}`
 
     useEffect(() => { setMounted(true) }, [])
 
     // ── Phase 1: Load Episodes ───────────────────────────────────────────────
     const findAndLoadEpisodes = useCallback(async () => {
+        if (!animeTitle) return
         setHiLoading(true)
         setHiError(null)
+        
         try {
+            console.debug(`Mesh Discovery Phase 1: "${animeTitle}"`)
             const results = await Promise.race([
                 api.get(`/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`)
                     .then(res => {
                         const rawData = res.data.data || res.data
                         return Array.isArray(rawData) ? rawData : rawData.results ? rawData.results : [rawData]
                     }),
-                new Promise<any[]>((_, reject) => setTimeout(() => reject(new Error('Mesh Timeout')), 4000))
+                new Promise<any[]>((_, reject) => setTimeout(() => reject(new Error('Mesh Timeout')), 5000))
             ])
 
             if (!results.length || !results[0].id) throw new Error('No Nodes Active')
 
             const animeId = results[0].id
-            const infoRes = await api.get(`/streaming/anime/${encodeURIComponent(animeId)}`)
+            const infoRes = await Promise.race([
+                api.get(`/streaming/anime/${encodeURIComponent(animeId)}`),
+                new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Metadata Timeout')), 5000))
+            ])
             const info = infoRes.data.data || infoRes.data
 
             if (!info?.episodes?.length) throw new Error('No Data Stream')
@@ -93,8 +99,9 @@ export function StreamingContainer({
 
             setHiEpisodes(episodes)
             setSelectedEp(episodes[0])
+            console.debug(`Mesh Discovery SUCCESS: ${episodes.length} episodes found.`)
         } catch (e: any) {
-            console.warn('Mesh Discovery failed or timed out, using Nuclear Fallback:', e.message)
+            console.warn('Mesh Discovery failed, engaging Nuclear Fallback:', e.message)
             
             const count = totalEpisodes > 0 ? totalEpisodes : 1
             const virtualEpisodes: Episode[] = Array.from({ length: count }, (_, i) => ({
@@ -104,7 +111,10 @@ export function StreamingContainer({
             }))
 
             setHiEpisodes(virtualEpisodes)
-            setSelectedEp(virtualEpisodes[0])
+            if (virtualEpisodes.length > 0) {
+                setSelectedEp(virtualEpisodes[0])
+            }
+            setHiError(e.message)
         } finally {
             setHiLoading(false)
         }
@@ -226,9 +236,19 @@ export function StreamingContainer({
                         <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
                             Engaging Resilience Mesh v11.0...
                         </p>
-                        <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest">
-                            Nuclear Discovery Bridge Active
-                        </p>
+                        <div className="flex flex-col items-center gap-2">
+                             <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest">
+                                 Nuclear Discovery Bridge Active
+                             </p>
+                             {streamLoading && (
+                                 <button 
+                                     onClick={() => setStreamError('Manual Bypass Triggered')}
+                                     className="text-indigo-500/50 hover:text-indigo-400 text-[9px] uppercase font-bold tracking-tighter mt-2 underline"
+                                 >
+                                     Skip Waiting & Show Mirrors
+                                 </button>
+                             )}
+                        </div>
                     </div>
                 )}
 

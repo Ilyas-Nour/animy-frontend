@@ -66,7 +66,13 @@ async function fetchWithInterceptor(url: string, options: RequestOptions = {}) {
     }
   }
 
-  const response = await fetch(finalUrl, config);
+  // 15-second timeout to prevent hanging requests
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const response = await fetch(finalUrl, { ...config, signal: controller.signal });
+    clearTimeout(timeoutId);
 
   if (!response.ok) {
     console.error(`[API ERROR] ${response.status} - ${finalUrl}`);
@@ -91,15 +97,21 @@ async function fetchWithInterceptor(url: string, options: RequestOptions = {}) {
     return { data: null, status: response.status };
   }
 
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
-    const data = await response.json();
-    return { data, status: response.status };
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      return { data, status: response.status };
+    }
+  
+    const text = await response.text();
+    return { data: text as any, status: response.status };
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('Request Timeout: The server took too long to respond.');
+    }
+    throw error;
   }
-
-  // If not JSON, return the raw text or an error
-  const text = await response.text();
-  return { data: text as any, status: response.status };
 }
 
 export const api = {
