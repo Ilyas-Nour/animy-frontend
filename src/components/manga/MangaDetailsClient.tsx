@@ -88,7 +88,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         }
 
         fetchChapters()
-    }, [manga.mal_id])
+    }, [manga.mal_id, initialChapters])
 
     useEffect(() => {
         if (isAuthenticated) {

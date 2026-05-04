@@ -222,15 +222,25 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                     {anime.title_english}
                                 </p>
                             )}
-                            <div className="flex flex-wrap gap-3">
-                                {anime.genres?.map(genre => (
-                                    <Badge
-                                        key={genre.mal_id}
-                                        className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 transition-all duration-300"
-                                    >
-                                        {genre.name}
-                                    </Badge>
-                                ))}
+                            <div className="flex flex-wrap items-center gap-4 mb-8">
+                                <Button 
+                                    size="lg"
+                                    className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-xl shadow-primary/30 group"
+                                    onClick={() => document.getElementById('streaming-section')?.scrollIntoView({ behavior: 'smooth' })}
+                                >
+                                    <Play className="h-6 w-6 mr-3 fill-current group-hover:scale-110 transition-transform" />
+                                    WATCH NOW
+                                </Button>
+                                <div className="flex flex-wrap gap-2">
+                                    {anime.genres?.map(genre => (
+                                        <Badge
+                                            key={genre.mal_id}
+                                            className="h-8 px-4 bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 transition-all duration-300 font-bold"
+                                        >
+                                            {genre.name}
+                                        </Badge>
+                                    ))}
+                                </div>
                             </div>
                         </motion.div>
                     </div>
@@ -437,7 +447,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                         </section>
 
                         {/* Streaming */}
-                        <section className="bg-background relative rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
+                        <section id="streaming-section" className="bg-background relative rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
                             <div className="p-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <h2 className="text-2xl font-black flex items-center gap-3">
                                     <span className="w-1.5 h-8 bg-primary rounded-full" />

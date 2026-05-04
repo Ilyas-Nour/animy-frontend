@@ -159,7 +159,7 @@ export default function HomePage() {
     }
 
     loadAllData()
-  }, [])
+  }, [topAnime.length, topManga.length])
 
   if (error) return <ErrorMessage message={error} />
 

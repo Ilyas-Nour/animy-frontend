@@ -37,9 +37,9 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
         if (!sources) {
             fetchSources()
         }
-    }, [episodeId, sources])
+    }, [episodeId, sources, fetchSources])
 
-    const fetchSources = async () => {
+    const fetchSources = useCallback(async () => {
         try {
             setLoading(true)
             setError(null)
@@ -72,7 +72,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
         } finally {
             setLoading(false)
         }
-    }
+    }, [episodeId, episodeNumber, malId])
 
     useEffect(() => {
         if (!activeServer || activeServer.provider !== 'hianime' || !sources || !videoRef.current || sources.iframeUrl) return
@@ -84,9 +84,9 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
                 hlsRef.current.destroy()
             }
         }
-    }, [sources, activeServer])
+    }, [sources, activeServer, initializePlayer])
 
-    const initializePlayer = () => {
+    const initializePlayer = useCallback(() => {
         if (!sources?.sources || !videoRef.current) return
 
         const videoSource = sources.sources.find((s: any) => s.quality === '1080p') ||
@@ -133,7 +133,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             videoRef.current.src = videoUrl
             videoRef.current.play().catch(console.error)
         }
-    }
+    }, [sources, retryCount])
 
     const renderPlayer = () => {
         if (loading) {
