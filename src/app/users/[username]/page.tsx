@@ -118,34 +118,34 @@ export default function UserProfilePage() {
     // Render Friend Action Button
     const renderActionButton = () => {
         if (!isAuthenticated) return (
-            <Link href={`/auth/login?redirect=/users/${username}`}>
-                <Button>Login to Connect</Button>
+            <Link href={`/auth/login?redirect=/users/${username}`} className="w-full md:w-auto">
+                <Button className="w-full gap-2 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all">Login to Connect</Button>
             </Link>
         )
         if (isSelf) return (
-            <Link href="/dashboard/profile">
-                <Button variant="outline">Edit Profile</Button>
+            <Link href="/dashboard/profile" className="w-full md:w-auto">
+                <Button variant="outline" className="w-full gap-2 bg-background/50 backdrop-blur-md border-white/10 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all">Edit Profile</Button>
             </Link>
         )
 
         switch (friendshipStatus) {
             case 'ACCEPTED':
                 return (
-                    <Button variant="secondary" disabled className="gap-2">
+                    <Button variant="secondary" disabled className="w-full gap-2 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all opacity-80">
                         <UserCheck className="h-4 w-4" /> Friend
                     </Button>
                 )
             case 'PENDING':
                 return (
-                    <Button variant="outline" disabled className="gap-2">
+                    <Button variant="outline" disabled className="w-full gap-2 bg-background/50 backdrop-blur-md border-white/10 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all opacity-70">
                         <Clock className="h-4 w-4" /> Request Pending
                     </Button>
                 )
             case 'REJECTED':
-                return <Button variant="outline" disabled>Unavailable</Button>
+                return <Button variant="outline" disabled className="w-full gap-2 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all">Unavailable</Button>
             default:
                 return (
-                    <Button onClick={() => handleFriendAction('request')} disabled={actionLoading} className="gap-2">
+                    <Button onClick={() => handleFriendAction('request')} disabled={actionLoading} className="w-full gap-2 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all hover:scale-105 active:scale-95">
                         <UserPlus className="h-4 w-4" /> Add Friend
                     </Button>
                 )
@@ -258,7 +258,7 @@ export default function UserProfilePage() {
 
                                 <Button
                                     variant="destructive"
-                                    className="w-full gap-2 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm"
+                                    className="w-full md:w-auto gap-2 h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all hover:scale-105 active:scale-95"
                                     onClick={handleUnfriend}
                                     disabled={actionLoading}
                                 >
