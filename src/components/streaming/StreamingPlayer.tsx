@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Hls from 'hls.js'
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -25,19 +25,6 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     const [availableServers, setAvailableServers] = useState<any[]>([])
     const videoRef = useRef<HTMLVideoElement>(null)
     const hlsRef = useRef<Hls | null>(null)
-
-    useEffect(() => {
-        // Reset state when episode changes
-        setSources(null)
-        setAvailableServers([])
-        setActiveServer(null)
-    }, [episodeId])
-
-    useEffect(() => {
-        if (!sources) {
-            fetchSources()
-        }
-    }, [episodeId, sources, fetchSources])
 
     const fetchSources = useCallback(async () => {
         try {
@@ -73,18 +60,6 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             setLoading(false)
         }
     }, [episodeId, episodeNumber, malId])
-
-    useEffect(() => {
-        if (!activeServer || activeServer.provider !== 'hianime' || !sources || !videoRef.current || sources.iframeUrl) return
-
-        initializePlayer()
-
-        return () => {
-            if (hlsRef.current) {
-                hlsRef.current.destroy()
-            }
-        }
-    }, [sources, activeServer, initializePlayer])
 
     const initializePlayer = useCallback(() => {
         if (!sources?.sources || !videoRef.current) return
@@ -129,11 +104,38 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             })
 
             hlsRef.current = hls
-        } else {
+        } else if (videoRef.current?.canPlayType('application/vnd.apple.mpegurl')) {
             videoRef.current.src = videoUrl
-            videoRef.current.play().catch(console.error)
+            videoRef.current.addEventListener('loadedmetadata', () => {
+                videoRef.current?.play().catch(console.error)
+            })
         }
     }, [sources, retryCount])
+
+    useEffect(() => {
+        // Reset state when episode changes
+        setSources(null)
+        setAvailableServers([])
+        setActiveServer(null)
+    }, [episodeId])
+
+    useEffect(() => {
+        if (!sources) {
+            fetchSources()
+        }
+    }, [episodeId, sources, fetchSources])
+
+    useEffect(() => {
+        if (!activeServer || activeServer.provider !== 'hianime' || !sources || !videoRef.current || sources.iframeUrl) return
+
+        initializePlayer()
+
+        return () => {
+            if (hlsRef.current) {
+                hlsRef.current.destroy()
+            }
+        }
+    }, [sources, activeServer, initializePlayer])
 
     const renderPlayer = () => {
         if (loading) {
