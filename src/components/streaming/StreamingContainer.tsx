@@ -253,7 +253,8 @@ export function StreamingContainer({
                     <ArtPlayer
                         url={activeServer.sources[0].url}
                         poster={animePoster}
-                        headers={streamData?.headers}
+                        subtitles={activeServer.subtitles as any} // Subtitles from native source
+                        onEnded={nextEp} // Auto-Play next episode
                         className="w-full h-full"
                         onReady={() => setIframeLoaded(true)}
                     />

@@ -8,11 +8,12 @@ interface ArtPlayerProps {
   url: string
   poster?: string
   className?: string
-  headers?: Record<string, string>
+  subtitles?: Array<{ url: string; lang: string; label: string }>
+  onEnded?: () => void
   onReady?: (art: Artplayer) => void
 }
 
-export default function ArtPlayer({ url, poster, className, headers, onReady }: ArtPlayerProps) {
+export default function ArtPlayer({ url, poster, className, subtitles, onEnded, onReady }: ArtPlayerProps) {
   const artRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function ArtPlayer({ url, poster, className, headers, onReady }: 
       volume: 0.7,
       isLive: false,
       muted: false,
-      autoplay: false,
+      autoplay: true, // Auto-Play enabled
       pip: true,
       autoSize: true,
       autoMini: true,
@@ -44,12 +45,36 @@ export default function ArtPlayer({ url, poster, className, headers, onReady }: 
       playsInline: true,
       autoPlayback: true,
       airplay: true,
-      theme: '#6366f1', // Indigo-500
+      theme: '#6366f1',
+      subtitle: {
+        url: subtitles?.[0]?.url || '',
+        type: 'vtt',
+        style: {
+          color: '#fff',
+          fontSize: '20px',
+        },
+        encoding: 'utf-8',
+      },
+      settings: [
+        {
+          html: 'Subtitles',
+          tooltip: subtitles?.[0]?.label || 'Off',
+          selector: [
+            { html: 'Off', url: '' },
+            ...(subtitles || []).map(s => ({
+              html: s.label,
+              url: s.url,
+            })),
+          ],
+          onSelect: function (item) {
+            art.subtitle.url = item.url;
+            return item.html;
+          },
+        },
+      ],
       customType: {
-        m3u8: function (video: HTMLMediaElement, url: string) {
+        m3u8: function (video: HTMLMediaElement, url: string, art: Artplayer) {
           if (Hls.isSupported()) {
-            // All .m3u8 URLs are already pre-proxied by the backend.
-            // No CORS workaround needed — load directly.
             const hls = new Hls({
               maxBufferLength: 30,
               enableWorker: true,
@@ -60,12 +85,17 @@ export default function ArtPlayer({ url, poster, className, headers, onReady }: 
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
               video.play().catch(() => {})
             })
+            art.on('destroy', () => hls.destroy())
           } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            // Native HLS (Safari)
             video.src = url
           }
         },
       },
+    })
+
+    // Auto-Next Logic
+    art.on('video:ended', () => {
+      if (onEnded) onEnded();
     })
 
     if (onReady) {
@@ -77,7 +107,7 @@ export default function ArtPlayer({ url, poster, className, headers, onReady }: 
         art.destroy(false)
       }
     }
-  }, [url, poster])
+  }, [url, poster, subtitles])
 
   return <div ref={artRef} className={className}></div>
 }
