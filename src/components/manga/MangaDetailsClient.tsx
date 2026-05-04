@@ -90,20 +90,6 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         fetchChapters()
     }, [manga.mal_id, initialChapters])
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            checkStatus()
-        }
-    }, [isAuthenticated, checkStatus])
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 300)
-        }
-        window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
-
     const checkStatus = useCallback(async () => {
         try {
             const [listRes, favRes] = await Promise.all([
@@ -130,6 +116,20 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
             console.error('Failed to check manga status:', error)
         }
     }, [manga.mal_id])
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            checkStatus()
+        }
+    }, [isAuthenticated, checkStatus])
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 300)
+        }
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
 
     const handleToggleFavorite = async () => {
 
