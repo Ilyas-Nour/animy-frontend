@@ -292,7 +292,7 @@ export function StreamingContainer({
                             <p className="text-white/40 text-xs">Direct MAL-ID Bridge failed to resolve the stream. Try another mirror.</p>
                         </div>
                         <Button variant="outline" size="sm" onClick={() => selectedEp && fetchStreamSources(selectedEp)} className="mt-2 border-white/10">
-                            <RefreshCw className="w-3.5 h-3.5 mr-2" /> Retry Node
+                            <RefreshCcw className="w-3.5 h-3.5 mr-2" /> Retry Node
                         </Button>
                     </div>
                 )}

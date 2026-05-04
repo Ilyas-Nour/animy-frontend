@@ -94,7 +94,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         if (isAuthenticated) {
             checkStatus()
         }
-    }, [isAuthenticated, manga.mal_id])
+    }, [isAuthenticated, checkStatus])
 
     useEffect(() => {
         const handleScroll = () => {
@@ -104,7 +104,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
-    const checkStatus = async () => {
+    const checkStatus = useCallback(async () => {
         try {
             const [listRes, favRes] = await Promise.all([
                 api.get('/users/mangalist'),
@@ -129,7 +129,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         } catch (error) {
             console.error('Failed to check manga status:', error)
         }
-    }
+    }, [manga.mal_id])
 
     const handleToggleFavorite = async () => {
 

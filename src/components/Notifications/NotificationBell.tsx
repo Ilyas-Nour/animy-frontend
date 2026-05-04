@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, Check } from 'lucide-react'
 import api from '@/lib/api'
@@ -32,7 +32,7 @@ export function NotificationBell() {
 
     const { socket, playNotif } = useSocket()
 
-    const fetchAllocations = async () => {
+    const fetchAllocations = useCallback(async () => {
         try {
             const [countRes, listRes] = await Promise.all([
                 api.get('/notifications/unread-count'),
@@ -46,7 +46,7 @@ export function NotificationBell() {
             console.error("Failed to fetch notifications")
             setNotifications([])
         }
-    }
+    }, [])
 
     useEffect(() => {
         fetchAllocations()
@@ -65,7 +65,7 @@ export function NotificationBell() {
         return () => {
             socket.off('notification:receive', handleNewNotification)
         }
-    }, [socket])
+    }, [socket, fetchAllocations, playNotif])
 
     // Close dropdown when clicking outside
     useEffect(() => {
