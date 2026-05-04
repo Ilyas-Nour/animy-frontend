@@ -52,7 +52,12 @@ export function StreamingContainer({
     const [hiError, setHiError] = useState<string | null>(null)
     const [selectedEp, setSelectedEp] = useState<Episode | null>(null)
     const [streamData, setStreamData] = useState<any>(null)
-      const lastLoadedRef = useRef<string | null>(null)
+    const [streamLoading, setStreamLoading] = useState(false)
+    const [streamError, setStreamError] = useState<string | null>(null)
+    const [activeServer, setActiveServer] = useState<Server | null>(null)
+    const [iframeLoaded, setIframeLoaded] = useState(false)
+    const [iframeKey, setIframeKey] = useState(0)
+    const lastLoadedRef = useRef<string | null>(null)
 
     const externalSearchUrl = `https://anikai.to/browser?keyword=${encodeURIComponent(animeTitle)}`
     const gogoSearchUrl = `https://gogoanime.hy/?s=${encodeURIComponent(animeTitle)}`
