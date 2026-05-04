@@ -68,46 +68,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
     ]
 
-    // TODO: In production, fetch dynamic pages from database
-    // Example for when you have database access:
-    /*
-    try {
-      // Fetch popular anime (top 100)
-      const animePages = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/anime/popular?limit=100`)
-        .then(res => res.json())
-        .then(data => data.map((anime: any) => ({
-          url: `${baseUrl}/anime/${anime.id}`,
-          lastModified: new Date(anime.updatedAt || currentDate),
-          changeFrequency: 'weekly' as const,
-          priority: 0.8,
-        })))
-  
-      // Fetch popular manga (top 100)
-      const mangaPages = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/manga/popular?limit=100`)
-        .then(res => res.json())
-        .then(data => data.map((manga: any) => ({
-          url: `${baseUrl}/manga/${manga.id}`,
-          lastModified: new Date(manga.updatedAt || currentDate),
-          changeFrequency: 'weekly' as const,
-          priority: 0.8,
-        })))
-  
-      // Fetch popular characters (top 50)
-      const characterPages = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/characters/popular?limit=50`)
-        .then(res => res.json())
-        .then(data => data.map((character: any) => ({
-          url: `${baseUrl}/character/${character.id}`,
-          lastModified: new Date(character.updatedAt || currentDate),
-          changeFrequency: 'monthly' as const,
-          priority: 0.6,
-        })))
-  
-      return [...staticPages, ...animePages, ...mangaPages, ...characterPages]
-    } catch (error) {
-      console.error('Error generating dynamic sitemap:', error)
-      return staticPages
-    }
-    */
+    // Fetch dynamic content
+    let animePages: MetadataRoute.Sitemap = []
+    let mangaPages: MetadataRoute.Sitemap = []
 
-    return staticPages
+    try {
+        // Fetch top anime
+        const animeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/anime/popular?limit=100`, { next: { revalidate: 3600 } })
+        if (animeRes.ok) {
+            const animeData = await animeRes.json()
+            const items = animeData.data || []
+            animePages = items.map((anime: any) => ({
+                url: `${baseUrl}/anime/${anime.mal_id}`,
+                lastModified: currentDate,
+                changeFrequency: 'weekly',
+                priority: 0.8,
+            }))
+        }
+
+        // Fetch top manga
+        const mangaRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/manga/top?filter=bypopularity&limit=100`, { next: { revalidate: 3600 } })
+        if (mangaRes.ok) {
+            const mangaData = await mangaRes.json()
+            const items = mangaData.data || []
+            mangaPages = items.map((manga: any) => ({
+                url: `${baseUrl}/manga/${manga.mal_id}`,
+                lastModified: currentDate,
+                changeFrequency: 'weekly',
+                priority: 0.8,
+            }))
+        }
+    } catch (error) {
+        console.error('Sitemap dynamic generation failed:', error)
+    }
+
+    return [...staticPages, ...animePages, ...mangaPages]
 }

@@ -41,12 +41,6 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
     const [scrolled, setScrolled] = useState(false)
 
     useEffect(() => {
-        if (anime) {
-            document.title = `${anime.title} | Animy`
-        }
-    }, [anime])
-
-    useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 300)
         }

@@ -163,8 +163,16 @@ export default function HomePage() {
 
   if (error) return <ErrorMessage message={error} />
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://animy-frontend.pages.dev'
+
   return (
     <div className="min-h-screen bg-background">
+      <StructuredData 
+        data={[
+          generateOrganizationSchema(siteUrl),
+          generateWebSiteSchema(siteUrl)
+        ]} 
+      />
       {/* 1. Cinematic Hero Section */}
       {heroLoading ? (
         <div className="h-[600px] md:h-[85vh] w-full bg-muted/20 animate-pulse flex items-center justify-center">
