@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 12000)
 
+        const url = `${BACKEND_API}/manga?q=${q}&type=${type}&status=${status}&order_by=${order_by}&sort=${sort}&limit=${limit}&page=${page}`
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },
             next: { revalidate: 3600 },
