@@ -22,144 +22,69 @@ import { MangaHomeSection } from '@/components/home/MangaHomeSection'
 import { GuestHomeSection } from '@/components/home/GuestHomeSection'
 import { UserHomeSection } from '@/components/home/UserHomeSection'
 
+// Global cache to persist home data across client-side navigations
+let globalHomeCache: any = null;
+
 export default function HomePage() {
   const { isAuthenticated } = useAuth()
   const [hasMounted, setHasMounted] = useState(false)
-  const [topAnime, setTopAnime] = useState<Anime[]>([])
-  const [trendingHighlight, setTrendingHighlight] = useState<Anime[]>([])
-  const [upcomingAnime, setUpcomingAnime] = useState<Anime[]>([])
-  const [heroAnime, setHeroAnime] = useState<Anime[]>([])
-  const [topManga, setTopManga] = useState<Manga[]>([])
-  const [publishingManga, setPublishingManga] = useState<Manga[]>([])
+  const [topAnime, setTopAnime] = useState<Anime[]>(globalHomeCache?.popularAnime || [])
+  const [trendingHighlight, setTrendingHighlight] = useState<Anime[]>(globalHomeCache?.trendingAnime || [])
+  const [upcomingAnime, setUpcomingAnime] = useState<Anime[]>(globalHomeCache?.upcomingAnime || [])
+  const [heroAnime, setHeroAnime] = useState<Anime[]>(globalHomeCache?.popularAnime?.slice(0, 5) || [])
+  const [topManga, setTopManga] = useState<Manga[]>(globalHomeCache?.topManga || [])
+  const [publishingManga, setPublishingManga] = useState<Manga[]>(globalHomeCache?.publishingManga || [])
   const [activeCategory, setActiveCategory] = useState<'anime' | 'manga' | 'social'>('anime')
 
   // Fine-grained loading states
-  const [heroLoading, setHeroLoading] = useState(true)
-  const [topAnimeLoading, setTopAnimeLoading] = useState(true)
-  const [upcomingLoading, setUpcomingLoading] = useState(true)
-  const [topMangaLoading, setTopMangaLoading] = useState(true)
-  const [pubMangaLoading, setPubMangaLoading] = useState(true)
+  const [heroLoading, setHeroLoading] = useState(!globalHomeCache)
+  const [topAnimeLoading, setTopAnimeLoading] = useState(!globalHomeCache)
+  const [upcomingLoading, setUpcomingLoading] = useState(!globalHomeCache)
+  const [topMangaLoading, setTopMangaLoading] = useState(!globalHomeCache)
+  const [pubMangaLoading, setPubMangaLoading] = useState(!globalHomeCache)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    setHasMounted(true)
+    
     const loadAllData = async () => {
       try {
-        setHasMounted(true)
-
-        // 1. Fetch Top Anime First (The Source of Truth for Deduplication)
-        const fetchTopAnime = async () => {
-          setHeroLoading(true)
-          setTopAnimeLoading(true)
-          try {
-            const res = await fetch('/api/anime/top?filter=airing&limit=20')
-            const json = await res.json()
-
-            let data = []
-            if (Array.isArray(json.data?.data)) data = json.data.data
-            else if (Array.isArray(json.data)) data = json.data
-            else if (Array.isArray(json)) data = json
-
-            const top = data.slice(0, 10)
-            const hero = data.slice(0, 5)
-            const trending = data.slice(5, 15)
-
-            setTopAnime(top)
-            setHeroAnime(hero)
-            setTrendingHighlight(trending)
-            return top
-          } catch (e) {
-            console.error('Top anime fetch error:', e)
-            return []
-          } finally {
-            setHeroLoading(false)
-            setTopAnimeLoading(false)
-          }
-        }
-
-        // 2. Fetch Upcoming (Sequenced)
-        const fetchUpcoming = async (baseAnime: Anime[]) => {
-          setUpcomingLoading(true)
-          try {
-            const res = await fetch('/api/anime/upcoming?limit=30')
-            const json = await res.json()
-
-            let data = []
-            if (Array.isArray(json.data?.data)) data = json.data.data
-            else if (Array.isArray(json.data)) data = json.data
-            else if (Array.isArray(json)) data = json
-
-            const topIds = new Set(baseAnime.map(a => a.mal_id))
-            const filtered = data.filter((a: Anime) => !topIds.has(a.mal_id))
-            setUpcomingAnime(filtered.slice(0, 10))
-          } catch (e) {
-            console.error('Upcoming fetch error:', e)
-          } finally {
-            setUpcomingLoading(false)
-          }
-        }
-
-        // 3. Fetch Top Manga
-        const fetchTopManga = async () => {
-          setTopMangaLoading(true)
-          try {
-            const res = await fetch('/api/manga/search?order_by=popularity&sort=desc&limit=15')
-            const json = await res.json()
-
-            let data = []
-            if (Array.isArray(json.data)) data = json.data
-            else if (Array.isArray(json.data?.data)) data = json.data.data
-            else if (Array.isArray(json)) data = json
-
-            const top = data.slice(0, 10)
-            setTopManga(top)
-            return top
-          } catch (e) {
-            console.error('Top manga fetch error:', e)
-            return []
-          } finally {
-            setTopMangaLoading(false)
-          }
-        }
-
-        // 4. Fetch Publishing Manga (Sequenced)
-        const fetchPubManga = async (baseManga: Manga[]) => {
-          setPubMangaLoading(true)
-          try {
-            const res = await fetch('/api/manga/search?status=publishing&type=manga&order_by=popularity&sort=desc&limit=30')
-            const json = await res.json()
-
-            let data = []
-            if (Array.isArray(json.data)) data = json.data
-            else if (Array.isArray(json.data?.data)) data = json.data.data
-            else if (Array.isArray(json)) data = json
-
-            const topIds = new Set(baseManga.map(m => m.mal_id))
-            const filtered = data.filter((m: Manga) => !topIds.has(m.mal_id))
-            setPublishingManga(filtered.slice(0, 10))
-          } catch (e) {
-            console.error('Pub manga fetch error:', e)
-          } finally {
-            setPubMangaLoading(false)
-          }
-        }
-
-        // Run sequences independently to prevent one hang from blocking everything
-        const topAnimeTask = fetchTopAnime().then(loaded => fetchUpcoming(loaded))
-        const topMangaTask = fetchTopManga().then(loaded => fetchPubManga(loaded))
+        // Use the new unified home endpoint for instant, single-request loading
+        const res = await fetch('/api/proxy?url=/home')
+        if (!res.ok) throw new Error('Failed to fetch home data')
         
-        await Promise.allSettled([topAnimeTask, topMangaTask])
+        const json = await res.json()
+        const data = json.data || json;
 
+        if (data) {
+          // Update global cache
+          globalHomeCache = data;
+
+          // Update local state
+          setTopAnime(data.popularAnime || [])
+          setHeroAnime(data.popularAnime?.slice(0, 5) || [])
+          setTrendingHighlight(data.trendingAnime || [])
+          setUpcomingAnime(data.upcomingAnime || [])
+          setTopManga(data.topManga || [])
+          setPublishingManga(data.publishingManga || [])
+        }
       } catch (err) {
         console.error('Home load error:', err)
-        // Only show full error if we have NO content at all
-        if (topAnime.length === 0 && topManga.length === 0) {
+        if (!globalHomeCache) {
            setError('Failed to load portal content. Please try again.')
         }
+      } finally {
+        setHeroLoading(false)
+        setTopAnimeLoading(false)
+        setUpcomingLoading(false)
+        setTopMangaLoading(false)
+        setPubMangaLoading(false)
       }
     }
 
     loadAllData()
-  }, [topAnime.length, topManga.length])
+  }, [])
+
 
   if (error) return <ErrorMessage message={error} />
 
