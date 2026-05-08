@@ -255,7 +255,10 @@ const MessageBubble = React.memo(({
                                                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                                className="absolute bottom-full mb-3 right-0 w-64 bg-popover/95 backdrop-blur-3xl border border-border/50 rounded-3xl shadow-2xl z-50 overflow-hidden p-2"
+                                                className={cn(
+                                                    "absolute bottom-full mb-3 w-64 bg-popover/95 backdrop-blur-3xl border border-border/50 rounded-3xl shadow-2xl z-50 overflow-hidden p-2",
+                                                    isMyMessage ? "right-0" : "left-0"
+                                                )}
                                             >
                                                 {/* Quick Reactions */}
                                                 <div className="px-3 py-3 border-b border-border/10 mb-2 bg-muted/30 rounded-2xl">
