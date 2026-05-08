@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MoreVertical, Check, CheckCheck, CornerDownRight, ExternalLink, Sparkles, Plus, Edit2, Trash2 } from 'lucide-react'
 import { cn, getAvatarUrl } from '@/lib/utils'
@@ -77,6 +77,20 @@ const MessageBubble = React.memo(({
     const [showMenu, setShowMenu] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+    const [menuPosition, setMenuPosition] = useState<'top' | 'bottom'>('top')
+    const triggerRef = useRef<HTMLDivElement>(null)
+
+    const handleMenuToggle = () => {
+        if (!showMenu && triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect()
+            if (rect.top < 320) {
+                setMenuPosition('bottom')
+            } else {
+                setMenuPosition('top')
+            }
+        }
+        setShowMenu(!showMenu)
+    }
     const [editContent, setEditContent] = useState(message.content)
 
     const handleEditSave = () => {
@@ -232,11 +246,11 @@ const MessageBubble = React.memo(({
                             "opacity-0 group-hover/bubble:opacity-100 transition-all duration-300 flex items-center gap-1",
                             isMyMessage ? "order-1" : "order-2"
                         )}>
-                            <div className="relative">
+                            <div className="relative" ref={triggerRef}>
                                 <motion.button
                                     whileHover={{ scale: 1.1, rotate: 90 }}
                                     whileTap={{ scale: 0.9 }}
-                                    onClick={() => setShowMenu(!showMenu)}
+                                    onClick={handleMenuToggle}
                                     className="p-2 bg-muted/50 hover:bg-muted rounded-2xl text-muted-foreground hover:text-foreground transition-all border border-border/40"
                                 >
                                     <MoreVertical className="w-4 h-4" />
@@ -252,13 +266,15 @@ const MessageBubble = React.memo(({
                                                 onClick={() => setShowMenu(false)}
                                             />
                                             <motion.div
-                                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                                initial={{ opacity: 0, scale: 0.9, y: menuPosition === 'top' ? 10 : -10 }}
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                                exit={{ opacity: 0, scale: 0.9, y: menuPosition === 'top' ? 10 : -10 }}
                                                 className={cn(
-                                                    "absolute bottom-full mb-3 w-64 bg-popover/95 backdrop-blur-3xl border border-border/50 rounded-3xl shadow-2xl z-50 overflow-hidden p-2",
-                                                    isMyMessage ? "right-0" : "left-0"
+                                                    "absolute w-64 bg-popover/95 backdrop-blur-3xl border border-border/50 rounded-3xl shadow-2xl z-50 overflow-hidden p-2",
+                                                    isMyMessage ? "right-0" : "left-0",
+                                                    menuPosition === 'top' ? "bottom-full mb-3" : "top-full mt-3"
                                                 )}
+                                                style={{ transformOrigin: menuPosition === 'top' ? (isMyMessage ? "bottom right" : "bottom left") : (isMyMessage ? "top right" : "top left") }}
                                             >
                                                 {/* Quick Reactions */}
                                                 <div className="px-3 py-3 border-b border-border/10 mb-2 bg-muted/30 rounded-2xl">
