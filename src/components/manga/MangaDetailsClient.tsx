@@ -50,7 +50,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
 
     useEffect(() => {
         const fetchChapters = async () => {
-            if (initialChapters.length > 0) {
+            if (initialChapters && initialChapters.length > 0) {
                 setChapters(initialChapters)
                 setChaptersLoading(false)
                 return
@@ -88,7 +88,8 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         }
 
         fetchChapters()
-    }, [manga.mal_id, initialChapters])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [manga.mal_id])
 
     const checkStatus = useCallback(async () => {
         try {
