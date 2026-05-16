@@ -15,7 +15,7 @@ export async function GET(
 
         const response = await fetch(`${BACKEND_API}/manga/${id}/read-chapters`, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 3600 },
+            cache: 'no-store',
             signal: controller.signal
         })
 
