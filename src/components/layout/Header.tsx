@@ -32,7 +32,7 @@ export function Header() {
   const [requestCount, setRequestCount] = useState(0)
 
   useEffect(() => {
-    if (!isAuthenticated) return
+    if (!user) return
 
     const fetchRequests = async () => {
       try {
@@ -48,7 +48,7 @@ export function Header() {
     // Poll every 30 seconds
     const interval = setInterval(fetchRequests, 30000)
     return () => clearInterval(interval)
-  }, [isAuthenticated]) // Re-run when auth changes
+  }, [user]) // Re-run when user changes
 
   // Load dark mode from localStorage on mount
   useEffect(() => {
@@ -162,7 +162,7 @@ export function Header() {
 
           {authLoading ? (
             <div className="h-10 w-24 bg-accent animate-pulse rounded-full opacity-20" />
-          ) : isAuthenticated ? (
+          ) : user ? (
             <div className="flex items-center space-x-2 lg:space-x-3">
               <Link href="/dashboard/friends" className="relative group">
                 <div className="p-2.5 rounded-full hover:bg-accent/50 transition-all duration-300 relative">
@@ -256,7 +256,7 @@ export function Header() {
             </div>
           </button>
 
-          {isAuthenticated && (
+          {user && (
             <>
               <Link href="/profile/shrine" className="relative group">
                 <div className="p-2.5 rounded-full hover:bg-accent/50 transition-all duration-300">
@@ -342,7 +342,7 @@ export function Header() {
               {/* Account Section */}
               <div className="space-y-4 pt-6 border-t border-white/5">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-2">Account</h3>
-                {isAuthenticated ? (
+                {user ? (
                   <div className="space-y-3">
                     {/* User Profile Summary */}
                     <Link

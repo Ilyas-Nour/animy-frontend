@@ -84,7 +84,24 @@ async function fetchWithInterceptor(url: string, options: RequestOptions = {}) {
       errorData = { message: response.statusText };
     }
     
-    const error: any = new Error(errorData.message || response.statusText);
+    let errorMessage = '';
+    if (errorData) {
+      if (typeof errorData.message === 'string') {
+        errorMessage = errorData.message;
+      } else if (Array.isArray(errorData.message)) {
+        errorMessage = errorData.message.join(', ');
+      } else if (typeof errorData.message === 'object' && errorData.message !== null) {
+        errorMessage = errorData.message.message || JSON.stringify(errorData.message);
+      } else if (typeof errorData.error === 'string') {
+        errorMessage = errorData.error;
+      }
+    }
+    
+    if (!errorMessage) {
+      errorMessage = response.statusText || `Request failed with status ${response.status}`;
+    }
+    
+    const error: any = new Error(errorMessage);
     error.response = {
       status: response.status,
       data: errorData,
