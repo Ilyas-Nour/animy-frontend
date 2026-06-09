@@ -30,8 +30,10 @@ export function UserHomeSection({ trending }: UserHomeSectionProps) {
         if (user?.lastCheckIn) {
             const last = new Date(user.lastCheckIn)
             const now = new Date()
-            // Compare local dates
-            const isToday = last.toDateString() === now.toDateString()
+            // Compare UTC dates to avoid timezone discrepancies
+            const isToday = last.getUTCFullYear() === now.getUTCFullYear() &&
+                            last.getUTCMonth() === now.getUTCMonth() &&
+                            last.getUTCDate() === now.getUTCDate()
             setAlreadyClaimed(isToday)
         }
     }, [user])
@@ -52,7 +54,6 @@ export function UserHomeSection({ trending }: UserHomeSectionProps) {
             updateUser(profile.data.data) // 'profile.data.data' from /auth/me should have XP if we added it to select
 
         } catch (err: any) {
-            console.error('Claim Error:', err)
             // Handle potentially nested error objects from NestJS/Backend
             let errorMessage = 'Failed to claim reward'
             if (err.response?.data) {
@@ -67,10 +68,17 @@ export function UserHomeSection({ trending }: UserHomeSectionProps) {
                     errorMessage = JSON.stringify(data.message)
                 }
             }
+            
+            // Skip logging the 400 error to console if it's just 'already claimed' to avoid console noise
+            const isAlreadyClaimedError = errorMessage.toLowerCase().includes('already claimed')
+            if (!isAlreadyClaimedError) {
+                console.error('Claim Error:', err)
+            }
+            
             toast.error(errorMessage)
 
             // If the error implies already claimed, update state to reflect reality
-            if (errorMessage.toLowerCase().includes('already claimed')) {
+            if (isAlreadyClaimedError) {
                 setAlreadyClaimed(true)
             }
         } finally {

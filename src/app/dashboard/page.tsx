@@ -72,7 +72,7 @@ export default function DashboardPage() {
           console.error('[Dashboard] Schedule fetch failed:', e)
           return null
         })
-        if (scheduleRes) setSchedule(scheduleRes.data.data?.data || [])
+        if (scheduleRes) setSchedule(scheduleRes.data.data || [])
 
       } catch (globalError) {
         console.error('[Dashboard] Critical error during fetchData:', globalError)
