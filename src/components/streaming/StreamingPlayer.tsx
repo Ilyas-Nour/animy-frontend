@@ -49,8 +49,8 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             
             if (sourcesData.servers && sourcesData.servers.length > 0) {
                 setAvailableServers(sourcesData.servers)
-                // Set HiAnime as default if available, otherwise first server
-                const defaultServer = sourcesData.servers.find((s: any) => s.provider === 'hianime') || sourcesData.servers[0]
+                // Set first native server as default if available, otherwise first server
+                const defaultServer = sourcesData.servers.find((s: any) => s.isNative) || sourcesData.servers[0]
                 setActiveServer(defaultServer)
             }
         } catch (err: any) {
@@ -61,22 +61,38 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
         }
     }, [episodeId, episodeNumber, malId])
 
-    const initializePlayer = useCallback(() => {
-        if (!sources?.sources || !videoRef.current) return
-
-        const videoSource = sources.sources.find((s: any) => s.quality === '1080p') ||
-            sources.sources.find((s: any) => s.quality === '720p') ||
-            sources.sources.find((s: any) => s.quality === 'default') ||
-            sources.sources[0]
-
-        if (!videoSource) {
+    const handleServerFailover = useCallback(() => {
+        if (!activeServer || availableServers.length <= 1) {
+            setError('All streaming nodes offline.')
             return
         }
+        const currentIndex = availableServers.findIndex(s => s.name === activeServer.name)
+        const nextIndex = (currentIndex + 1) % availableServers.length
+        
+        if (nextIndex === 0) {
+            setError('All streaming nodes offline.')
+            return
+        }
+        
+        setActiveServer(availableServers[nextIndex])
+        setRetryCount(0)
+        setError(null)
+    }, [activeServer, availableServers])
 
-        let videoUrl = videoSource.url
+    const initializePlayer = useCallback(() => {
+        if (!activeServer || !activeServer.isNative || !videoRef.current) return
+
+        const videoSource = activeServer.sources?.find((s: any) => s.quality === '1080p') ||
+            activeServer.sources?.find((s: any) => s.quality === '720p') ||
+            activeServer.sources?.find((s: any) => s.quality === 'default') ||
+            activeServer.sources?.[0]
+
+        let videoUrl = videoSource ? videoSource.url : activeServer.url
+        if (!videoUrl) return
+
         setError(null)
 
-        if (Hls.isSupported() && (videoUrl.includes('.m3u8') || videoSource.isM3U8)) {
+        if (Hls.isSupported() && (videoUrl.includes('.m3u8') || videoSource?.isM3U8)) {
             if (hlsRef.current) hlsRef.current.destroy()
 
             const hls = new Hls({
@@ -99,6 +115,9 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
                         setRetryCount(prev => prev + 1)
                         hls.destroy()
                         setTimeout(() => initializePlayer(), 1000)
+                    } else {
+                        hls.destroy()
+                        handleServerFailover()
                     }
                 }
             })
@@ -109,8 +128,11 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             videoRef.current.addEventListener('loadedmetadata', () => {
                 videoRef.current?.play().catch(console.error)
             })
+            videoRef.current.addEventListener('error', () => {
+                handleServerFailover()
+            })
         }
-    }, [sources, retryCount])
+    }, [activeServer, retryCount, handleServerFailover])
 
     useEffect(() => {
         // Reset state when episode changes
@@ -126,7 +148,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     }, [episodeId, sources, fetchSources])
 
     useEffect(() => {
-        if (!activeServer || activeServer.provider !== 'hianime' || !sources || !videoRef.current || sources.iframeUrl) return
+        if (!activeServer || !activeServer.isNative || !videoRef.current) return
 
         initializePlayer()
 
@@ -135,7 +157,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
                 hlsRef.current.destroy()
             }
         }
-    }, [sources, activeServer, initializePlayer])
+    }, [activeServer, initializePlayer])
 
     const renderPlayer = () => {
         if (loading) {
@@ -164,8 +186,8 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
         }
 
         // Handle Iframe Servers (VidLink, Vidsrc, etc)
-        if (activeServer.url || activeServer.provider !== 'hianime') {
-            const iframeUrl = activeServer.url || (activeServer.provider === 'vidlink' ? sources.iframeUrl : null)
+        if (!activeServer.isNative) {
+            const iframeUrl = activeServer.url
             
             if (!iframeUrl) return null
 
@@ -232,7 +254,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
                 {activeServer && (
                     <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         <div className="px-4 py-1.5 bg-black/80 backdrop-blur-xl rounded-full text-[9px] uppercase font-black tracking-[0.2em] text-indigo-400 border border-indigo-500/30 shadow-2xl">
-                            {activeServer.provider === 'hianime' ? 'Direct Node' : 'Satellite Link'}
+                            {activeServer.isNative ? 'Direct Node' : 'Satellite Link'}
                         </div>
                     </div>
                 )}
