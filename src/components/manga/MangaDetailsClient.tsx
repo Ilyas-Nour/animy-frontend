@@ -39,8 +39,8 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
     const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
 
     const sortedChapters = [...chapters].sort((a, b) => {
-        const numA = parseFloat(a.chapterNumber) || 0
-        const numB = parseFloat(b.chapterNumber) || 0
+        const numA = parseFloat(a.chapterNumber || a.chapter) || 0
+        const numB = parseFloat(b.chapterNumber || b.chapter) || 0
         return sortOrder === 'desc' ? numB - numA : numA - numB
     })
 
@@ -533,10 +533,10 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                                 >
                                                     <div>
                                                         <h3 className="font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
-                                                            {chapter.title ? chapter.title : `Chapter ${chapter.chapterNumber}`}
+                                                            {chapter.title ? chapter.title : `Chapter ${chapter.chapterNumber || chapter.chapter}`}
                                                         </h3>
                                                         <span className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
-                                                            {chapter.chapterNumber ? `Ch. ${chapter.chapterNumber}` : ''}
+                                                            {(chapter.chapterNumber || chapter.chapter) ? `Ch. ${chapter.chapterNumber || chapter.chapter}` : ''}
                                                             {chapter.volumeNumber ? `• Vol. ${chapter.volumeNumber}` : ''}
                                                             {chapter.pages ? `• ${chapter.pages} Pages` : ''}
                                                         </span>
