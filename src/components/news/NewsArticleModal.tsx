@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { X, ExternalLink, Clock, Heart, MessageCircle, Share2 } from 'lucide-react'
+import { X, ExternalLink, Clock, Heart, MessageCircle, Share2, Users, Link2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { AniNewsItem } from './NewsFeed'
 import { cn } from '@/lib/utils'
 import { CommentSection } from './CommentSection'
+import { ShareNewsModal } from './ShareNewsModal'
 import { useAuth } from '@/context/AuthContext'
 import api from '@/lib/api'
 import { toast } from 'sonner'
@@ -21,6 +22,7 @@ export function NewsArticleModal({ article, onClose }: Props) {
     const [imgError, setImgError] = useState(false)
     const [stats, setStats] = useState({ likes: 0, comments: 0, isLiked: false })
     const [showComments, setShowComments] = useState(false)
+    const [showFriendsModal, setShowFriendsModal] = useState(false)
 
     // Lock body scroll
     useEffect(() => {
@@ -59,12 +61,10 @@ export function NewsArticleModal({ article, onClose }: Props) {
         }
     }
 
-    const handleShare = () => {
-        if (navigator.share) navigator.share({ title: article.title, url: article.link }).catch(() => { })
-        else { navigator.clipboard.writeText(article.link); toast.success('Link copied!') }
-    }
+
 
     return (
+        <>
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -179,13 +179,26 @@ export function NewsArticleModal({ article, onClose }: Props) {
                                 <MessageCircle className="w-3.5 h-3.5" />
                                 {stats.comments > 0 ? stats.comments : 'Comment'}
                             </button>
+                        </div>
 
+                        {/* Share — two separate buttons */}
+                        <div className="grid grid-cols-2 gap-2">
                             <button
-                                onClick={handleShare}
-                                className="flex-1 h-10 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold border bg-secondary/50 border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                                onClick={() => setShowFriendsModal(true)}
+                                className="h-10 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold border bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 transition-all"
                             >
-                                <Share2 className="w-3.5 h-3.5" />
-                                Share
+                                <Users className="w-3.5 h-3.5" />
+                                Share to Friends
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (navigator.share) navigator.share({ title: article.title, url: article.link }).catch(() => {})
+                                    else { navigator.clipboard.writeText(article.link); toast.success('Link copied!') }
+                                }}
+                                className="h-10 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold border bg-secondary/50 border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                            >
+                                <Link2 className="w-3.5 h-3.5" />
+                                Copy Link
                             </button>
                         </div>
 
@@ -199,5 +212,13 @@ export function NewsArticleModal({ article, onClose }: Props) {
                 </div>
             </motion.div>
         </motion.div>
+
+        {/* In-app friends share modal */}
+        <ShareNewsModal
+            open={showFriendsModal}
+            onOpenChange={setShowFriendsModal}
+            newsItem={{ id: article.slug, title: article.title, url: article.link, image_url: article.image ?? undefined }}
+        />
+    </>
     )
 }

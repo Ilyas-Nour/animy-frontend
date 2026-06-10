@@ -4,19 +4,33 @@ export const runtime = 'edge'
 
 const ANINEWS_BASE = 'https://aninews.vercel.app/api'
 
-/** Strip thumbnail query params to get full-resolution images */
+/**
+ * Upgrade any image URL to its highest-quality version by:
+ * 1. Removing common query-string resize params (w, h, crop, resize, etc.)
+ * 2. Removing MAL-style path-based resize prefixes (/r/WxH/)
+ * 3. Removing WordPress-style filename dimension suffixes (-150x150.jpg)
+ */
 function upgradeImageUrl(url: string | null): string | null {
     if (!url) return null
     try {
-        const u = new URL(url)
-        // Remove common thumbnail resize params
-        u.searchParams.delete('w')
-        u.searchParams.delete('h')
-        u.searchParams.delete('crop')
-        u.searchParams.delete('resize')
-        u.searchParams.delete('fit')
-        u.searchParams.delete('width')
-        u.searchParams.delete('height')
+        let u = new URL(url)
+
+        // ── 1. Strip query-string thumbnail params ──────────────────────
+        const removeParams = ['w', 'h', 'crop', 'resize', 'fit', 'width', 'height', 'size', 'quality', 's']
+        // Keep 's' only for MAL (it's a signature, not a size) — actually remove it to get full image
+        removeParams.forEach(p => u.searchParams.delete(p))
+
+        // ── 2. MAL CDN: remove /r/WxH/ path segment ─────────────────────
+        // e.g. cdn.myanimelist.net/r/100x156/s/common/... → cdn.myanimelist.net/s/common/...
+        const malResizePattern = /\/r\/\d+x\d+\//
+        if (malResizePattern.test(u.pathname)) {
+            u.pathname = u.pathname.replace(malResizePattern, '/')
+        }
+
+        // ── 3. WordPress: remove -WxH suffix before extension ───────────
+        // e.g. image-300x200.jpg → image.jpg
+        u.pathname = u.pathname.replace(/-\d+x\d+(\.[a-zA-Z]+)$/, '$1')
+
         return u.toString()
     } catch {
         return url
