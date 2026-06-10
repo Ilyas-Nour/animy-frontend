@@ -22,6 +22,11 @@ export default function NotFound() {
 
     useEffect(() => {
         setMounted(true)
+    }, [])
+
+    useEffect(() => {
+        if (!mounted || !containerRef.current) return
+
         const ctx = gsap.context(() => {
             // 1. Custom Cursor Follower
             const moveCursor = (e: MouseEvent) => {
@@ -119,7 +124,7 @@ export default function NotFound() {
         }, containerRef)
 
         return () => ctx.revert()
-    }, [])
+    }, [mounted])
 
     if (!mounted) return null
 
