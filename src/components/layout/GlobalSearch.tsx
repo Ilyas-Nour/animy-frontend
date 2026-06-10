@@ -200,6 +200,17 @@ export function GlobalSearch() {
                       </div>
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      router.push(`${targetRoute}?q=${encodeURIComponent(query.trim())}`)
+                      setIsExpanded(false)
+                      setShowDropdown(false)
+                    }}
+                    className="mt-2 w-full p-2.5 text-xs font-bold uppercase tracking-wider text-primary hover:bg-primary/10 rounded-xl transition-colors"
+                  >
+                    View all results for &quot;{query}&quot;
+                  </button>
                 </div>
               ) : (
                 <div className="p-6 text-center text-sm text-muted-foreground">
