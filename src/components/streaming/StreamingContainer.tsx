@@ -80,9 +80,10 @@ export function StreamingContainer({
         try {
             console.debug(`Mesh Discovery Phase 1: "${animeTitle}" (AL: ${malId})`)
             const results = await Promise.race([
-                api.get(`/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`)
+                fetch(`/api/streaming/find?title=${encodeURIComponent(animeTitle)}&titleEnglish=${encodeURIComponent(animeTitleEnglish || '')}&anilistId=${malId}`)
+                    .then(res => res.json())
                     .then(res => {
-                        const rawData = res.data.data || res.data
+                        const rawData = res.data || res
                         return Array.isArray(rawData) ? rawData : rawData.results ? rawData.results : [rawData]
                     }),
                 new Promise<any[]>((_, reject) => setTimeout(() => reject(new Error('Mesh Timeout')), 8000))
@@ -92,10 +93,10 @@ export function StreamingContainer({
 
             const animeId = results[0].id
             const infoRes = await Promise.race([
-                api.get(`/streaming/anime/${encodeURIComponent(animeId)}`),
+                fetch(`/api/streaming/anime/${encodeURIComponent(animeId)}`).then(r => r.json()),
                 new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Metadata Timeout')), 8000))
             ])
-            const info = infoRes.data.data || infoRes.data
+            const info = infoRes.data || infoRes
 
             if (!info?.episodes?.length) throw new Error('No Data Stream')
 
@@ -152,10 +153,11 @@ export function StreamingContainer({
         setStreamError(null)
         setIframeLoaded(false)
         try {
-            const res = await api.get(
-                `/streaming/episode/${encodeURIComponent(ep.id)}?provider=animepahe&malId=${malId}&ep=${ep.number}&tmdbId=${tmdbId || ''}&title=${encodeURIComponent(animeTitle)}`
+            const res = await fetch(
+                `/api/streaming/episode/${encodeURIComponent(ep.id)}?provider=animepahe&malId=${malId}&ep=${ep.number}&tmdbId=${tmdbId || ''}&title=${encodeURIComponent(animeTitle)}`
             )
-            const data = res.data.data || res.data
+            const rawData = await res.json()
+            const data = rawData.data || rawData
             setStreamData(data)
             
             const primary = data.servers?.[0]
