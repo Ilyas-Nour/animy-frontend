@@ -417,6 +417,24 @@ function MangaReaderContent() {
                             readingMode="horizontal"
                             isCurrentPage={true}
                         />
+
+                        {/* Hidden Preloader for Instant Page Switching */}
+                        <div className="hidden pointer-events-none" aria-hidden="true">
+                            {(() => {
+                                const preloadIndices = [
+                                    currentPage - 1,
+                                    currentPage + 1,
+                                    currentPage + 2,
+                                    currentPage + 3
+                                ].filter(i => i >= 0 && i < pages.length);
+
+                                return preloadIndices.map(i => {
+                                    const page = pages[i];
+                                    const src = page?.img || page?.url || page;
+                                    return src ? <img key={`preload-${i}`} src={src} alt="" referrerPolicy="no-referrer" /> : null;
+                                });
+                            })()}
+                        </div>
                         
                         {/* Page Navigation Zones */}
                         <div 
