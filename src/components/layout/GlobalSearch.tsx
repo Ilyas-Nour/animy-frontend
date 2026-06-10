@@ -31,8 +31,8 @@ export function GlobalSearch() {
       const q = searchParams.get('q')
       if (q && !query) {
         setQuery(q)
-      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, searchParams, targetRoute])
 
   // Handle outside click to close dropdown
@@ -203,7 +203,7 @@ export function GlobalSearch() {
                 </div>
               ) : (
                 <div className="p-6 text-center text-sm text-muted-foreground">
-                  No results found for "{query}"
+                  No results found for &quot;{query}&quot;
                 </div>
               )}
             </div>
