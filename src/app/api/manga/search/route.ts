@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
         if (!response.ok) {
             console.error(`[PROXY ERROR] Manga search backend status: ${response.status}`)
-            return NextResponse.json({ data: [] }, { status: 200 })
+            return NextResponse.json({ error: 'Backend failed' }, { status: response.status })
         }
 
         const data = await response.json()
@@ -36,9 +36,10 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
         if (error.name === 'AbortError') {
             console.warn('[PROXY TIMEOUT] Manga search timed out after 55s')
+            return NextResponse.json({ error: 'Backend request timed out' }, { status: 504 })
         } else {
             console.error('[PROXY CRASH] Manga search proxy error:', error)
+            return NextResponse.json({ error: 'Proxy failed to connect to backend' }, { status: 502 })
         }
-        return NextResponse.json({ data: [] }, { status: 200 })
     }
 }

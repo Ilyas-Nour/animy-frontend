@@ -41,6 +41,9 @@ function MangaContent() {
                 })
 
                 const response = await fetch(`/api/manga/search?${params.toString()}`)
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                }
                 const json = await response.json()
                 const data = Array.isArray(json.data) ? json.data : json.data?.data || []
                 const pagination = json.pagination || json.data?.pagination || null
