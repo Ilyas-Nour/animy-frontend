@@ -4,6 +4,32 @@ export const runtime = 'edge'
 
 const ANINEWS_BASE = 'https://aninews.vercel.app/api'
 
+/** Strip thumbnail query params to get full-resolution images */
+function upgradeImageUrl(url: string | null): string | null {
+    if (!url) return null
+    try {
+        const u = new URL(url)
+        // Remove common thumbnail resize params
+        u.searchParams.delete('w')
+        u.searchParams.delete('h')
+        u.searchParams.delete('crop')
+        u.searchParams.delete('resize')
+        u.searchParams.delete('fit')
+        u.searchParams.delete('width')
+        u.searchParams.delete('height')
+        return u.toString()
+    } catch {
+        return url
+    }
+}
+
+function processArticles(articles: any[]): any[] {
+    return articles.map((a: any) => ({
+        ...a,
+        image: upgradeImageUrl(a.image)
+    }))
+}
+
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
@@ -17,13 +43,11 @@ export async function GET(request: NextRequest) {
         let url: string
 
         if (q) {
-            // Use search endpoint
             const params = new URLSearchParams({ q, limit })
             if (from) params.set('from', from)
             if (to) params.set('to', to)
             url = `${ANINEWS_BASE}/search?${params.toString()}`
         } else {
-            // Use news endpoint
             const params = new URLSearchParams({ limit })
             if (cursor) params.set('cursor', cursor)
             if (source) params.set('source', source)
@@ -34,14 +58,18 @@ export async function GET(request: NextRequest) {
 
         const res = await fetch(url, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 300 } // Cache 5 minutes
+            next: { revalidate: 300 }
         })
 
-        if (!res.ok) {
-            throw new Error(`AniNewsAPI responded with ${res.status}`)
-        }
+        if (!res.ok) throw new Error(`AniNewsAPI responded with ${res.status}`)
 
         const data = await res.json()
+
+        // Upgrade all image URLs to full resolution
+        if (data.data && Array.isArray(data.data)) {
+            data.data = processArticles(data.data)
+        }
+
         return NextResponse.json(data)
     } catch (error: any) {
         console.error('[News API] Error:', error.message)

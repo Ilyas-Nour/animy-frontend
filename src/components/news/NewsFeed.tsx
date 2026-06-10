@@ -3,28 +3,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-    Share2, Heart, MessageCircle, ExternalLink, Search,
-    X, ChevronDown, Loader2, RefreshCw, Rss, Filter,
-    TrendingUp, Clock, Newspaper
+    Search, X, ChevronRight, Loader2, RefreshCw,
+    ExternalLink, Clock, ArrowUpRight, Flame, Rss
 } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import api from '@/lib/api'
-import { toast } from 'sonner'
-import { CommentSection } from './CommentSection'
-import { useAuth } from '@/context/AuthContext'
+import { formatDistanceToNow, format } from 'date-fns'
 import { cn } from '@/lib/utils'
-import { ShareNewsModal } from './ShareNewsModal'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { NewsArticleModal } from './NewsArticleModal'
 
 // ─────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────
-interface AniNewsItem {
+export interface AniNewsItem {
     title: string
     slug: string
     source: string
@@ -40,496 +29,400 @@ interface NewsMeta {
     returned: number
     hasMore: boolean
     nextCursor?: string
-    availableSources?: string[]
 }
-
-// Source display config
-const SOURCE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
-    all:          { label: 'All Sources', color: 'text-foreground',   bg: 'bg-secondary/60',        border: 'border-border' },
-    ann:          { label: 'ANN',          color: 'text-blue-400',    bg: 'bg-blue-500/10',          border: 'border-blue-500/20' },
-    animecorner:  { label: 'Anime Corner', color: 'text-purple-400',  bg: 'bg-purple-500/10',        border: 'border-purple-500/20' },
-    myanimelist:  { label: 'MAL',          color: 'text-sky-400',     bg: 'bg-sky-500/10',           border: 'border-sky-500/20' },
-    otakuusa:     { label: 'Otaku USA',    color: 'text-orange-400',  bg: 'bg-orange-500/10',        border: 'border-orange-500/20' },
-    crunchyroll:  { label: 'Crunchyroll',  color: 'text-amber-400',   bg: 'bg-amber-500/10',         border: 'border-amber-500/20' },
-    animeherald:  { label: 'Anime Herald', color: 'text-green-400',   bg: 'bg-green-500/10',         border: 'border-green-500/20' },
-    comicbook:    { label: 'Comic Book',   color: 'text-red-400',     bg: 'bg-red-500/10',           border: 'border-red-500/20' },
-}
-
-const SOURCES = ['all', 'ann', 'animecorner', 'myanimelist', 'otakuusa', 'crunchyroll', 'animeherald', 'comicbook']
 
 // ─────────────────────────────────────────────────────────
-// Main Component
+// Source Config
+// ─────────────────────────────────────────────────────────
+const SOURCE_CONFIG: Record<string, { label: string; accent: string; dot: string }> = {
+    all:          { label: 'All',          accent: 'text-white',         dot: 'bg-white' },
+    ann:          { label: 'ANN',          accent: 'text-blue-400',      dot: 'bg-blue-400' },
+    animecorner:  { label: 'Anime Corner', accent: 'text-violet-400',    dot: 'bg-violet-400' },
+    myanimelist:  { label: 'MAL',          accent: 'text-sky-400',       dot: 'bg-sky-400' },
+    otakuusa:     { label: 'Otaku USA',    accent: 'text-orange-400',    dot: 'bg-orange-400' },
+    crunchyroll:  { label: 'Crunchyroll',  accent: 'text-amber-400',     dot: 'bg-amber-400' },
+    animeherald:  { label: 'Anime Herald', accent: 'text-emerald-400',   dot: 'bg-emerald-400' },
+    comicbook:    { label: 'Comic Book',   accent: 'text-rose-400',      dot: 'bg-rose-400' },
+}
+const SOURCES = Object.keys(SOURCE_CONFIG)
+
+function getSourceKey(sourceName: string): string {
+    const lower = sourceName.toLowerCase().replace(/\s+/g, '')
+    return SOURCES.find(k => k !== 'all' && lower.includes(k)) || 'ann'
+}
+
+// ─────────────────────────────────────────────────────────
+// Main Feed
 // ─────────────────────────────────────────────────────────
 export function NewsFeed() {
     const [articles, setArticles] = useState<AniNewsItem[]>([])
     const [meta, setMeta] = useState<NewsMeta | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [isLoadingMore, setIsLoadingMore] = useState(false)
-    const [isRefreshing, setIsRefreshing] = useState(false)
     const [activeSource, setActiveSource] = useState('all')
-    const [searchQuery, setSearchQuery] = useState('')
     const [searchInput, setSearchInput] = useState('')
-    const [cursor, setCursor] = useState<string | undefined>(undefined)
-    const searchTimeoutRef = useRef<NodeJS.Timeout>()
+    const [searchQuery, setSearchQuery] = useState('')
+    const [cursor, setCursor] = useState<string | undefined>()
+    const [selectedArticle, setSelectedArticle] = useState<AniNewsItem | null>(null)
+    const debounceRef = useRef<NodeJS.Timeout>()
 
     const fetchNews = useCallback(async (opts: {
-        source?: string
-        query?: string
-        cursor?: string
-        append?: boolean
+        source?: string; query?: string; cursor?: string; append?: boolean
     } = {}) => {
         const { source = activeSource, query = searchQuery, cursor: cur, append = false } = opts
-
-        if (!append) {
-            setIsLoading(true)
-            setArticles([])
-            setCursor(undefined)
-        } else {
-            setIsLoadingMore(true)
-        }
+        if (!append) { setIsLoading(true); setArticles([]) }
+        else setIsLoadingMore(true)
 
         try {
-            const params = new URLSearchParams({ limit: '15' })
-            if (source && source !== 'all') params.set('source', source)
-            if (query) params.set('q', query)
-            if (cur) params.set('cursor', cur)
+            const p = new URLSearchParams({ limit: '16' })
+            if (source !== 'all') p.set('source', source)
+            if (query) p.set('q', query)
+            if (cur) p.set('cursor', cur)
 
-            const res = await fetch(`/api/news?${params.toString()}`)
-            if (!res.ok) throw new Error('Failed to fetch')
+            const res = await fetch(`/api/news?${p}`)
+            if (!res.ok) throw new Error()
             const json = await res.json()
 
-            const newArticles: AniNewsItem[] = json.data || []
+            const items: AniNewsItem[] = json.data || []
             const newMeta: NewsMeta = json.meta || { total: 0, returned: 0, hasMore: false }
 
-            setArticles(prev => append ? [...prev, ...newArticles] : newArticles)
+            setArticles(prev => append ? [...prev, ...items] : items)
             setMeta(newMeta)
             setCursor(newMeta.nextCursor)
-        } catch (err) {
-            toast.error('Failed to load news. Please try again.')
+        } catch {
+            // silent fail
         } finally {
             setIsLoading(false)
             setIsLoadingMore(false)
-            setIsRefreshing(false)
         }
     }, [activeSource, searchQuery])
 
-    // Initial load - intentionally runs once on mount
     useEffect(() => {
         fetchNews()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    // Handle source change
-    const handleSourceChange = (source: string) => {
-        setActiveSource(source)
-        setSearchQuery('')
+    const handleSource = (src: string) => {
+        setActiveSource(src)
         setSearchInput('')
-        fetchNews({ source, query: '' })
+        setSearchQuery('')
+        fetchNews({ source: src, query: '' })
     }
 
-    // Handle search with debounce
-    const handleSearchInputChange = (val: string) => {
+    const handleSearch = (val: string) => {
         setSearchInput(val)
-        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
-        searchTimeoutRef.current = setTimeout(() => {
+        if (debounceRef.current) clearTimeout(debounceRef.current)
+        debounceRef.current = setTimeout(() => {
             setSearchQuery(val)
             fetchNews({ query: val, source: activeSource })
-        }, 500)
+        }, 480)
     }
 
-    const handleRefresh = () => {
-        setIsRefreshing(true)
-        fetchNews({ source: activeSource, query: searchQuery })
-    }
-
-    const handleLoadMore = () => {
-        if (cursor && !isLoadingMore) {
-            fetchNews({ source: activeSource, query: searchQuery, cursor, append: true })
-        }
-    }
+    const featured = articles[0]
+    const rest = articles.slice(1)
 
     return (
-        <div className="w-full max-w-3xl mx-auto space-y-8">
-            {/* ── Controls: Search + Source Filter ── */}
-            <div className="space-y-4">
-                {/* Search Bar */}
-                <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <>
+            {/* ── Controls ── */}
+            <div className="space-y-5 mb-10">
+                {/* Search */}
+                <div className="relative max-w-lg mx-auto">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                     <input
-                        type="text"
                         value={searchInput}
-                        onChange={e => handleSearchInputChange(e.target.value)}
-                        placeholder="Search anime news..."
-                        className="w-full h-12 pl-11 pr-10 rounded-2xl bg-secondary/60 border border-border/50 focus:border-orange-500/40 focus:bg-secondary text-sm font-medium placeholder:text-muted-foreground/60 text-foreground outline-none transition-all"
+                        onChange={e => handleSearch(e.target.value)}
+                        placeholder="Search news, shows, studios..."
+                        className="w-full h-12 pl-11 pr-10 bg-white/5 border border-white/10 rounded-2xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-white/25 focus:bg-white/8 transition-all"
                     />
                     {searchInput && (
-                        <button
-                            onClick={() => { setSearchInput(''); handleSearchInputChange('') }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-xl hover:bg-accent/50 text-muted-foreground transition-colors"
-                        >
+                        <button onClick={() => handleSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
                             <X className="w-4 h-4" />
                         </button>
                     )}
                 </div>
 
-                {/* Source Filter Pills */}
-                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {/* Source filter tabs */}
+                <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide justify-center flex-wrap">
                     {SOURCES.map(src => {
                         const cfg = SOURCE_CONFIG[src]
-                        const isActive = activeSource === src
+                        const active = activeSource === src
                         return (
                             <button
                                 key={src}
-                                onClick={() => handleSourceChange(src)}
+                                onClick={() => handleSource(src)}
                                 className={cn(
-                                    "shrink-0 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all",
-                                    isActive
-                                        ? `${cfg.bg} ${cfg.border} ${cfg.color} shadow-sm`
-                                        : "bg-secondary/40 border-border/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                                    "shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap",
+                                    active
+                                        ? "bg-white text-black shadow-lg shadow-white/10"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                                 )}
                             >
+                                {active && <span className={cn("inline-block w-1.5 h-1.5 rounded-full mr-1.5 -translate-y-px", cfg.dot)} />}
                                 {cfg.label}
                             </button>
                         )
                     })}
                 </div>
-            </div>
 
-            {/* ── Stats bar ── */}
-            {meta && !isLoading && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex items-center justify-between text-xs text-muted-foreground px-1"
-                >
-                    <div className="flex items-center gap-1.5">
-                        <Newspaper className="w-3.5 h-3.5" />
-                        <span><span className="font-bold text-foreground">{meta.total}</span> articles from 7 sources</span>
+                {/* Meta line */}
+                {meta && !isLoading && (
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground/60 px-1">
+                        <span>{meta.total} articles · 7 live sources</span>
+                        <button onClick={() => fetchNews()} className="flex items-center gap-1 hover:text-muted-foreground transition-colors">
+                            <RefreshCw className="w-3 h-3" /> Refresh
+                        </button>
                     </div>
-                    <button
-                        onClick={handleRefresh}
-                        disabled={isRefreshing}
-                        className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-                    >
-                        <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin")} />
-                        Refresh
-                    </button>
-                </motion.div>
-            )}
+                )}
+            </div>
 
             {/* ── Feed ── */}
             {isLoading ? (
-                <NewsSkeletons />
+                <LoadingSkeleton />
             ) : articles.length === 0 ? (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-20 text-muted-foreground"
-                >
-                    <Newspaper className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                    <p className="font-bold text-sm">
-                        {searchQuery ? `No results for "${searchQuery}"` : 'No news available right now'}
-                    </p>
-                    <p className="text-xs mt-1 opacity-60">Try a different source or check back soon</p>
-                </motion.div>
+                <EmptyState query={searchQuery} />
             ) : (
-                <div className="space-y-6">
-                    <AnimatePresence mode="popLayout">
-                        {articles.map((item, index) => (
-                            <NewsCard key={item.slug} item={item} index={index} />
+                <div className="space-y-12">
+                    {/* Featured Hero Article */}
+                    {featured && (
+                        <FeaturedCard article={featured} onOpen={setSelectedArticle} />
+                    )}
+
+                    {/* Divider */}
+                    {rest.length > 0 && (
+                        <div className="flex items-center gap-4">
+                            <div className="flex-1 h-px bg-border/40" />
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40">Latest</span>
+                            <div className="flex-1 h-px bg-border/40" />
+                        </div>
+                    )}
+
+                    {/* Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {rest.map((article, i) => (
+                            <GridCard key={article.slug} article={article} index={i} onOpen={setSelectedArticle} />
                         ))}
-                    </AnimatePresence>
+                    </div>
 
                     {/* Load More */}
                     {meta?.hasMore && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex justify-center pt-4"
-                        >
+                        <div className="flex justify-center pt-4">
                             <button
-                                onClick={handleLoadMore}
+                                onClick={() => fetchNews({ cursor, append: true })}
                                 disabled={isLoadingMore}
-                                className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-secondary/60 border border-border/50 hover:bg-secondary text-sm font-bold text-muted-foreground hover:text-foreground transition-all disabled:opacity-50"
+                                className="flex items-center gap-2 px-8 py-3 rounded-2xl border border-border/50 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-border transition-all disabled:opacity-40"
                             >
-                                {isLoadingMore ? (
-                                    <><Loader2 className="w-4 h-4 animate-spin" />Loading...</>
-                                ) : (
-                                    <><ChevronDown className="w-4 h-4" />Load More</>
-                                )}
+                                {isLoadingMore
+                                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
+                                    : <><ChevronRight className="w-4 h-4" /> Load more</>
+                                }
                             </button>
-                        </motion.div>
+                        </div>
                     )}
                 </div>
             )}
-        </div>
+
+            {/* Article Modal */}
+            <AnimatePresence>
+                {selectedArticle && (
+                    <NewsArticleModal article={selectedArticle} onClose={() => setSelectedArticle(null)} />
+                )}
+            </AnimatePresence>
+        </>
     )
 }
 
 // ─────────────────────────────────────────────────────────
-// Loading Skeletons
+// Featured Hero Card
 // ─────────────────────────────────────────────────────────
-function NewsSkeletons() {
+function FeaturedCard({ article, onOpen }: { article: AniNewsItem; onOpen: (a: AniNewsItem) => void }) {
+    const [imgError, setImgError] = useState(false)
+    const srcKey = getSourceKey(article.source)
+    const srcCfg = SOURCE_CONFIG[srcKey]
+
     return (
-        <div className="space-y-6">
-            {[...Array(4)].map((_, i) => (
-                <div key={i} className="rounded-[2rem] overflow-hidden bg-card border border-border/30 animate-pulse">
-                    <div className="p-5 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-secondary/80" />
-                        <div className="space-y-2 flex-1">
-                            <div className="h-3 w-24 bg-secondary/80 rounded-full" />
-                            <div className="h-2 w-16 bg-secondary/50 rounded-full" />
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="group relative rounded-3xl overflow-hidden cursor-pointer bg-card border border-border/30 hover:border-border/60 transition-all duration-500"
+            onClick={() => onOpen(article)}
+        >
+            {/* Image */}
+            {article.image && !imgError ? (
+                <div className="relative w-full aspect-[21/9] overflow-hidden">
+                    <img
+                        src={article.image}
+                        alt={article.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        onError={() => setImgError(true)}
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                    {/* Content on image */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                        <SourceBadge source={article.source} srcCfg={srcCfg} date={article.date} />
+                        <h2 className="mt-3 text-2xl md:text-3xl font-bold text-white leading-tight tracking-tight line-clamp-2 group-hover:text-white/90 transition-colors">
+                            {article.title}
+                        </h2>
+                        {article.excerpt && (
+                            <p className="mt-2 text-sm text-white/60 line-clamp-2 leading-relaxed">
+                                {article.excerpt}
+                            </p>
+                        )}
+                        <div className="mt-4 flex items-center gap-2 text-xs text-white/50 font-medium">
+                            <span>Read article</span>
+                            <ArrowUpRight className="w-3.5 h-3.5" />
                         </div>
                     </div>
-                    <div className="px-5 pb-4 space-y-2">
-                        <div className="h-5 bg-secondary/80 rounded-xl w-4/5" />
-                        <div className="h-4 bg-secondary/60 rounded-xl w-3/5" />
-                    </div>
-                    <div className="w-full aspect-[16/9] bg-secondary/40" />
-                    <div className="p-5">
-                        <div className="h-3 w-full bg-secondary/40 rounded-full mb-2" />
-                        <div className="h-3 w-2/3 bg-secondary/30 rounded-full" />
+                </div>
+            ) : (
+                <div className="p-8 md:p-10">
+                    <SourceBadge source={article.source} srcCfg={srcCfg} date={article.date} />
+                    <h2 className="mt-4 text-2xl md:text-3xl font-bold leading-tight tracking-tight line-clamp-3">
+                        {article.title}
+                    </h2>
+                    {article.excerpt && (
+                        <p className="mt-3 text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                            {article.excerpt}
+                        </p>
+                    )}
+                    <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground font-medium group-hover:text-foreground transition-colors">
+                        Read article <ArrowUpRight className="w-3.5 h-3.5" />
                     </div>
                 </div>
-            ))}
+            )}
+        </motion.div>
+    )
+}
+
+// ─────────────────────────────────────────────────────────
+// Grid Card (compact)
+// ─────────────────────────────────────────────────────────
+function GridCard({ article, index, onOpen }: { article: AniNewsItem; index: number; onOpen: (a: AniNewsItem) => void }) {
+    const [imgError, setImgError] = useState(false)
+    const srcKey = getSourceKey(article.source)
+    const srcCfg = SOURCE_CONFIG[srcKey]
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-30px' }}
+            transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.2) }}
+            onClick={() => onOpen(article)}
+            className="group flex flex-col rounded-2xl overflow-hidden cursor-pointer bg-card border border-border/30 hover:border-border/60 transition-all duration-300 hover:-translate-y-0.5"
+        >
+            {/* Image */}
+            {article.image && !imgError ? (
+                <div className="relative w-full aspect-[16/9] overflow-hidden bg-secondary/40 shrink-0">
+                    <img
+                        src={article.image}
+                        alt={article.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={() => setImgError(true)}
+                    />
+                </div>
+            ) : (
+                <div className="w-full aspect-[16/9] bg-gradient-to-br from-secondary/60 to-secondary/20 flex items-center justify-center shrink-0">
+                    <Rss className="w-8 h-8 text-muted-foreground/20" />
+                </div>
+            )}
+
+            {/* Body */}
+            <div className="flex flex-col flex-1 p-4">
+                <SourceBadge source={article.source} srcCfg={srcCfg} date={article.date} small />
+                <h3 className="mt-2.5 text-sm font-semibold leading-snug tracking-tight line-clamp-2 group-hover:text-foreground/80 transition-colors">
+                    {article.title}
+                </h3>
+                {article.excerpt && (
+                    <p className="mt-1.5 text-xs text-muted-foreground/70 line-clamp-2 leading-relaxed">
+                        {article.excerpt}
+                    </p>
+                )}
+                <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
+                    {article.tags && article.tags.length > 0 && (
+                        <div className="flex gap-1 flex-wrap">
+                            {article.tags
+                                .filter(t => !['news', 'anime', 'manga'].includes(t))
+                                .slice(0, 2)
+                                .map(tag => (
+                                    <span key={tag} className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-wide">
+                                        #{tag}
+                                    </span>
+                                ))}
+                        </div>
+                    )}
+                    <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-foreground/60 transition-colors ml-auto" />
+                </div>
+            </div>
+        </motion.div>
+    )
+}
+
+// ─────────────────────────────────────────────────────────
+// Source Badge
+// ─────────────────────────────────────────────────────────
+function SourceBadge({ source, srcCfg, date, small = false }: {
+    source: string
+    srcCfg: { label: string; accent: string; dot: string }
+    date: string
+    small?: boolean
+}) {
+    const timeAgo = formatDistanceToNow(new Date(date), { addSuffix: true })
+    return (
+        <div className={cn("flex items-center gap-2", small ? "text-[10px]" : "text-xs")}>
+            <span className={cn("font-bold uppercase tracking-wider", srcCfg.accent)}>{source}</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="text-muted-foreground/60 flex items-center gap-1">
+                <Clock className={cn(small ? "w-2.5 h-2.5" : "w-3 h-3")} />
+                {timeAgo}
+            </span>
         </div>
     )
 }
 
 // ─────────────────────────────────────────────────────────
-// Individual News Card
+// Skeleton
 // ─────────────────────────────────────────────────────────
-function NewsCard({ item, index }: { item: AniNewsItem; index: number }) {
-    const { user } = useAuth()
-    const [stats, setStats] = useState({ likes: 0, comments: 0, isLiked: false })
-    const [showComments, setShowComments] = useState(false)
-    const [isShareModalOpen, setIsShareModalOpen] = useState(false)
-    const [imgError, setImgError] = useState(false)
-
-    const sourceKey = Object.keys(SOURCE_CONFIG).find(k =>
-        item.source.toLowerCase().replace(/\s+/g, '').includes(k) ||
-        k.includes(item.source.toLowerCase().replace(/\s+/g, '').slice(0, 5))
-    ) || 'ann'
-    const srcCfg = SOURCE_CONFIG[sourceKey] || SOURCE_CONFIG['ann']
-
-    useEffect(() => {
-        const fetchEngagement = async () => {
-            try {
-                const url = `/news-engagement/${item.slug}${user ? `?userId=${user.id}` : ''}`
-                const res = await api.get(url)
-                const data = res.data.data
-                setStats({
-                    likes: data._count?.reactions || 0,
-                    comments: data._count?.comments || 0,
-                    isLiked: data.isLiked || false
-                })
-            } catch {
-                // silence - engagement is optional
-            }
-        }
-        fetchEngagement()
-    }, [item.slug, user])
-
-    const handleLike = async () => {
-        if (!user) { toast.error('Sign in to like articles'); return }
-        const wasLiked = stats.isLiked
-        setStats(prev => ({ ...prev, likes: wasLiked ? prev.likes - 1 : prev.likes + 1, isLiked: !wasLiked }))
-        try {
-            await api.post('/reactions', { type: 'LIKE', providerId: item.slug })
-        } catch {
-            setStats(prev => ({ ...prev, likes: wasLiked ? prev.likes + 1 : prev.likes - 1, isLiked: wasLiked }))
-        }
-    }
-
-    const handleShare = async () => {
-        if (navigator.share) {
-            try { await navigator.share({ title: item.title, url: item.link }) } catch { }
-        } else {
-            navigator.clipboard.writeText(item.link)
-            toast.success('Link copied!')
-        }
-    }
-
-    const hasImage = item.image && !imgError
-
+function LoadingSkeleton() {
     return (
-        <motion.article
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.45, delay: Math.min(index * 0.04, 0.2) }}
-            className="group relative bg-card dark:bg-[#0a0a0a]/80 border border-border/40 dark:border-white/5 rounded-[2rem] overflow-hidden shadow-lg hover:shadow-orange-500/10 hover:border-border/70 transition-all duration-500 hover:-translate-y-0.5 backdrop-blur-xl"
-        >
-            {/* Top shimmer */}
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
-
-            {/* Source badge + meta */}
-            <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                    {/* Source pill */}
-                    <span className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] border",
-                        srcCfg.bg, srcCfg.border, srcCfg.color
-                    )}>
-                        <Rss className="w-2.5 h-2.5" />
-                        {item.source}
-                    </span>
-                    <span className="text-[9px] text-muted-foreground font-medium flex items-center gap-1">
-                        <Clock className="w-2.5 h-2.5" />
-                        {formatDistanceToNow(new Date(item.date), { addSuffix: true })}
-                    </span>
+        <div className="space-y-12 animate-pulse">
+            {/* Featured */}
+            <div className="rounded-3xl overflow-hidden bg-card border border-border/20">
+                <div className="aspect-[21/9] bg-secondary/40" />
+                <div className="p-6 space-y-3">
+                    <div className="h-3 w-32 bg-secondary/60 rounded-full" />
+                    <div className="h-7 w-3/4 bg-secondary/60 rounded-xl" />
+                    <div className="h-4 w-full bg-secondary/40 rounded-lg" />
                 </div>
-
-                {/* Share dropdown */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <button className="p-2 rounded-xl bg-secondary/50 border border-border hover:bg-secondary hover:scale-105 transition-all focus:outline-none">
-                            <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
-                        </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-card border-border rounded-2xl shadow-2xl min-w-[180px] p-2 z-50">
-                        <DropdownMenuItem
-                            onClick={() => setIsShareModalOpen(true)}
-                            className="rounded-xl p-2.5 flex items-center gap-2.5 focus:bg-indigo-500/10 focus:text-indigo-500 cursor-pointer text-xs font-black uppercase tracking-tight"
-                        >
-                            Share to Friends
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={handleShare}
-                            className="rounded-xl p-2.5 flex items-center gap-2.5 focus:bg-indigo-500/10 focus:text-indigo-500 cursor-pointer text-xs font-black uppercase tracking-tight"
-                        >
-                            Copy Link
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
             </div>
-
-            <ShareNewsModal
-                open={isShareModalOpen}
-                onOpenChange={setIsShareModalOpen}
-                newsItem={{ id: item.slug, title: item.title, url: item.link, image_url: item.image ?? undefined }}
-            />
-
-            {/* Title */}
-            <div className="px-5 pb-4">
-                <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group/link block"
-                >
-                    <h2 className="text-lg md:text-xl font-black text-foreground leading-[1.25] tracking-tight group-hover/link:text-orange-500 transition-colors">
-                        {item.title}
-                    </h2>
-                </a>
-            </div>
-
-            {/* Image */}
-            {hasImage && (
-                <div className="px-3 pb-0">
-                    <div className="w-full aspect-[16/9] relative rounded-[1.5rem] overflow-hidden bg-secondary group/img">
-                        <img
-                            src={item.image!}
-                            alt={item.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-105"
-                            onError={() => setImgError(true)}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity" />
-                        {/* External link overlay */}
-                        <a
-                            href={item.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="absolute inset-0 flex items-end justify-end p-3 opacity-0 group-hover/img:opacity-100 transition-opacity"
-                        >
-                            <span className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold">
-                                <ExternalLink className="w-3 h-3" />
-                                Read Full Article
-                            </span>
-                        </a>
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="rounded-2xl overflow-hidden bg-card border border-border/20">
+                        <div className="aspect-[16/9] bg-secondary/40" />
+                        <div className="p-4 space-y-2">
+                            <div className="h-2.5 w-24 bg-secondary/50 rounded-full" />
+                            <div className="h-4 w-full bg-secondary/50 rounded-lg" />
+                            <div className="h-3 w-4/5 bg-secondary/30 rounded-lg" />
+                        </div>
                     </div>
-                </div>
-            )}
-
-            {/* Excerpt */}
-            {item.excerpt && (
-                <p className="px-5 py-4 text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                    {item.excerpt}
-                </p>
-            )}
-
-            {/* Tags */}
-            {item.tags && item.tags.length > 0 && (
-                <div className="px-5 pb-4 flex flex-wrap gap-1.5">
-                    {item.tags.filter(t => !['news', 'anime', 'manga'].includes(t)).slice(0, 4).map(tag => (
-                        <span
-                            key={tag}
-                            className="px-2 py-0.5 rounded-md bg-secondary/60 text-muted-foreground text-[9px] font-bold uppercase tracking-wide border border-border/30"
-                        >
-                            #{tag}
-                        </span>
-                    ))}
-                </div>
-            )}
-
-            {/* Actions Footer */}
-            <div className="px-5 pb-5">
-                <div className="flex items-center gap-2 pt-3 border-t border-border/30">
-                    <button
-                        onClick={handleLike}
-                        className={cn(
-                            "flex-1 h-11 rounded-xl flex items-center justify-center gap-2 transition-all font-black text-[10px] uppercase tracking-wider border",
-                            stats.isLiked
-                                ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
-                                : "bg-secondary/50 border-border text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        )}
-                    >
-                        <Heart className={cn("w-4 h-4", stats.isLiked && "fill-current")} />
-                        <span>{stats.likes}</span>
-                    </button>
-
-                    <button
-                        onClick={() => setShowComments(!showComments)}
-                        className={cn(
-                            "flex-1 h-11 rounded-xl flex items-center justify-center gap-2 transition-all font-black text-[10px] uppercase tracking-wider border",
-                            showComments
-                                ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-500"
-                                : "bg-secondary/50 border-border text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        )}
-                    >
-                        <MessageCircle className="w-4 h-4" />
-                        <span>{stats.comments}</span>
-                    </button>
-
-                    <a
-                        href={item.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="h-11 px-4 rounded-xl flex items-center justify-center gap-1.5 bg-secondary/50 border border-border text-muted-foreground hover:bg-orange-500/10 hover:border-orange-500/20 hover:text-orange-500 transition-all font-black text-[10px] uppercase tracking-wider"
-                    >
-                        <ExternalLink className="w-4 h-4" />
-                        <span className="hidden sm:inline">Source</span>
-                    </a>
-                </div>
-
-                {/* Comment Section */}
-                <AnimatePresence>
-                    {showComments && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-                            className="overflow-hidden"
-                        >
-                            <div className="pt-6 mt-4 border-t border-border/30">
-                                <CommentSection newsId={item.slug} />
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                ))}
             </div>
-        </motion.article>
+        </div>
+    )
+}
+
+function EmptyState({ query }: { query: string }) {
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24">
+            <div className="w-16 h-16 rounded-2xl bg-secondary/40 flex items-center justify-center mx-auto mb-5">
+                <Flame className="w-7 h-7 text-muted-foreground/30" />
+            </div>
+            <p className="text-base font-semibold text-foreground/60">
+                {query ? `No results for "${query}"` : 'No articles right now'}
+            </p>
+            <p className="text-sm text-muted-foreground/40 mt-1">Try a different source or check back soon</p>
+        </motion.div>
     )
 }

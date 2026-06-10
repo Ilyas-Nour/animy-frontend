@@ -1,41 +1,34 @@
 'use client'
 
 import { NewsFeed } from '@/components/news/NewsFeed'
-import { Flame } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Suspense } from 'react'
 
 export default function NewsPage() {
     return (
-        <div className="min-h-screen bg-background text-foreground relative overflow-hidden selection:bg-orange-500/30">
-            {/* Background Effects - Refined for both modes */}
+        <div className="min-h-screen bg-background text-foreground">
+            {/* Subtle background gradient */}
             <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-orange-500/10 dark:bg-orange-600/10 rounded-full blur-[120px] dark:blur-[150px] opacity-50 dark:opacity-100" />
-                <div className="absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-purple-500/10 dark:bg-red-600/10 rounded-full blur-[120px] dark:blur-[150px] opacity-40 dark:opacity-100" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[400px] bg-orange-500/5 blur-[120px] rounded-full" />
             </div>
 
-            <div className="relative z-10 container max-w-3xl mx-auto px-4 py-8 md:py-16">
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8 md:mb-16 text-center space-y-4 md:space-y-6"
-                >
-                    <div className="inline-flex items-center gap-2 px-4 md:px-6 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-                        <Flame className="w-3 h-3 md:w-4 md:h-4" />
-                        Live Feed Active
+            <div className="relative z-10 max-w-4xl mx-auto px-4 pt-10 pb-20 md:pt-16">
+                {/* Page Header */}
+                <div className="mb-10 md:mb-14">
+                    <div className="flex items-center gap-2 mb-4">
+                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-orange-500/80">Live Feed</span>
                     </div>
-
-                    <h1 className="text-4xl md:text-7xl font-black text-foreground leading-[0.9] tracking-tighter italic uppercase">
-                        Global<br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-red-500 to-purple-600">Transmissions</span>
+                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.05]">
+                        Anime News
                     </h1>
-
-                    <p className="max-w-xl mx-auto text-muted-foreground text-xs md:text-sm font-medium leading-relaxed px-4">
-                        Intercepting high-priority data shards from the secure Anime news lattice.
-                        Stay synchronized with every shift in the multi-world frequency.
+                    <p className="mt-3 text-sm md:text-base text-muted-foreground/60 max-w-md">
+                        Real-time articles from ANN, Crunchyroll, MAL, and 4 more sources — all in one place.
                     </p>
-                </motion.div>
+                </div>
 
-                <NewsFeed />
+                <Suspense>
+                    <NewsFeed />
+                </Suspense>
             </div>
         </div>
     )
