@@ -13,7 +13,7 @@ export default function NewsPage() {
                 <div className="absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-purple-500/10 dark:bg-red-600/10 rounded-full blur-[120px] dark:blur-[150px] opacity-40 dark:opacity-100" />
             </div>
 
-            <div className="relative z-10 container max-w-4xl mx-auto px-4 py-8 md:py-16">
+            <div className="relative z-10 container max-w-3xl mx-auto px-4 py-8 md:py-16">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
