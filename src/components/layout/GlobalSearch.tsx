@@ -31,6 +31,7 @@ export function GlobalSearch() {
       const q = searchParams.get('q')
       if (q && !query) {
         setQuery(q)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, searchParams, targetRoute])
