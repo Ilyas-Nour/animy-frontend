@@ -14,6 +14,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import { cn, getAvatarUrl } from '@/lib/utils'
 import UserAvatar from '@/components/common/UserAvatar'
 import { AnimatedLogo } from './AnimatedLogo'
+import { GlobalSearch } from './GlobalSearch'
 import { NotificationBell } from '@/components/Notifications/NotificationBell'
 
 export function Header() {
@@ -106,6 +107,9 @@ export function Header() {
         <Link href="/" className="shrink-0">
           <AnimatedLogo />
         </Link>
+
+        {/* Global Search */}
+        <GlobalSearch />
 
         {/* Desktop Navigation (Text) - Visible only on Large screens */}
         <nav className="hidden lg:flex items-center space-x-6">
