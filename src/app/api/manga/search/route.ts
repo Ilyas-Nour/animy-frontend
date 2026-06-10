@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 12000)
+        const timeoutId = setTimeout(() => controller.abort(), 120000)
 
         const url = `${BACKEND_API}/manga?q=${q}&type=${type}&status=${status}&order_by=${order_by}&sort=${sort}&limit=${limit}&page=${page}`
         const response = await fetch(url, {
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(data)
     } catch (error: any) {
         if (error.name === 'AbortError') {
-            console.warn('[PROXY TIMEOUT] Manga search timed out after 12s')
+            console.warn('[PROXY TIMEOUT] Manga search timed out after 120s')
         } else {
             console.error('[PROXY CRASH] Manga search proxy error:', error)
         }
