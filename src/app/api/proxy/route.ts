@@ -54,8 +54,9 @@ async function handleRequest(request: NextRequest) {
       headers.set('content-type', 'application/json');
     }
 
+    // 120-second timeout to allow Hugging Face Spaces cold starts
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     const fetchOptions: RequestInit = {
       method: request.method,
@@ -89,7 +90,7 @@ async function handleRequest(request: NextRequest) {
     });
   } catch (error: any) {
     if (error.name === 'AbortError') {
-      console.warn(`[PROXY TIMEOUT] ${request.method} ${finalUrl} timed out after 15s`);
+      console.warn(`[PROXY TIMEOUT] ${request.method} ${finalUrl} timed out after 120s`);
       return NextResponse.json(
         { error: 'Backend request timed out', details: 'The server took too long to respond' },
         { status: 504 }

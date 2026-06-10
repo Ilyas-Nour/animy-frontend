@@ -66,9 +66,9 @@ async function fetchWithInterceptor(url: string, options: RequestOptions = {}) {
     }
   }
 
-  // 15-second timeout to prevent hanging requests
+  // 120-second timeout to allow Hugging Face Spaces cold starts
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
 
   try {
     const response = await fetch(finalUrl, { ...config, signal: controller.signal });
