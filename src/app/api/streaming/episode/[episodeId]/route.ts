@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { WitanimeExtractor } from '@/lib/witanime';
 
 export const runtime = 'edge';
 
@@ -73,6 +74,20 @@ export async function GET(
                 }
             } catch (e) {
                 console.error('MALSync resolution failed', e);
+            }
+            
+            try {
+                const jikanRes = await fetch(`https://api.jikan.moe/v4/anime/${malId}`);
+                if (jikanRes.ok) {
+                    const jikanData = await jikanRes.json();
+                    const title = jikanData?.data?.title_english || jikanData?.data?.title;
+                    if (title) {
+                        const witanimeServers = await WitanimeExtractor.getServersForAnimeEpisode(title, epNumber);
+                        servers.push(...witanimeServers);
+                    }
+                }
+            } catch (e) {
+                console.error('Witanime resolution failed', e);
             }
         }
 
