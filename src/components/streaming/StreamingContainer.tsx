@@ -1,16 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import Hls from 'hls.js'
 import { EpisodeGrid } from './EpisodeGrid'
 import { 
-    Tv, ChevronLeft, ChevronRight, Info, ExternalLink, 
-    Wifi, AlertCircle, Play, Loader2, Maximize, 
-    Settings, Subtitles, RefreshCcw 
+    ChevronLeft, ChevronRight,
+    Wifi, AlertCircle, Loader2,
+    RefreshCcw 
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import api from '@/lib/api'
 import ArtPlayer from './ArtPlayer'
 
 interface StreamingContainerProps {
@@ -63,11 +61,8 @@ export function StreamingContainer({
     const [iframeKey, setIframeKey] = useState(0)
     const lastLoadedRef = useRef<string | null>(null)
 
-    const externalSearchUrl = `https://anikai.to/browser?keyword=${encodeURIComponent(animeTitle)}`
-    const gogoSearchUrl = `https://gogoanime.hy/?s=${encodeURIComponent(animeTitle)}`
-    const anifySearchUrl = `https://anify.to/search?searchText=${encodeURIComponent(animeTitle)}`
-
     useEffect(() => { setMounted(true) }, [])
+
 
     // ── Phase 1: Load Episodes ───────────────────────────────────────────────
     const findAndLoadEpisodes = useCallback(async () => {
@@ -211,7 +206,7 @@ export function StreamingContainer({
                             : 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
                 )}>
                     <Wifi className={cn("w-3 h-3", hiLoading && "animate-pulse")} />
-                    {hiLoading ? 'Syncing Nuclear Mesh...' : hiError ? 'Restoration Active (Fallback Mode)' : 'Nuclear Mesh v11.1 Online'}
+                    {hiLoading ? 'Loading episodes...' : hiError ? 'Using direct embed mode' : 'Episodes loaded'}
                 </div>
 
                 <button 
@@ -240,49 +235,23 @@ export function StreamingContainer({
                     ))}
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <a href={externalSearchUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-[10px] text-indigo-400/70 hover:text-indigo-300 transition-colors font-bold uppercase tracking-widest">
-                        <ExternalLink className="w-3 h-3" /> Anikai
-                    </a>
-                    <a href={gogoSearchUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-[10px] text-orange-400/70 hover:text-orange-300 transition-colors font-bold uppercase tracking-widest">
-                        <ExternalLink className="w-3 h-3" /> Gogo
-                    </a>
-                    <a href={anifySearchUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-[10px] text-emerald-400/70 hover:text-emerald-300 transition-colors font-bold uppercase tracking-widest">
-                        <ExternalLink className="w-3 h-3" /> Anify
-                    </a>
-                </div>
+
             </div>
 
             {/* ── Video Player ── */}
             <div className="relative bg-black rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-black/50 group"
                 style={{ aspectRatio: '16/9' }}>
 
-                {/* Loading/Error State */}
-                {(streamLoading || !iframeLoaded) && !streamError && (
+                {/* Loading State: only while fetching server list */}
+                {streamLoading && !streamError && (
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0a0a0b] gap-4">
                         <div className="relative">
                              <div className="w-12 h-12 rounded-full border-2 border-indigo-500/20" />
                              <div className="absolute inset-0 w-12 h-12 rounded-full border-t-2 border-indigo-500 animate-spin" />
                         </div>
                         <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-                            Engaging Resilience Mesh v11.0...
+                            Finding streaming servers...
                         </p>
-                        <div className="flex flex-col items-center gap-2">
-                             <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest">
-                                 Nuclear Discovery Bridge Active
-                             </p>
-                             {streamLoading && (
-                                 <button 
-                                     onClick={() => setStreamError('Manual Bypass Triggered')}
-                                     className="text-indigo-500/50 hover:text-indigo-400 text-[9px] uppercase font-bold tracking-tighter mt-2 underline"
-                                 >
-                                     Skip Waiting & Show Mirrors
-                                 </button>
-                             )}
-                        </div>
                     </div>
                 )}
 
@@ -290,11 +259,11 @@ export function StreamingContainer({
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0a0a0b] gap-4 px-6 text-center">
                         <AlertCircle className="w-12 h-12 text-red-500/30" />
                         <div className="space-y-1">
-                            <p className="text-white font-bold">Node Connection Failed</p>
-                            <p className="text-white/40 text-xs">Direct MAL-ID Bridge failed to resolve the stream. Try another mirror.</p>
+                            <p className="text-white font-bold">Failed to load servers</p>
+                            <p className="text-white/40 text-xs">Could not find streaming links. Try another episode or click retry.</p>
                         </div>
                         <Button variant="outline" size="sm" onClick={() => selectedEp && fetchStreamSources(selectedEp)} className="mt-2 border-white/10">
-                            <RefreshCcw className="w-3.5 h-3.5 mr-2" /> Retry Node
+                            <RefreshCcw className="w-3.5 h-3.5 mr-2" /> Retry
                         </Button>
                     </div>
                 )}
@@ -304,43 +273,23 @@ export function StreamingContainer({
                     <ArtPlayer
                         url={activeServer.sources[0].url}
                         poster={animePoster}
-                        subtitles={activeServer.subtitles as any} // Subtitles from native source
-                        onEnded={nextEp} // Auto-Play next episode
+                        subtitles={activeServer.subtitles as any}
+                        onEnded={nextEp}
                         className="w-full h-full"
                         onReady={() => setIframeLoaded(true)}
                     />
-                ) : (activeServer?.provider === 'external' || activeServer?.name?.includes('Direct')) ? (
-                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#0a0a0b] gap-6 px-6 text-center">
-                        <div className="w-20 h-20 rounded-full bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                             <ExternalLink className="w-10 h-10 text-indigo-500" />
-                        </div>
-                        <div className="space-y-2">
-                            <h3 className="text-xl font-black text-white uppercase tracking-tighter">Secure Portal Ready</h3>
-                            <p className="text-white/40 text-xs max-w-xs mx-auto">
-                                This provider ({activeServer.name}) requires a direct secure connection to play.
-                            </p>
-                        </div>
-                        <Button 
-                            onClick={() => {
-                                window.open(activeServer.url, '_blank', 'noopener,noreferrer');
-                                setIframeLoaded(true);
-                            }}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 h-12 rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-500/20"
-                        >
-                            Launch Secure Player
-                        </Button>
-                    </div>
-                ) : activeServer?.url && (
+                ) : activeServer?.url ? (
                     <iframe
                         key={`${activeServer.url}-${iframeKey}`}
                         src={activeServer.url}
                         className="w-full h-full border-0"
                         allowFullScreen
-                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
                         referrerPolicy="no-referrer-when-downgrade"
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-presentation"
                         onLoad={() => setIframeLoaded(true)}
                     />
-                )}
+                ) : null}
 
                 <div className="absolute top-4 left-4 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <div className="px-3 py-1.5 bg-black/60 backdrop-blur-xl rounded-2xl text-[9px] uppercase font-black tracking-[0.2em] text-indigo-400 border border-white/10">

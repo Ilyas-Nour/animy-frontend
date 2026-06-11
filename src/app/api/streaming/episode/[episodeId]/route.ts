@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { WitanimeExtractor } from '@/lib/witanime';
 
 export const runtime = 'edge';
 
@@ -13,6 +12,7 @@ export async function GET(
         const tmdbId = searchParams.get('tmdbId');
         const epNumber = searchParams.get('ep') || '1';
         const malId = searchParams.get('malId');
+        const title = searchParams.get('title') || '';
 
         if (!tmdbId && !malId) {
             return NextResponse.json({ error: 'Missing tmdbId or malId' }, { status: 400 });
@@ -20,40 +20,65 @@ export async function GET(
 
         const servers = [];
 
-        if (tmdbId && tmdbId !== 'undefined' && tmdbId !== 'null') {
+        // ─── MAL-ID Based Embeds (best for anime) ─────────────────────────────
+        // These work purely with MAL ID and are reliable iframe embeds for anime
+        if (malId && malId !== 'undefined' && malId !== 'null') {
+            // vidsrc.me - reliable MAL-ID based anime embed
             servers.push({
-                name: 'VidSrc (Multi-Lang)',
-                provider: 'vidsrc',
+                name: 'VidSrc',
+                provider: 'vidsrc-me',
                 isNative: false,
-                url: `https://vidsrc.to/embed/tv/${tmdbId}/1/${epNumber}`
+                url: `https://vidsrc.me/embed/anime?mal=${malId}&ep=${epNumber}`
             });
 
+            // AnimeKai - good MAL-ID based embed
             servers.push({
-                name: 'VidLink (Fast)',
-                provider: 'vidlink',
-                isNative: false,
-                url: `https://vidlink.pro/anime/${tmdbId}/${epNumber}`
-            });
-            
-            servers.push({
-                name: 'AutoEmbed (Backup)',
-                provider: 'autoembed',
-                isNative: false,
-                url: `https://autoembed.to/tv/tmdb/${tmdbId}-1-${epNumber}`
-            });
-        }
-        
-        // If tmdbId is missing, we use malId with alternative embed providers
-        if (malId && malId !== 'undefined' && malId !== 'null') {
-             servers.push({
-                name: 'AnimeKAI Direct',
+                name: 'AnimeKai',
                 provider: 'animekai',
                 isNative: false,
-                url: `https://animekai.be/embed/watch/${malId}?ep=${epNumber}`
+                url: `https://animekai.bz/embed/?mal=${malId}&ep=${epNumber}`
             });
 
+            // 2embed - works with MAL ID for anime
+            servers.push({
+                name: '2Embed',
+                provider: '2embed',
+                isNative: false,
+                url: `https://www.2embed.skin/embedanime/${malId}/${epNumber}`
+            });
+        }
+
+        // ─── TMDB-ID Based Embeds (more universal) ─────────────────────────────
+        if (tmdbId && tmdbId !== 'undefined' && tmdbId !== 'null') {
+            servers.push({
+                name: 'EmbedSu',
+                provider: 'embedsu',
+                isNative: false,
+                url: `https://embed.su/embed/tv/${tmdbId}/1/${epNumber}`
+            });
+
+            servers.push({
+                name: 'VidSrc Pro',
+                provider: 'vidsrc-pro',
+                isNative: false,
+                url: `https://vidsrc.pro/embed/tv/${tmdbId}/1/${epNumber}`
+            });
+
+            servers.push({
+                name: 'MultiEmbed',
+                provider: 'multiembed',
+                isNative: false,
+                url: `https://multiembed.mov/directstream.php?video_id=${tmdbId}&s=1&e=${epNumber}`
+            });
+        }
+
+        // ─── MAL-Only fallback embeds ──────────────────────────────────────────
+        if (malId && malId !== 'undefined' && malId !== 'null') {
+            // GogoAnime via MALSync (async, non-blocking)
             try {
-                const msRes = await fetch(`https://api.malsync.moe/mal/anime/${malId}`);
+                const msRes = await fetch(`https://api.malsync.moe/mal/anime/${malId}`, {
+                    signal: AbortSignal.timeout(3000)
+                });
                 if (msRes.ok) {
                     const msData = await msRes.json();
                     if (msData?.Sites?.Gogoanime) {
@@ -63,7 +88,7 @@ export async function GET(
                             const identifier = gogoUrl.split('/category/')[1];
                             if (identifier) {
                                 servers.push({
-                                    name: 'GogoAnime (External)',
+                                    name: 'GogoAnime',
                                     provider: 'gogoanime',
                                     isNative: false,
                                     url: `https://gogoanime3.co/${identifier}-episode-${epNumber}`
@@ -73,21 +98,7 @@ export async function GET(
                     }
                 }
             } catch (e) {
-                console.error('MALSync resolution failed', e);
-            }
-            
-            try {
-                const jikanRes = await fetch(`https://api.jikan.moe/v4/anime/${malId}`);
-                if (jikanRes.ok) {
-                    const jikanData = await jikanRes.json();
-                    const title = jikanData?.data?.title_english || jikanData?.data?.title;
-                    if (title) {
-                        const witanimeServers = await WitanimeExtractor.getServersForAnimeEpisode(title, epNumber);
-                        servers.push(...witanimeServers);
-                    }
-                }
-            } catch (e) {
-                console.error('Witanime resolution failed', e);
+                // MALSync failed — not critical
             }
         }
 
