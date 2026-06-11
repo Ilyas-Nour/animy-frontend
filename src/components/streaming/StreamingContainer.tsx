@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import ArtPlayer from './ArtPlayer'
+import { ClientWitanimeExtractor } from '@/lib/client-witanime'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Episode {
@@ -144,27 +145,39 @@ export function StreamingContainer({
         setActiveServer(null)
 
         try {
-            const res = await fetch(
-                `/api/streaming/episode/${encodeURIComponent(ep.id)}?provider=animepahe&malId=${malId}&ep=${ep.number}&tmdbId=${tmdbId || ''}&title=${encodeURIComponent(animeTitle)}`
-            )
-            const raw = await res.json()
-            const data = raw.data || raw
-            const servers: Server[] = data.servers || []
+            // Race the backend API and the direct client-side Witanime extractor
+            const [backendRes, clientWitanimeServers] = await Promise.all([
+                fetch(`/api/streaming/episode/${encodeURIComponent(ep.id)}?provider=animepahe&malId=${malId}&ep=${ep.number}&tmdbId=${tmdbId || ''}&title=${encodeURIComponent(animeTitle)}`)
+                    .then(r => r.json())
+                    .catch(() => ({ data: { servers: [] } })),
+                ClientWitanimeExtractor.getServers(animeTitle, ep.number)
+                    .catch(() => [])
+            ]);
 
-            if (!servers.length) throw new Error('No streaming sources found')
+            const raw = backendRes.data || backendRes;
+            let servers: Server[] = raw.servers || [];
 
-            setAllServers(servers)
+            // Unshift the client-extracted Witanime servers to the front of the list
+            if (clientWitanimeServers.length > 0) {
+                // Remove backend witanime servers if any exist to prevent duplicates
+                servers = servers.filter(s => s.provider !== 'witanime');
+                servers.unshift(...clientWitanimeServers);
+            }
+
+            if (!servers.length) throw new Error('No streaming sources found');
+
+            setAllServers(servers);
 
             // Prefer native server, then fallback to first server
-            const nativeServer = servers.find(s => s.isNative && s.sources?.[0]?.url)
-            setActiveServer(nativeServer || servers[0])
-            setIframeKey(k => k + 1)
+            const nativeServer = servers.find(s => s.isNative && s.sources?.[0]?.url);
+            setActiveServer(nativeServer || servers[0]);
+            setIframeKey(k => k + 1);
         } catch (e: any) {
-            setStreamError(e.message || 'Failed to load episode')
+            setStreamError(e.message || 'Failed to load episode');
         } finally {
-            setStreamLoading(false)
+            setStreamLoading(false);
         }
-    }, [animeTitle, malId, tmdbId])
+    }, [animeTitle, malId, tmdbId]);
 
     useEffect(() => {
         if (!selectedEp) return
