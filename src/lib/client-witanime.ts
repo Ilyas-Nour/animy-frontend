@@ -1,5 +1,5 @@
 export class ClientWitanimeExtractor {
-    private static baseUrl = 'https://witanime.cyou';
+    private static baseUrl = 'https://witanime.you';
     private static cachedEpisodesRoute = '/custom-api/v1/anime-episodes/green/blue/ldu/';
     private static cachedEpisodeDetailsRoute = '/custom-api/blue/ldo/frum/chd/not/loaded/v1/episode/';
 
