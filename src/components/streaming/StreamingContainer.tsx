@@ -9,8 +9,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import ArtPlayer from './ArtPlayer'
-import { ClientWitanimeExtractor } from '@/lib/client-witanime'
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Episode {
     id: string
@@ -145,24 +143,13 @@ export function StreamingContainer({
         setActiveServer(null)
 
         try {
-            // Race the backend API and the direct client-side Witanime extractor
-            const [backendRes, clientWitanimeServers] = await Promise.all([
-                fetch(`/api/streaming/episode/${encodeURIComponent(ep.id)}?provider=animepahe&malId=${malId}&ep=${ep.number}&tmdbId=${tmdbId || ''}&title=${encodeURIComponent(animeTitle)}`)
-                    .then(r => r.json())
-                    .catch(() => ({ data: { servers: [] } })),
-                ClientWitanimeExtractor.getServers(animeTitle, ep.number)
-                    .catch(() => [])
-            ]);
+            // Fetch directly from backend
+            const backendRes = await fetch(`/api/streaming/episode/${encodeURIComponent(ep.id)}?provider=animepahe&malId=${malId}&ep=${ep.number}&tmdbId=${tmdbId || ''}&title=${encodeURIComponent(animeTitle)}`)
+                .then(r => r.json())
+                .catch(() => ({ data: { servers: [] } }));
 
             const raw = backendRes.data || backendRes;
             let servers: Server[] = raw.servers || [];
-
-            // Unshift the client-extracted Witanime servers to the front of the list
-            if (clientWitanimeServers.length > 0) {
-                // Remove backend witanime servers if any exist to prevent duplicates
-                servers = servers.filter(s => s.provider !== 'witanime');
-                servers.unshift(...clientWitanimeServers);
-            }
 
             if (!servers.length) throw new Error('No streaming sources found');
 
