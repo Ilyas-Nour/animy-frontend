@@ -183,186 +183,274 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
     ]
 
     return (
-        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
-            {/* Banner Section */}
-            <div className="relative w-full h-[300px] md:h-[450px] overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10" />
-                <div className="absolute inset-0 bg-black/20 z-[1]" />
-                {anime.images?.jpg?.large_image_url && (
-                    <motion.div
-                        initial={{ scale: 1.1, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.8 }}
-                        className="w-full h-full"
-                    >
-                        <Image
-                            src={anime.images.jpg.large_image_url}
-                            alt={anime.title}
-                            fill
-                            className="object-cover object-center blur-2xl opacity-60 scale-110"
-                            priority
-                        />
-                    </motion.div>
-                )}
-
-                {/* Content Overlay */}
-                <div className="absolute inset-0 z-20 flex flex-col justify-end pb-12">
-                    <div className="container px-4 md:px-8">
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 pb-20">
+            {/* Unified Hero Section */}
+            <div className="relative w-full min-h-[500px] md:min-h-[600px] pb-12 mb-12">
+                {/* Background Banner */}
+                <div className="absolute inset-0 z-0 overflow-hidden">
+                    {/* Sophisticated Gradients for blending */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent z-10" />
+                    <div className="absolute inset-0 bg-black/40 z-[5]" />
+                    {anime.images?.jpg?.large_image_url && (
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="max-w-4xl"
+                            initial={{ scale: 1.05, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.8 }}
+                            className="w-full h-full"
                         >
-                            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white drop-shadow-2xl mb-4 leading-tight">
-                                {anime.title}
-                            </h1>
-                            {anime.title_english && anime.title_english !== anime.title && (
-                                <p className="text-lg md:text-2xl text-white/80 font-medium drop-shadow-lg mb-6">
-                                    {anime.title_english}
-                                </p>
-                            )}
-                            <div className="flex flex-wrap items-center gap-4 mb-8">
-                                <Button 
-                                    size="lg"
-                                    className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-xl shadow-primary/30 group"
-                                    onClick={() => document.getElementById('streaming-section')?.scrollIntoView({ behavior: 'smooth' })}
-                                >
-                                    <Play className="h-6 w-6 mr-3 fill-current group-hover:scale-110 transition-transform" />
-                                    WATCH NOW
-                                </Button>
-                                <div className="flex flex-wrap gap-2">
-                                    {anime.genres?.map(genre => (
-                                        <Badge
-                                            key={genre.mal_id}
-                                            className="h-8 px-4 bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 transition-all duration-300 font-bold"
-                                        >
-                                            {genre.name}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </div>
+                            <Image
+                                src={anime.images.jpg.large_image_url}
+                                alt={anime.title}
+                                fill
+                                className="object-cover object-top blur-[40px] opacity-50 scale-110"
+                                priority
+                            />
                         </motion.div>
-                    </div>
+                    )}
                 </div>
-            </div>
 
-            {/* Main Content Grid */}
-            <div className="container -mt-8 md:-mt-16 px-4 md:px-8 relative z-30 pb-20">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-                    {/* Left Sidebar: Poster & Meta */}
-                    <div className="lg:col-span-3 space-y-8">
-                        {/* Poster */}
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="relative group"
-                        >
-                            <div className="relative aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-secondary">
+                {/* Hero Content */}
+                <div className="container relative z-20 pt-24 md:pt-32 px-4 md:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                        {/* Left: Poster */}
+                        <div className="lg:col-span-3 lg:col-start-1 flex flex-col gap-6 items-center lg:items-start shrink-0">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="relative w-[220px] sm:w-[280px] lg:w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-secondary group"
+                            >
                                 {anime.images?.jpg?.large_image_url ? (
                                     <Image
                                         src={anime.images.jpg.large_image_url}
                                         alt={anime.title}
                                         fill
-                                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                                         priority
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center">No Image</div>
+                                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">No Image</div>
                                 )}
-                            </div>
-                        </motion.div>
+                            </motion.div>
+                        </div>
 
-                        {/* Actions (Desktop) */}
-                        <div className="hidden lg:flex flex-col gap-3">
-                            <AuthGuard
-                                title="Favorite"
-                                description="Add this anime to your favorites list."
-                                fallback={
-                                    <Button variant="outline" className="w-full h-12 rounded-xl opacity-50 cursor-not-allowed">
-                                        <Heart className="h-5 w-5 mr-2" /> Favorite
-                                    </Button>
-                                }
+                        {/* Right: Info */}
+                        <div className="lg:col-span-9 flex flex-col gap-6 lg:pt-8 text-center lg:text-left">
+                            {/* Title & Meta Row */}
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="flex flex-col gap-4"
                             >
-                                <Button
-                                    variant={isFavorited ? "default" : "outline"}
-                                    className={cn(
-                                        "w-full h-12 rounded-xl font-bold transition-all",
-                                        isFavorited && "bg-red-500 hover:bg-red-600 text-white border-red-500"
+                                <div>
+                                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white drop-shadow-2xl mb-2 leading-tight">
+                                        {anime.title}
+                                    </h1>
+                                    {anime.title_english && anime.title_english !== anime.title && (
+                                        <p className="text-lg md:text-xl text-white/60 font-medium drop-shadow-lg">
+                                            {anime.title_english}
+                                        </p>
                                     )}
-                                    onClick={handleToggleFavorite}
-                                    disabled={actionLoading}
-                                >
-                                    {actionLoading ? (
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                    ) : (
-                                        <Heart className={cn("h-5 w-5 mr-2", isFavorited && "fill-current")} />
-                                    )}
-                                    {isFavorited ? 'Favorited' : 'Add to Favorites'}
-                                </Button>
-                            </AuthGuard>
-
-                            {isInWatchlist ? (
-                                <div className="space-y-2">
-                                    <select
-                                        value={watchlistStatus}
-                                        onChange={handleUpdateWatchlistStatus}
-                                        disabled={actionLoading}
-                                        className="w-full h-12 px-4 rounded-xl border border-white/10 bg-secondary/50 backdrop-blur-md text-sm font-bold focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-                                    >
-                                        {statusOptions.map(option => (
-                                            <option key={option.value} value={option.value} className="bg-background">
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <Button
-                                        variant="ghost"
-                                        className="w-full text-xs text-red-500 hover:text-red-400 hover:bg-red-500/10 h-8 font-medium"
-                                        onClick={handleRemoveFromWatchlist}
-                                        disabled={actionLoading}
-                                    >
-                                        Remove from List
-                                    </Button>
                                 </div>
-                            ) : (
+
+                                {/* Quick Meta Row */}
+                                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 md:gap-4">
+                                    {anime.score && (
+                                        <div className="flex items-center gap-1.5 bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-3 py-1 rounded-full font-bold text-sm backdrop-blur-md">
+                                            <Star className="h-4 w-4 fill-current" />
+                                            {getAnimeScore(anime.score)}
+                                        </div>
+                                    )}
+                                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 md:gap-3 text-sm font-bold text-white/80">
+                                        {anime.type && <span>{anime.type}</span>}
+                                        {anime.episodes && (
+                                            <>
+                                                <span className="w-1.5 h-1.5 rounded-full bg-white/30 hidden md:block" />
+                                                <span>{anime.episodes} Episodes</span>
+                                            </>
+                                        )}
+                                        {anime.year && (
+                                            <>
+                                                <span className="w-1.5 h-1.5 rounded-full bg-white/30 hidden md:block" />
+                                                <span>{anime.season} {anime.year}</span>
+                                            </>
+                                        )}
+                                        {anime.status && (
+                                            <>
+                                                <span className="w-1.5 h-1.5 rounded-full bg-white/30 hidden md:block" />
+                                                <span className={anime.status === 'Currently Airing' ? 'text-green-400' : ''}>
+                                                    {getAnimeStatus(anime.status)}
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            {/* Action Bar (Desktop & Large Mobile) */}
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="hidden md:flex flex-wrap items-center justify-center lg:justify-start gap-3 mt-2"
+                            >
+                                <Button 
+                                    size="lg"
+                                    className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-white font-black text-base shadow-[0_0_30px_-5px] shadow-primary/40 group transition-all"
+                                    onClick={() => document.getElementById('streaming-section')?.scrollIntoView({ behavior: 'smooth' })}
+                                >
+                                    <Play className="h-5 w-5 mr-2 fill-current group-hover:scale-110 transition-transform" />
+                                    WATCH NOW
+                                </Button>
+
+                                {isInWatchlist ? (
+                                    <div className="relative group/watchlist min-w-[160px]">
+                                        <select
+                                            value={watchlistStatus}
+                                            onChange={handleUpdateWatchlistStatus}
+                                            disabled={actionLoading}
+                                            className="w-full h-12 px-4 rounded-xl border border-white/20 bg-black/40 backdrop-blur-xl text-sm font-bold text-white focus:ring-2 focus:ring-primary appearance-none cursor-pointer transition-colors hover:bg-black/60"
+                                        >
+                                            {statusOptions.map(option => (
+                                                <option key={option.value} value={option.value} className="bg-background text-foreground">
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <Button
+                                            variant="ghost"
+                                            className="absolute -bottom-8 left-0 text-xs text-red-500 hover:text-red-400 hover:bg-red-500/10 h-6 px-2 font-medium opacity-0 group-hover/watchlist:opacity-100 transition-opacity"
+                                            onClick={handleRemoveFromWatchlist}
+                                            disabled={actionLoading}
+                                        >
+                                            Remove from List
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <AuthGuard
+                                        title="Watchlist"
+                                        description="Add this anime to your watchlist."
+                                        fallback={
+                                            <Button variant="secondary" className="h-12 px-6 rounded-xl font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md opacity-50 cursor-not-allowed">
+                                                <Plus className="h-5 w-5 mr-2" /> Add to List
+                                            </Button>
+                                        }
+                                    >
+                                        <Button
+                                            variant="secondary"
+                                            className="h-12 px-6 rounded-xl font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md transition-all"
+                                            onClick={() => handleAddToWatchlist('PLAN_TO_WATCH')}
+                                            disabled={actionLoading}
+                                        >
+                                            {actionLoading ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <Plus className="h-5 w-5 mr-2" />}
+                                            Add to List
+                                        </Button>
+                                    </AuthGuard>
+                                )}
+
                                 <AuthGuard
-                                    title="Watchlist"
-                                    description="Add this anime to your watchlist."
+                                    title="Favorite"
+                                    description="Add this anime to your favorites list."
                                     fallback={
-                                        <Button className="w-full h-12 rounded-xl bg-primary/20 text-primary opacity-50 cursor-not-allowed">
-                                            <Plus className="h-5 w-5 mr-2" /> Watchlist
+                                        <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl bg-white/5 border-white/10 text-white backdrop-blur-md opacity-50 cursor-not-allowed">
+                                            <Heart className="h-5 w-5" />
                                         </Button>
                                     }
                                 >
                                     <Button
-                                        className="w-full h-12 rounded-xl font-bold shadow-lg shadow-primary/20"
-                                        onClick={() => handleAddToWatchlist('PLAN_TO_WATCH')}
+                                        variant="outline"
+                                        size="icon"
+                                        className={cn(
+                                            "h-12 w-12 rounded-xl border-white/10 backdrop-blur-md transition-all",
+                                            isFavorited 
+                                                ? "bg-red-500 hover:bg-red-600 text-white border-red-500 shadow-[0_0_20px_-5px_rgba(239,68,68,0.5)]" 
+                                                : "bg-white/5 hover:bg-white/20 text-white"
+                                        )}
+                                        onClick={handleToggleFavorite}
                                         disabled={actionLoading}
                                     >
-                                        {actionLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5 mr-2" />}
-                                        Add to Watchlist
+                                        {actionLoading ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                        ) : (
+                                            <Heart className={cn("h-5 w-5", isFavorited && "fill-current")} />
+                                        )}
                                     </Button>
                                 </AuthGuard>
-                            )}
 
-                            <ShareModal
-                                title={anime.title}
-                                description={anime.synopsis}
-                                image={anime.images?.jpg?.large_image_url}
-                                type="ANIME"
-                                id={anime.mal_id}
-                                path={`/anime/${anime.mal_id}`}
-                                trigger={
-                                    <Button variant="secondary" className="w-full h-12 rounded-xl font-bold border border-white/5">
-                                        <Share2 className="h-5 w-5 mr-2" /> Share
-                                    </Button>
-                                }
-                            />
+                                <ShareModal
+                                    title={anime.title}
+                                    description={anime.synopsis}
+                                    image={anime.images?.jpg?.large_image_url}
+                                    type="ANIME"
+                                    id={anime.mal_id}
+                                    path={`/anime/${anime.mal_id}`}
+                                    trigger={
+                                        <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl bg-white/5 hover:bg-white/20 text-white border-white/10 backdrop-blur-md transition-all">
+                                            <Share2 className="h-5 w-5" />
+                                        </Button>
+                                    }
+                                />
+                            </motion.div>
+
+                            {/* Genres */}
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className="flex flex-wrap items-center justify-center lg:justify-start gap-2"
+                            >
+                                {anime.genres?.map(genre => (
+                                    <Badge
+                                        key={genre.mal_id}
+                                        className="h-8 px-4 bg-white/10 hover:bg-white/20 border-white/10 text-white transition-colors font-medium rounded-full backdrop-blur-md"
+                                    >
+                                        {genre.name}
+                                    </Badge>
+                                ))}
+                            </motion.div>
+
+                            {/* Synopsis in Hero */}
+                            {anime.synopsis && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.4 }}
+                                    className="mt-4 hidden md:block"
+                                >
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-white/50 mb-3 flex items-center gap-2 justify-center lg:justify-start">
+                                        <Info className="h-4 w-4" /> Synopsis
+                                    </h3>
+                                    <div
+                                        className="text-base leading-relaxed text-white/80 line-clamp-4 hover:line-clamp-none transition-all duration-500 cursor-pointer text-left"
+                                        dangerouslySetInnerHTML={{ __html: anime.synopsis }}
+                                    />
+                                </motion.div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="container px-4 md:px-8 relative z-30">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                    {/* Left Sidebar: Meta Details */}
+                    <div className="lg:col-span-3 space-y-8">
+                        {/* Mobile Actions Only */}
+                        <div className="flex md:hidden flex-col gap-3">
+                            <Button 
+                                size="lg"
+                                className="w-full h-14 rounded-xl bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-lg shadow-primary/30 group"
+                                onClick={() => document.getElementById('streaming-section')?.scrollIntoView({ behavior: 'smooth' })}
+                            >
+                                <Play className="h-6 w-6 mr-3 fill-current group-hover:scale-110 transition-transform" />
+                                WATCH NOW
+                            </Button>
                         </div>
 
                         {/* Metadata Sidebar */}
-                        <div className="bg-secondary/20 backdrop-blur-md rounded-2xl p-6 border border-white/5 space-y-6">
+                        <div className="bg-secondary/20 backdrop-blur-xl rounded-2xl p-6 border border-white/10 space-y-6 shadow-xl">
                             <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                 <Info className="h-4 w-4 text-primary" /> Details
                             </h3>
@@ -377,12 +465,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                     label="Season"
                                     value={anime.season && anime.year ? `${anime.season} ${anime.year}` : 'Unknown'}
                                 />
-                                <MetadataItem
-                                    icon={<Star className="text-yellow-500 fill-yellow-500" />}
-                                    label="Score"
-                                    value={getAnimeScore(anime.score)}
-                                />
-                                <MetadataItem icon={<TrendingUp />} label="Popularity" value={`#${anime.popularity || 'N/A'}`} />
+                                <MetadataItem icon={<TrendingUp />} label="Popularity" value={anime.popularity ? `#${anime.popularity}` : 'N/A'} />
 
                                 {anime.studios && anime.studios.length > 0 && (
                                     <div className="space-y-2">
@@ -434,17 +517,19 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                             />
                         </div>
 
-                        {/* Synopsis */}
-                        <section className="bg-secondary/10 rounded-3xl p-8 border border-white/5">
-                            <h2 className="text-2xl font-black mb-6 flex items-center gap-3">
-                                <span className="w-1.5 h-8 bg-primary rounded-full" />
-                                Synopsis
-                            </h2>
-                            <div
-                                className="text-lg leading-loose text-muted-foreground prose prose-invert max-w-none"
-                                dangerouslySetInnerHTML={{ __html: anime.synopsis || 'No synopsis available.' }}
-                            />
-                        </section>
+                        {/* Mobile Synopsis */}
+                        {anime.synopsis && (
+                            <section className="md:hidden bg-secondary/10 rounded-3xl p-6 border border-white/5">
+                                <h2 className="text-xl font-black mb-4 flex items-center gap-3">
+                                    <span className="w-1.5 h-6 bg-primary rounded-full" />
+                                    Synopsis
+                                </h2>
+                                <div
+                                    className="text-base leading-relaxed text-muted-foreground prose prose-invert max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: anime.synopsis }}
+                                />
+                            </section>
+                        )}
 
                         {/* Streaming */}
                         <section id="streaming-section" className="bg-background relative rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
