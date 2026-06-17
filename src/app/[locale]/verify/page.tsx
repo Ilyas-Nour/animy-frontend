@@ -1,5 +1,5 @@
 'use client'
-
+export const runtime = 'edge';
 import { Suspense, useEffect, useState, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'

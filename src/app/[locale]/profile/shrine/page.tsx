@@ -1,5 +1,5 @@
 'use client'
-
+export const runtime = 'edge';
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, Heart, Crown, Search, Users } from 'lucide-react'

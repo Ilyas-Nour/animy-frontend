@@ -1,5 +1,5 @@
 'use client'
-
+export const runtime = 'edge';
 import { NewsFeed } from '@/components/news/NewsFeed'
 import { Suspense } from 'react'
 

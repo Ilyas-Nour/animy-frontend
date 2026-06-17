@@ -1,5 +1,5 @@
 'use client'
-
+export const runtime = 'edge';
 import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
