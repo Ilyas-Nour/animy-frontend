@@ -67,16 +67,7 @@ export default function ProfileShrinePage() {
                 </motion.div>
 
                 <div className="relative z-10">
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-semibold mb-6"
-                    >
-                        <Sparkles className="w-4 h-4" />
-                        <span>Hall of Fame</span>
-                    </motion.div>
-                    
+
                     <motion.h1 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
