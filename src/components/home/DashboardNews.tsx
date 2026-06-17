@@ -171,7 +171,7 @@ export function DashboardNews() {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
                     </div>
-                    <h3 className="text-xl md:text-2xl font-black italic tracking-tight bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent">LATEST INTEL</h3>
+                    <h3 className="text-xl md:text-2xl font-black italic tracking-tight bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent">Latest News</h3>
                 </div>
                 <Link href="/news" className="text-sm font-bold text-muted-foreground hover:text-orange-400 transition-colors flex items-center gap-1 group">
                     Live Feed <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -265,7 +265,7 @@ export function DashboardNews() {
                         <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-red-500/10 group-hover:from-orange-500/20 group-hover:to-red-500/20 transition-colors duration-500" />
                         <div className="absolute inset-0 flex items-center justify-between px-6">
                             <span className="text-sm font-bold tracking-widest uppercase text-foreground/80 group-hover:text-white transition-colors">
-                                Access Full Database
+                                View All News
                             </span>
                             <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center text-foreground group-hover:scale-110 transition-transform shadow-lg border border-white/10">
                                 <ChevronRight size={16} />
