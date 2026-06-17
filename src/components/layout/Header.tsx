@@ -269,7 +269,7 @@ export function Header() {
                     <Link href="/profile/shrine">
                       <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 focus:bg-orange-500/10 focus:text-orange-500 transition-colors">
                         <Flame className="mr-2 h-4 w-4" />
-                        <span className="font-medium">My Shrine</span>
+                        <span className="font-medium">My Profile</span>
                       </DropdownMenuItem>
                     </Link>
                     <Link href="/dashboard/friends">
@@ -387,7 +387,7 @@ export function Header() {
 
               {/* Theme Section */}
               <div className="space-y-3">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-2">Preferences</h3>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-2">Settings</h3>
                 <button
                   onClick={toggleDarkMode}
                   className="flex items-center justify-between w-full p-4 rounded-2xl bg-secondary/30 border border-transparent hover:bg-secondary/50 transition-all group"
@@ -424,7 +424,7 @@ export function Header() {
                       <UserAvatar user={user} className="h-12 w-12 rounded-xl ring-2 ring-primary/20" />
                       <div className="flex-1 min-w-0">
                         <p className="text-base font-bold truncate">{user?.firstName}</p>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Level {user?.level || 1} • {user?.rank || 'Initiate'}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Level {user?.level || 1} • {user?.rank || 'Beginner'}</p>
                       </div>
                       <Layers className="w-5 h-5 text-primary opacity-50" />
                     </Link>
@@ -448,7 +448,7 @@ export function Header() {
                       <Link href="/profile/shrine" onClick={() => setIsMenuOpen(false)}>
                         <Button variant="outline" className="w-full gap-2 justify-start h-12 rounded-xl border-transparent bg-secondary/40 hover:bg-secondary/60">
                           <Flame className="w-4 h-4 text-orange-500" />
-                          <span className="text-xs font-bold">Shrine</span>
+                          <span className="text-xs font-bold">Profile</span>
                         </Button>
                       </Link>
                       <Button

@@ -128,7 +128,7 @@ export function UserHomeSection({ trending }: UserHomeSectionProps) {
                             </div>
 
                             <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter mb-1">
-                                WELCOME BACK,
+                                Welcome back,
                             </h2>
                             <p className="text-lg md:text-xl font-medium text-primary mb-6">
                                 {user.username}
@@ -137,8 +137,8 @@ export function UserHomeSection({ trending }: UserHomeSectionProps) {
                             <div className="w-full bg-background/50 backdrop-blur-md rounded-2xl p-4 border border-white/5 space-y-4 text-left">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-[10px] md:text-xs text-muted-foreground font-bold uppercase tracking-wider">Current Rank</p>
-                                        <p className="text-base md:text-lg font-black text-foreground">{user.rank || 'Initiate'}</p>
+                                        <p className="text-[10px] md:text-xs text-muted-foreground font-bold uppercase tracking-wider">Rank</p>
+                                        <p className="text-base md:text-lg font-black text-foreground">{user.rank || 'Beginner'}</p>
                                     </div>
                                     <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
                                         <span className="font-bold text-primary">{user.level}</span>

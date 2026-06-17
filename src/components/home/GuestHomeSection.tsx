@@ -47,7 +47,7 @@ export function GuestHomeSection() {
                             className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-2xl"
                         >
                             <Sparkles size={16} className="text-primary animate-pulse" />
-                            <span className="text-[10px] md:text-xs font-black text-primary tracking-[0.2em] uppercase">Gateway to Multi-World Data</span>
+                            <span className="text-[10px] md:text-xs font-black text-primary tracking-[0.2em] uppercase">Your Anime Journey Starts Here</span>
                         </motion.div>
 
                         <div className="space-y-4 md:space-y-6">
@@ -58,8 +58,8 @@ export function GuestHomeSection() {
                                 transition={{ delay: 0.1 }}
                                 className="text-5xl md:text-8xl font-black italic tracking-tighter text-foreground leading-[0.85] uppercase"
                             >
-                                START YOUR <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-indigo-600 drop-shadow-sm">JOURNEY</span>.
+                                START <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-500 to-indigo-600 drop-shadow-sm">WATCHING</span>.
                             </motion.h2>
 
                             <motion.p
@@ -69,7 +69,7 @@ export function GuestHomeSection() {
                                 transition={{ delay: 0.2 }}
                                 className="text-base md:text-xl text-muted-foreground font-medium max-w-lg leading-relaxed"
                             >
-                                Step into the ultimate anime interface. Track every episode, engage with the community, and ascend from <b>Initiate</b> to <b>Immortal</b>.
+                                Track every episode, chat with friends, and level up as you watch.
                             </motion.p>
                         </div>
 
@@ -83,12 +83,12 @@ export function GuestHomeSection() {
                             <Link href="/auth/register">
                                 <Button size="lg" className="h-14 md:h-16 px-8 md:px-12 text-base md:text-lg font-black uppercase tracking-[0.1em] rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl shadow-primary/30 transform hover:scale-105 active:scale-95 transition-all">
                                     <Rocket size={20} className="mr-2" />
-                                    Launch Interface
+                                    Sign Up
                                 </Button>
                             </Link>
                             <Link href="/auth/login">
                                 <Button size="lg" variant="outline" className="h-14 md:h-16 px-8 md:px-12 text-base md:text-lg font-black uppercase tracking-[0.1em] rounded-2xl border-border/50 bg-background/5 hover:bg-accent backdrop-blur-xl text-foreground transform hover:scale-105 active:scale-95 transition-all">
-                                    Continue Signal
+                                    Log In
                                 </Button>
                             </Link>
                         </motion.div>
@@ -124,14 +124,14 @@ export function GuestHomeSection() {
                                         <Zap className="text-primary" size={28} />
                                     </div>
                                     <div>
-                                        <h4 className="text-xl font-black text-foreground italic">LEVEL ASCENSION</h4>
-                                        <p className="text-sm text-muted-foreground font-bold">Earn data shards for every interaction</p>
+                                        <h4 className="text-xl font-black text-foreground italic">LEVEL UP</h4>
+                                        <p className="text-sm text-muted-foreground font-bold">Earn XP for watching and chatting</p>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
-                                        <span>Rank: Initiate</span>
-                                        <span>75% to Novice</span>
+                                        <span>Rank: Beginner</span>
+                                        <span>75% to Next Level</span>
                                     </div>
                                     <div className="h-3 w-full bg-accent/30 rounded-full overflow-hidden border border-white/5">
                                         <motion.div
@@ -153,7 +153,7 @@ export function GuestHomeSection() {
                                 className="p-8 rounded-[2rem] bg-background/40 backdrop-blur-2xl border border-white/10 flex flex-col items-center justify-center gap-3 text-center group/card hover:bg-primary/5 transition-colors"
                             >
                                 <Users size={40} className="text-indigo-500 group-hover/card:scale-110 transition-transform" />
-                                <h5 className="text-sm font-black italic uppercase">Social Sync</h5>
+                                <h5 className="text-sm font-black italic uppercase">Make Friends</h5>
                             </motion.div>
 
                             {/* Stat Card 3 */}
@@ -165,7 +165,7 @@ export function GuestHomeSection() {
                                 className="p-8 rounded-[2rem] bg-background/40 backdrop-blur-2xl border border-white/10 flex flex-col items-center justify-center gap-3 text-center group/card hover:bg-yellow-500/5 transition-colors"
                             >
                                 <Star size={40} className="text-yellow-500 fill-yellow-500 group-hover/card:scale-110 transition-transform" />
-                                <h5 className="text-sm font-black italic uppercase">Top Tier Rank</h5>
+                                <h5 className="text-sm font-black italic uppercase">Climb the Ranks</h5>
                             </motion.div>
 
                         </div>

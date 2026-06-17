@@ -24,9 +24,9 @@ export function Footer() {
     {
       title: 'Community',
       links: [
-        { name: 'Community Guidelines', href: '/guidelines' },
-        { name: 'Discussion Forum', href: '#' },
-        { name: 'Support Center', href: '/contact' },
+        { name: 'Rules', href: '/guidelines' },
+        { name: 'Forums', href: '#' },
+        { name: 'Help & Support', href: '/contact' },
         { name: 'Discord Community', href: 'https://discord.gg/kHEa8KqptX' },
       ],
     },
@@ -35,8 +35,8 @@ export function Footer() {
       links: [
         { name: 'Privacy Policy', href: '/privacy' },
         { name: 'Terms of Service', href: '/terms' },
-        { name: 'Cookie Policy', href: '/cookies' },
-        { name: 'DMCA Notice', href: '#' },
+        { name: 'Cookies', href: '/cookies' },
+        { name: 'DMCA', href: '#' },
       ],
     },
   ]
@@ -94,7 +94,7 @@ export function Footer() {
             <div className="flex flex-col items-center lg:items-start space-y-6">
               <AnimatedLogo className="scale-110 lg:origin-left" />
               <p className="text-muted-foreground text-sm leading-relaxed max-w-sm text-center lg:text-left">
-                The ultimate destination for anime enthusiasts. Discover trending shows, track your progress, and join a global community of otaku.
+                The best place for anime fans. Find trending shows, track what you watch, and join our community.
               </p>
               <div className="flex gap-3">
                 {socialIcons.map((social) => (
