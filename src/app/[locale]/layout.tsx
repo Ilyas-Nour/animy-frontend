@@ -10,17 +10,20 @@ import ClientLayoutWrapper from './ClientLayoutWrapper'
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Animy - Watch Anime & Read Manga Online',
-    default: 'Animy - Your Ultimate Anime Aggregator & Manga Reader',
+    template: '%s | Animy - Discover Anime & Read Manga',
+    default: 'Animy | Discover Anime, Read Manga & Share with Friends',
   },
   description:
-    'Animy is the world\'s most advanced anime and manga aggregator. Watch high-quality anime online, read latest manga chapters, track your progress, and join a vibrant community of fans. Fast, free, and always updated.',
+    'Discover the best anime series, read the latest manga chapters, and share your favorites with friends on Animy. Your ultimate anime and manga community.',
   keywords: [
     'anime',
     'manga',
-    'watch anime online',
-    'free anime streaming',
-    'read manga online',
+    'discover anime',
+    'read manga',
+    'share anime',
+    'anime database',
+    'manga database',
+    'explore manga',
     'latest manga chapters',
     'anime aggregator',
     'manga aggregator',
@@ -33,11 +36,11 @@ export const metadata: Metadata = {
     'manga tracker',
     'anime watchlist',
     'anime news',
-    'english sub anime',
-    'english dub anime',
-    'high quality anime',
+    'english sub anime info',
+    'english dub anime info',
+    'high quality anime database',
     'seasonal anime',
-    'anime schedule',
+    'anime schedule'
   ],
   authors: [{ name: 'Animy Team' }],
   creator: 'Animy',
@@ -47,8 +50,8 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'Animy - Watch Anime & Read Manga Online Free',
-    description: 'The ultimate destination for anime and manga fans. Stream thousands of episodes and read chapters in high quality for free.',
+    title: 'Animy | Discover Anime, Read Manga & Share with Friends',
+    description: 'Discover the best anime series, read the latest manga chapters, and share your favorites with friends on Animy. Your ultimate anime and manga community.',
     url: '/',
     siteName: 'Animy',
     type: 'website',
@@ -64,8 +67,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Animy - Watch Anime & Read Manga Online Free',
-    description: 'The ultimate destination for anime and manga fans. Stream thousands of episodes and read chapters in high quality for free.',
+    title: 'Animy | Discover Anime, Read Manga & Share with Friends',
+    description: 'Discover the best anime series, read the latest manga chapters, and share your favorites with friends on Animy. Your ultimate anime and manga community.',
     images: ['/og-image.png'],
     creator: '@animy_official',
     site: '@animy_official',
@@ -83,11 +86,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: '/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
-    shortcut: '/icon-512.png',
-    apple: '/icon-512.png',
+    shortcut: '/favicon-48x48.png',
+    apple: '/icon-192.png',
   },
   manifest: '/manifest.json',
 }
