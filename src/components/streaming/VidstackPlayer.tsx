@@ -50,7 +50,7 @@ export default function VidstackPlayer({
         <MediaProvider>
           {subtitles.map((sub, idx) => (
             <Track
-              key={idx}
+              key={sub.url}
               src={sub.url}
               kind="subtitles"
               label={sub.label}
