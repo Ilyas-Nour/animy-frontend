@@ -50,6 +50,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     keywords,
     alternates: {
       canonical: `https://animy.xyz/anime/${id}`,
+      languages: {
+        'en': `https://animy.xyz/anime/${id}`,
+        'es': `https://animy.xyz/es/anime/${id}`,
+        'fr': `https://animy.xyz/fr/anime/${id}`,
+      }
     },
     openGraph: {
       title,

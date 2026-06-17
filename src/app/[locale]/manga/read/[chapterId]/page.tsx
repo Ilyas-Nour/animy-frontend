@@ -33,6 +33,11 @@ export async function generateMetadata({ params }: { params: Promise<{ chapterId
         keywords,
         alternates: {
             canonical: `https://animy.xyz/manga/read/${chapterId}`,
+            languages: {
+                'en': `https://animy.xyz/manga/read/${chapterId}`,
+                'es': `https://animy.xyz/es/manga/read/${chapterId}`,
+                'fr': `https://animy.xyz/fr/manga/read/${chapterId}`,
+            }
         },
         openGraph: { title, description }
     }

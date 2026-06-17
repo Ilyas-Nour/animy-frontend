@@ -1,0 +1,18 @@
+{
+  "Navigation": {
+    "home": "Inicio",
+    "anime": "Anime",
+    "manga": "Manga",
+    "discovery": "Descubrir",
+    "login": "Iniciar sesión",
+    "register": "Regístrate"
+  },
+  "Common": {
+    "watch": "Ver Online",
+    "read": "Leer Capítulo",
+    "episodes": "Episodios",
+    "chapters": "Capítulos",
+    "popular": "Popular",
+    "trending": "Tendencias"
+  }
+}

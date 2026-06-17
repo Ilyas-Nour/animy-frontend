@@ -1,0 +1,18 @@
+{
+  "Navigation": {
+    "home": "Home",
+    "anime": "Anime",
+    "manga": "Manga",
+    "discovery": "Discovery",
+    "login": "Login",
+    "register": "Sign Up"
+  },
+  "Common": {
+    "watch": "Watch Online",
+    "read": "Read Chapter",
+    "episodes": "Episodes",
+    "chapters": "Chapters",
+    "popular": "Popular",
+    "trending": "Trending"
+  }
+}
