@@ -269,7 +269,7 @@ export function Header() {
                     <Link href="/profile/shrine">
                       <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 focus:bg-orange-500/10 focus:text-orange-500 transition-colors">
                         <Flame className="mr-2 h-4 w-4" />
-                        <span className="font-medium">My Profile</span>
+                        <span className="font-medium">Favorite Characters</span>
                       </DropdownMenuItem>
                     </Link>
                     <Link href="/dashboard/friends">
@@ -448,7 +448,7 @@ export function Header() {
                       <Link href="/profile/shrine" onClick={() => setIsMenuOpen(false)}>
                         <Button variant="outline" className="w-full gap-2 justify-start h-12 rounded-xl border-transparent bg-secondary/40 hover:bg-secondary/60">
                           <Flame className="w-4 h-4 text-orange-500" />
-                          <span className="text-xs font-bold">Profile</span>
+                          <span className="text-xs font-bold">Favorite Characters</span>
                         </Button>
                       </Link>
                       <Button
