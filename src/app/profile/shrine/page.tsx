@@ -117,7 +117,7 @@ export default function ProfileShrinePage() {
                     
                     <h3 className="text-3xl font-bold text-white mb-4">Your Shrine is Empty</h3>
                     <p className="text-muted-foreground text-center text-lg max-w-md mb-10">
-                        You haven't dedicated any characters to your shrine yet. Explore your favorite series to find them!
+                        You haven&apos;t dedicated any characters to your shrine yet. Explore your favorite series to find them!
                     </p>
 
                     <div className="flex flex-wrap items-center justify-center gap-4 relative z-10">
