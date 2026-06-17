@@ -24,6 +24,8 @@ interface Server {
     subtitles?: Array<{ url: string; lang: string; label: string }>
     provider: string
     isNative?: boolean
+    headers?: Record<string, string>
+    referer?: string
 }
 
 interface StreamingContainerProps {
