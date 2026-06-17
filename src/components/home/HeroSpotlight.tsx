@@ -27,7 +27,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
     const active = anime[current]
 
     return (
-        <section className="relative h-[600px] md:h-[85vh] w-full overflow-hidden bg-background">
+        <section className="relative h-[650px] sm:h-[600px] md:h-[85vh] w-full overflow-hidden bg-background">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={current}
@@ -162,17 +162,17 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.5 }}
-                                className="flex flex-wrap gap-4 pt-2 md:pt-4"
+                                className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 md:pt-4 w-full sm:w-auto"
                             >
-                                <Link href={`/anime/${active.mal_id}`}>
-                                    <Button size="lg" className="relative h-11 sm:h-12 lg:h-13 xl:h-14 px-6 lg:px-8 xl:px-10 text-[11px] sm:text-xs md:text-sm lg:text-sm xl:text-base font-black gap-2 md:gap-3 bg-gradient-to-r from-primary via-purple-500 to-indigo-600 text-primary-foreground shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_35px_rgba(139,92,246,0.5)] rounded-xl md:rounded-2xl lg:rounded-3xl border-0 overflow-hidden group/btn transition-all duration-300 hover:scale-105 active:scale-95">
+                                <Link href={`/anime/${active.mal_id}`} className="w-full sm:w-auto">
+                                    <Button size="lg" className="w-full sm:w-auto relative h-12 sm:h-14 px-6 lg:px-8 xl:px-10 text-xs sm:text-sm lg:text-sm xl:text-base font-black gap-2 md:gap-3 bg-gradient-to-r from-primary via-purple-500 to-indigo-600 text-primary-foreground shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_35px_rgba(139,92,246,0.5)] rounded-xl md:rounded-2xl lg:rounded-3xl border-0 overflow-hidden group/btn transition-all duration-300 hover:scale-105 active:scale-95">
                                         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:250%_250%] animate-shimmer group-hover/btn:opacity-100 opacity-0 transition-opacity" />
                                         <Play className="relative h-4 w-4 lg:h-5 xl:h-5 fill-current group-hover/btn:translate-x-1 transition-transform" />
                                         <span className="relative">Start Watching</span>
                                     </Button>
                                 </Link>
-                                <Link href={`/anime/${active.mal_id}`}>
-                                    <Button size="lg" variant="outline" className="h-11 sm:h-12 lg:h-13 xl:h-14 px-6 lg:px-8 xl:px-10 text-[11px] sm:text-xs md:text-sm lg:text-sm xl:text-base font-black gap-2 md:gap-3 border-white/20 bg-white/5 backdrop-blur-2xl text-foreground hover:bg-white/10 hover:border-white/40 rounded-xl md:rounded-2xl lg:rounded-3xl shadow-xl transition-all duration-300 hover:scale-105 group/intel">
+                                <Link href={`/anime/${active.mal_id}`} className="w-full sm:w-auto">
+                                    <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 sm:h-14 px-6 lg:px-8 xl:px-10 text-xs sm:text-sm lg:text-sm xl:text-base font-black gap-2 md:gap-3 border-white/20 bg-white/5 backdrop-blur-2xl text-foreground hover:bg-white/10 hover:border-white/40 rounded-xl md:rounded-2xl lg:rounded-3xl shadow-xl transition-all duration-300 hover:scale-105 group/intel">
                                         <Info className="h-4 w-4 lg:h-5 xl:h-5 text-primary group-hover/intel:scale-110 transition-transform" />
                                         More Info
                                     </Button>
@@ -184,7 +184,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
             </AnimatePresence>
 
             {/* Premium Navigation Controls */}
-            <div className="absolute right-8 bottom-32 z-30 flex flex-col gap-4">
+            <div className="hidden md:flex absolute right-8 bottom-32 z-30 flex-col gap-4">
                 <button
                     onClick={() => setCurrent((prev) => (prev - 1 + anime.length) % anime.length)}
                     className="h-14 w-14 bg-foreground/5 hover:bg-foreground/10 backdrop-blur-2xl rounded-2xl border border-foreground/10 flex items-center justify-center text-foreground transition-all hover:scale-110 active:scale-90"
