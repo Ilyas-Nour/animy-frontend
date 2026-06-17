@@ -11,6 +11,7 @@ import { Trophy, ChevronRight, Play, Star, Plus } from 'lucide-react'
 import { Anime } from '@/types/anime'
 import { XpBar } from '@/components/shared/XpBar'
 import { XpInfoButton } from '@/components/shared/XpInfoButton'
+import { DashboardNews } from './DashboardNews'
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
 import { toast } from 'sonner'
@@ -217,79 +218,8 @@ export function UserHomeSection({ trending }: UserHomeSectionProps) {
 
 
                 {/* 2. Content Board (Right Column - Wider) */}
-                <div className="md:col-span-2 space-y-6 md:space-y-8">
-
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-xl md:text-2xl font-black italic tracking-tight">CONTINUE WATCHING</h3>
-                        <Link href="/dashboard/watchlist" className="text-sm font-bold text-muted-foreground hover:text-primary flex items-center gap-1">
-                            View All <ChevronRight size={16} />
-                        </Link>
-                    </div>
-
-                    {/* Recommendations / Continue Watching Cards */}
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                        {/* 
-                           Since we don't have real history API yet, we'll use trending anime 
-                           as "Recommended for You" or placeholders.
-                        */}
-                        {recommendedAnime.map((anime, index) => (
-                            <motion.div
-                                key={anime.mal_id}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.1 }}
-                                className={`group relative aspect-[4/5] rounded-3xl overflow-hidden bg-muted ${index === 2 ? 'hidden lg:block' : ''}`}
-                            >
-                                <Image
-                                    src={anime.images?.jpg?.large_image_url || '/placeholder.jpg'}
-                                    alt={anime.title}
-                                    fill
-                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 md:p-6 flex flex-col justify-end">
-                                    <h4 className="font-bold text-white line-clamp-2 leading-tight mb-2 text-sm md:text-base">{anime.title}</h4>
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <Badge variant="outline" className="border-white/30 text-white bg-white/10 backdrop-blur-sm text-[10px]">
-                                            Eps {anime.episodes || '?'}
-                                        </Badge>
-                                        <div className="flex items-center gap-1 text-yellow-400 text-xs font-bold">
-                                            <Star size={12} fill="currentColor" /> {anime.score}
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Link href={`/anime/${anime.mal_id}`} className="w-full">
-                                            <Button size="sm" className="w-full rounded-xl bg-white text-black hover:bg-white/90 font-bold text-xs h-8">
-                                                <Play size={12} className="mr-1" fill="currentColor" /> Watch
-                                            </Button>
-                                        </Link>
-                                        <Button size="sm" variant="outline" className="w-full rounded-xl border-white/20 hover:bg-white/10 text-white font-bold text-xs h-8"
-                                        // Add to watchlist logic requires client component complexity, keep simple for now
-                                        >
-                                            <Plus size={12} className="mr-1" /> Add
-                                        </Button>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    {/* Banner: Explore */}
-                    <Link href="/anime" className="block relative h-28 md:h-32 rounded-[2rem] overflow-hidden group border border-border">
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary to-purple-600 opacity-20 group-hover:opacity-30 transition-opacity" />
-                        <div className="absolute inset-0 flex items-center justify-between px-6 md:px-10">
-                            <div>
-                                <h3 className="text-lg md:text-xl font-black italic text-foreground">DISCOVER NEW GEMS</h3>
-                                <p className="text-xs md:text-sm text-muted-foreground">Browse the top rated anime of all time.</p>
-                            </div>
-                            <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground group-hover:scale-110 transition-transform">
-                                <ChevronRight size={24} />
-                            </div>
-                        </div>
-                    </Link>
-
+                <div className="md:col-span-2">
+                    <DashboardNews />
                 </div>
 
             </div>
