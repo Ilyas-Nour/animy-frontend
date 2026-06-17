@@ -17,6 +17,16 @@ interface Props {
     onClose: () => void
 }
 
+function safeFormatDistance(dateStr: string) {
+    try {
+        const d = new Date(dateStr)
+        if (isNaN(d.getTime())) return 'recently'
+        return formatDistanceToNow(d, { addSuffix: true })
+    } catch {
+        return 'recently'
+    }
+}
+
 export function NewsArticleModal({ article, onClose }: Props) {
     const { user } = useAuth()
     const [imgError, setImgError] = useState(false)
@@ -91,7 +101,7 @@ export function NewsArticleModal({ article, onClose }: Props) {
                         <span className="text-muted-foreground/30">·</span>
                         <span className="text-xs text-muted-foreground/60 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {formatDistanceToNow(new Date(article.date), { addSuffix: true })}
+                            {safeFormatDistance(article.date)}
                         </span>
                     </div>
                     <button

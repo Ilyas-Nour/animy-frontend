@@ -70,10 +70,16 @@ export async function GET(request: NextRequest) {
             url = `${ANINEWS_BASE}/news?${params.toString()}`
         }
 
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 6000)
+
         const res = await fetch(url, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 300 }
+            cache: 'no-store',
+            signal: controller.signal
         })
+
+        clearTimeout(timeoutId)
 
         if (!res.ok) throw new Error(`AniNewsAPI responded with ${res.status}`)
 
@@ -84,7 +90,11 @@ export async function GET(request: NextRequest) {
             data.data = processArticles(data.data)
         }
 
-        return NextResponse.json(data)
+        return NextResponse.json(data, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300'
+            }
+        })
     } catch (error: any) {
         console.error('[News API] Error:', error.message)
         return NextResponse.json(

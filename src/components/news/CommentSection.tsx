@@ -215,6 +215,16 @@ export function CommentSection({ newsId }: { newsId: string }) {
     )
 }
 
+function safeFormatDistance(dateStr: string) {
+    try {
+        const d = new Date(dateStr)
+        if (isNaN(d.getTime())) return 'recently'
+        return formatDistanceToNow(d, { addSuffix: true })
+    } catch {
+        return 'recently'
+    }
+}
+
 function CommentItem({
     comment,
     onReply,
@@ -313,7 +323,7 @@ function CommentItem({
                                 <span className="text-xs font-black text-foreground hover:text-inherit">{comment.user.firstName || comment.user.username}</span>
                             </Link>
                             <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-50">
-                                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                                {safeFormatDistance(comment.createdAt)}
                             </span>
                         </div>
 

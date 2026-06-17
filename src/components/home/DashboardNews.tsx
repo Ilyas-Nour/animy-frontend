@@ -27,6 +27,16 @@ function getSourceKey(sourceName: string): string {
     return sources.find(k => lower.includes(k)) || 'ann'
 }
 
+function safeFormatDistance(dateStr: string) {
+    try {
+        const d = new Date(dateStr)
+        if (isNaN(d.getTime())) return 'recently'
+        return formatDistanceToNow(d, { addSuffix: true })
+    } catch {
+        return 'recently'
+    }
+}
+
 function SourceBadge({ source, date, small }: { source: string; date: string; small?: boolean }) {
     const srcKey = getSourceKey(source)
     const cfg = SOURCE_CONFIG[srcKey] || SOURCE_CONFIG.ann
@@ -36,7 +46,7 @@ function SourceBadge({ source, date, small }: { source: string; date: string; sm
             <span className="text-muted-foreground/30">·</span>
             <span className="text-muted-foreground/50 flex items-center gap-1">
                 <Clock className="w-2.5 h-2.5" />
-                {formatDistanceToNow(new Date(date), { addSuffix: true })}
+                {safeFormatDistance(date)}
             </span>
         </div>
     )
