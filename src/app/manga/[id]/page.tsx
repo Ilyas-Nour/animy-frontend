@@ -1,5 +1,5 @@
 export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 import type { Metadata } from 'next'
 import { Manga } from '@/types/manga'
 import { notFound } from 'next/navigation'
@@ -34,6 +34,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         title,
         description,
         keywords,
+        alternates: {
+            canonical: `https://animy.xyz/manga/${id}`,
+        },
         openGraph: {
             title,
             description,

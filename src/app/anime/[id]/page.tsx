@@ -1,5 +1,5 @@
 export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 import type { Metadata } from 'next'
 import { AnimeDetailsClient } from '@/components/anime/AnimeDetailsClient'
 import { notFound } from 'next/navigation'
@@ -48,6 +48,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     title,
     description,
     keywords,
+    alternates: {
+      canonical: `https://animy.xyz/anime/${id}`,
+    },
     openGraph: {
       title,
       description,

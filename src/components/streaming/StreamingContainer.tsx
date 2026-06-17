@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import ArtPlayer from './ArtPlayer'
+import VidstackPlayer from './VidstackPlayer'
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Episode {
     id: string
@@ -199,6 +199,31 @@ export function StreamingContainer({
 
     return (
         <div className="space-y-5">
+            {/* Dynamic JSON-LD Schema for SEO */}
+            {selectedEp && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify({
+                            '@context': 'https://schema.org',
+                            '@type': 'TVEpisode',
+                            episodeNumber: selectedEp.number.toString(),
+                            name: selectedEp.title || `Episode ${selectedEp.number}`,
+                            partOfSeries: {
+                                '@type': 'TVSeries',
+                                name: animeTitle
+                            },
+                            video: {
+                                '@type': 'VideoObject',
+                                name: `${animeTitle} Episode ${selectedEp.number}`,
+                                description: `Watch ${animeTitle} Episode ${selectedEp.number} online in high quality.`,
+                                thumbnailUrl: animePoster || '',
+                                uploadDate: new Date().toISOString().split('T')[0]
+                            }
+                        })
+                    }}
+                />
+            )}
 
             {/* ── Video Player ── */}
             <div className="relative bg-black rounded-3xl overflow-hidden border border-white/8 shadow-2xl shadow-black/60 group"
@@ -240,14 +265,15 @@ export function StreamingContainer({
                     </div>
                 )}
 
-                {/* ── Native HLS Player (ArtPlayer) ── */}
+                {/* ── Native HLS Player (Vidstack) ── */}
                 {!streamLoading && isNativeActive && (
-                    <ArtPlayer
+                    <VidstackPlayer
                         url={activeServer!.sources![0].url}
                         poster={animePoster}
                         subtitles={activeServer!.subtitles as any}
                         onEnded={nextEp}
                         className="w-full h-full"
+                        referer={activeServer!.headers?.Referer || activeServer!.referer || 'https://hianime.to/'}
                     />
                 )}
 
