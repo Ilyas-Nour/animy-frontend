@@ -1,12 +1,12 @@
+'use client'
+
 import { useState } from 'react'
-import { Select } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Filter } from 'lucide-react'
+import { ChevronDown, X, SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface AnimeFilterProps {
   onFilterChange: (filters: FilterState) => void
+  currentFilters?: FilterState
 }
 
 export interface FilterState {
@@ -17,107 +17,246 @@ export interface FilterState {
   sort?: string
 }
 
-export function AnimeFilter({ onFilterChange }: AnimeFilterProps) {
-  const [isOpen, setIsOpen] = useState(false)
+const filterOptions = {
+  type: {
+    label: 'Type',
+    options: [
+      { value: '', label: 'All Types' },
+      { value: 'tv', label: 'TV' },
+      { value: 'movie', label: 'Movie' },
+      { value: 'ova', label: 'OVA' },
+      { value: 'special', label: 'Special' },
+      { value: 'ona', label: 'ONA' },
+    ],
+  },
+  status: {
+    label: 'Status',
+    options: [
+      { value: '', label: 'All Status' },
+      { value: 'airing', label: 'Airing' },
+      { value: 'complete', label: 'Completed' },
+      { value: 'upcoming', label: 'Upcoming' },
+    ],
+  },
+  rating: {
+    label: 'Rating',
+    options: [
+      { value: '', label: 'All Ratings' },
+      { value: 'g', label: 'G — All Ages' },
+      { value: 'pg', label: 'PG — Children' },
+      { value: 'pg13', label: 'PG-13 — Teens 13+' },
+      { value: 'r17', label: 'R — 17+' },
+      { value: 'r', label: 'R+ — Mild Nudity' },
+    ],
+  },
+  order_by: {
+    label: 'Order By',
+    options: [
+      { value: 'score', label: 'Score' },
+      { value: 'title', label: 'Title' },
+      { value: 'start_date', label: 'Start Date' },
+      { value: 'popularity', label: 'Popularity' },
+      { value: 'rank', label: 'Rank' },
+      { value: 'episodes', label: 'Episodes' },
+    ],
+  },
+  sort: {
+    label: 'Sort',
+    options: [
+      { value: 'desc', label: 'Descending' },
+      { value: 'asc', label: 'Ascending' },
+    ],
+  },
+}
 
-  const handleChange = (key: keyof FilterState, value: string) => {
-    onFilterChange({ [key]: value || undefined })
-  }
+function FilterDropdown({
+  filterKey,
+  config,
+  value,
+  onChange,
+}: {
+  filterKey: keyof FilterState
+  config: (typeof filterOptions)[keyof typeof filterOptions]
+  value: string
+  onChange: (key: keyof FilterState, val: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const selected = config.options.find((o) => o.value === value) ?? config.options[0]
+  const isActive = !!value && value !== config.options[0]?.value
 
   return (
-    <div className="space-y-4">
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className={cn(
+          'flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap',
+          'border backdrop-blur-sm',
+          isActive
+            ? 'bg-purple-600/30 border-purple-500/50 text-purple-200 shadow-[0_0_12px_rgba(139,92,246,0.2)]'
+            : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20 hover:text-white'
+        )}
+      >
+        <span className="text-xs font-semibold uppercase tracking-wider opacity-60">{config.label}:</span>
+        <span className={isActive ? 'text-purple-200' : 'text-white/90'}>{selected.label}</span>
+        <ChevronDown className={cn('w-3.5 h-3.5 opacity-50 transition-transform duration-200', open && 'rotate-180')} />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute top-full left-0 mt-2 z-50 min-w-[160px] rounded-xl border border-white/10 bg-[#14111f]/95 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden">
+            {config.options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(filterKey, opt.value)
+                  setOpen(false)
+                }}
+                className={cn(
+                  'w-full text-left px-4 py-2.5 text-sm transition-colors duration-150',
+                  opt.value === value
+                    ? 'bg-purple-600/30 text-purple-200 font-semibold'
+                    : 'text-white/70 hover:bg-white/8 hover:text-white'
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+export function AnimeFilter({ onFilterChange, currentFilters = {} }: AnimeFilterProps) {
+  const [localFilters, setLocalFilters] = useState<FilterState>(currentFilters)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const activeCount = Object.entries(localFilters).filter(
+    ([k, v]) => v && v !== '' && !(k === 'sort' && v === 'desc') && !(k === 'order_by' && v === 'score')
+  ).length
+
+  const handleChange = (key: keyof FilterState, value: string) => {
+    const next = { ...localFilters, [key]: value || undefined }
+    setLocalFilters(next)
+    onFilterChange(next)
+  }
+
+  const handleClear = (key: keyof FilterState) => {
+    const next = { ...localFilters, [key]: undefined }
+    setLocalFilters(next)
+    onFilterChange(next)
+  }
+
+  const handleClearAll = () => {
+    setLocalFilters({})
+    onFilterChange({})
+  }
+
+  const getValue = (key: keyof FilterState) => localFilters[key] || ''
+
+  return (
+    <div className="space-y-3">
+      {/* Desktop Filter Row */}
+      <div className="hidden lg:flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 text-white/40 mr-1">
+          <SlidersHorizontal className="w-4 h-4" />
+          <span className="text-xs font-semibold uppercase tracking-wider">Filters</span>
+        </div>
+
+        {(Object.keys(filterOptions) as (keyof FilterState)[]).map((key) => (
+          <FilterDropdown
+            key={key}
+            filterKey={key}
+            config={filterOptions[key]}
+            value={getValue(key)}
+            onChange={handleChange}
+          />
+        ))}
+
+        {activeCount > 0 && (
+          <button
+            onClick={handleClearAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition-colors duration-200"
+          >
+            <X className="w-3 h-3" />
+            Clear all
+          </button>
+        )}
+      </div>
+
       {/* Mobile Filter Toggle */}
       <div className="lg:hidden">
-        <Button
-          variant="outline"
-          className="w-full justify-between"
-          onClick={() => setIsOpen(!isOpen)}
+        <button
+          type="button"
+          onClick={() => setMobileOpen((p) => !p)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 transition-colors w-full justify-between"
         >
           <span className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
+            <SlidersHorizontal className="w-4 h-4" />
             Filters
+            {activeCount > 0 && (
+              <span className="bg-purple-600 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                {activeCount}
+              </span>
+            )}
           </span>
-          <span className="text-xs text-muted-foreground">
-            {isOpen ? 'Hide' : 'Show'}
-          </span>
-        </Button>
+          <ChevronDown className={cn('w-4 h-4 opacity-50 transition-transform duration-200', mobileOpen && 'rotate-180')} />
+        </button>
+
+        {mobileOpen && (
+          <div className="mt-2 p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm grid grid-cols-2 gap-3">
+            {(Object.keys(filterOptions) as (keyof FilterState)[]).map((key) => (
+              <div key={key} className="space-y-1">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                  {filterOptions[key].label}
+                </label>
+                <select
+                  value={getValue(key)}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white/80 focus:outline-none focus:border-purple-500/50"
+                >
+                  {filterOptions[key].options.map((opt) => (
+                    <option key={opt.value} value={opt.value} className="bg-[#14111f]">
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Filter Grid - Hidden on mobile unless open, always visible on desktop */}
-      <div className={cn(
-        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4",
-        !isOpen && "hidden lg:grid"
-      )}>
-        <div className="space-y-2">
-          <Label htmlFor="type">Type</Label>
-          <Select
-            id="type"
-            onChange={(e) => handleChange('type', e.target.value)}
-          >
-            <option value="">All Types</option>
-            <option value="tv">TV</option>
-            <option value="movie">Movie</option>
-            <option value="ova">OVA</option>
-            <option value="special">Special</option>
-            <option value="ona">ONA</option>
-          </Select>
+      {/* Active Filter Chips */}
+      {activeCount > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {(Object.entries(localFilters) as [keyof FilterState, string][])
+            .filter(([, v]) => v && v !== '')
+            .map(([key, val]) => {
+              const opts = filterOptions[key]?.options
+              const label = opts?.find((o) => o.value === val)?.label ?? val
+              return (
+                <div
+                  key={key}
+                  className="flex items-center gap-1.5 pl-3 pr-2 py-1 rounded-full text-xs font-semibold bg-purple-600/20 border border-purple-500/30 text-purple-200"
+                >
+                  <span className="opacity-60 capitalize">{filterOptions[key]?.label}:</span>
+                  <span>{label}</span>
+                  <button
+                    onClick={() => handleClear(key)}
+                    className="w-4 h-4 rounded-full bg-purple-500/30 hover:bg-purple-500/60 flex items-center justify-center transition-colors duration-150"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </div>
+              )
+            })}
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
-          <Select
-            id="status"
-            onChange={(e) => handleChange('status', e.target.value)}
-          >
-            <option value="">All Status</option>
-            <option value="airing">Airing</option>
-            <option value="complete">Completed</option>
-            <option value="upcoming">Upcoming</option>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="rating">Rating</Label>
-          <Select
-            id="rating"
-            onChange={(e) => handleChange('rating', e.target.value)}
-          >
-            <option value="">All Ratings</option>
-            <option value="g">G - All Ages</option>
-            <option value="pg">PG - Children</option>
-            <option value="pg13">PG-13 - Teens 13+</option>
-            <option value="r17">R - 17+</option>
-            <option value="r">R+ - Mild Nudity</option>
-            <option value="rx">Rx - Hentai</option>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="order_by">Order By</Label>
-          <Select
-            id="order_by"
-            onChange={(e) => handleChange('order_by', e.target.value)}
-          >
-            <option value="score">Score</option>
-            <option value="title">Title</option>
-            <option value="start_date">Start Date</option>
-            <option value="end_date">End Date</option>
-            <option value="popularity">Popularity</option>
-            <option value="rank">Rank</option>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="sort">Sort</Label>
-          <Select
-            id="sort"
-            onChange={(e) => handleChange('sort', e.target.value)}
-          >
-            <option value="desc">Descending</option>
-            <option value="asc">Ascending</option>
-          </Select>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
