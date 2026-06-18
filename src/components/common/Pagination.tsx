@@ -34,7 +34,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         disabled={currentPage === 1}
         className={cn(
           btnBase,
-          'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed'
+          'bg-card border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-30 disabled:cursor-not-allowed'
         )}
         title="First page"
       >
@@ -47,7 +47,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         disabled={currentPage === 1}
         className={cn(
           btnBase,
-          'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed'
+          'bg-card border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-30 disabled:cursor-not-allowed'
         )}
         title="Previous page"
       >
@@ -59,12 +59,12 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         <>
           <button
             onClick={() => onPageChange(1)}
-            className={cn(btnBase, 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white')}
+            className={cn(btnBase, 'bg-card border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground')}
           >
             1
           </button>
           {startPage > 2 && (
-            <span className="flex items-center justify-center h-9 px-1 text-white/20 text-sm select-none">…</span>
+            <span className="flex items-center justify-center h-9 px-1 text-muted-foreground/50 text-sm select-none">…</span>
           )}
         </>
       )}
@@ -78,7 +78,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
             btnBase,
             page === currentPage
               ? 'bg-gradient-to-r from-purple-600 to-violet-600 border-purple-500/50 text-white shadow-[0_0_16px_rgba(139,92,246,0.4)]'
-              : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white'
+              : 'bg-card border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground'
           )}
         >
           {page}
@@ -89,11 +89,11 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       {endPage < totalPages && (
         <>
           {endPage < totalPages - 1 && (
-            <span className="flex items-center justify-center h-9 px-1 text-white/20 text-sm select-none">…</span>
+            <span className="flex items-center justify-center h-9 px-1 text-muted-foreground/50 text-sm select-none">…</span>
           )}
           <button
             onClick={() => onPageChange(totalPages)}
-            className={cn(btnBase, 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white')}
+            className={cn(btnBase, 'bg-card border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground')}
           >
             {totalPages}
           </button>
@@ -106,7 +106,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         disabled={currentPage === totalPages}
         className={cn(
           btnBase,
-          'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed'
+          'bg-card border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-30 disabled:cursor-not-allowed'
         )}
         title="Next page"
       >
@@ -119,7 +119,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         disabled={currentPage === totalPages}
         className={cn(
           btnBase,
-          'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed'
+          'bg-card border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-30 disabled:cursor-not-allowed'
         )}
         title="Last page"
       >
@@ -127,7 +127,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       </button>
 
       {/* Page info */}
-      <span className="text-white/25 text-xs font-medium ml-2 hidden sm:block">
+      <span className="text-muted-foreground/60 text-xs font-medium ml-2 hidden sm:block">
         Page {currentPage} of {totalPages}
       </span>
     </div>

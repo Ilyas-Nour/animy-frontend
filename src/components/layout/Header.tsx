@@ -15,6 +15,8 @@ import UserAvatar from '@/components/common/UserAvatar'
 import { AnimatedLogo } from './AnimatedLogo'
 import { GlobalSearch } from './GlobalSearch'
 import { NotificationBell } from '@/components/Notifications/NotificationBell'
+import { ThemeToggle } from '@/components/providers/ThemeToggle'
+import { useTheme } from 'next-themes'
 
 import {
   DropdownMenu,
@@ -27,9 +29,9 @@ import {
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [dark, setDark] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { theme, setTheme } = useTheme()
   const pathname = usePathname()
   const { isAuthenticated, user, logout, isLoading: authLoading } = useAuth()
   const { unreadCount } = useSocket()
@@ -69,33 +71,10 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Load dark mode from localStorage on mount
+  // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
-    const savedTheme = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-
-    const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark)
-    setDark(shouldBeDark)
-
-    if (shouldBeDark) {
-      document.documentElement.classList.add('dark')
-    }
   }, [])
-
-  // Toggle dark mode and save to localStorage
-  const toggleDarkMode = () => {
-    const newDarkMode = !dark
-    setDark(newDarkMode)
-
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }
 
   // Prevent flash of wrong theme
   if (!mounted) {
@@ -198,16 +177,7 @@ export function Header() {
         <div className="hidden md:flex items-center space-x-2 shrink-0">
           
           {/* Dark Mode Toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className="group relative p-2.5 rounded-full hover:bg-accent transition-colors duration-300 border border-transparent hover:border-border/50"
-            aria-label="Toggle dark mode"
-          >
-            <div className="relative w-5 h-5 flex items-center justify-center">
-              <Sun className={`w-5 h-5 text-orange-500 absolute transition-all duration-500 ${dark ? 'rotate-90 scale-0 opacity-0' : 'rotate-0 scale-100 opacity-100'}`} />
-              <Moon className={`w-5 h-5 text-blue-400 absolute transition-all duration-500 ${dark ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-0 opacity-0'}`} />
-            </div>
-          </button>
+          <ThemeToggle />
 
           {authLoading ? (
             <div className="h-10 w-32 bg-accent animate-pulse rounded-full opacity-20" />
@@ -389,21 +359,21 @@ export function Header() {
               <div className="space-y-3">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-2">Settings</h3>
                 <button
-                  onClick={toggleDarkMode}
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                   className="flex items-center justify-between w-full p-4 rounded-2xl bg-secondary/30 border border-transparent hover:bg-secondary/50 transition-all group"
                 >
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                      dark ? "bg-blue-500/10" : "bg-orange-500/10"
+                      theme === 'dark' ? "bg-blue-500/10" : "bg-orange-500/10"
                     )}>
-                      {dark ? <Moon className="w-5 h-5 text-blue-400" /> : <Sun className="w-5 h-5 text-orange-500" />}
+                      {theme === 'dark' ? <Moon className="w-5 h-5 text-blue-400" /> : <Sun className="w-5 h-5 text-orange-500" />}
                     </div>
-                    <span className="text-sm font-bold">{dark ? 'Dark Mode' : 'Light Mode'}</span>
+                    <span className="text-sm font-bold">{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
                   </div>
                   <div className="w-12 h-6 bg-muted rounded-full relative p-1 group-hover:bg-muted/80 transition-colors shadow-inner">
                     <motion.div
-                      animate={{ x: dark ? 24 : 0 }}
+                      animate={{ x: theme === 'dark' ? 24 : 0 }}
                       className="w-4 h-4 bg-background rounded-full shadow-md"
                     />
                   </div>

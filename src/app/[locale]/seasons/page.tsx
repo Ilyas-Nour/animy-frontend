@@ -135,9 +135,9 @@ function SeasonsContent() {
   return (
     <div className="min-h-screen">
       {/* Dynamic Background Banner */}
-      <div className={`relative overflow-hidden border-b border-white/5 mb-8 bg-gradient-to-br ${currentBg} transition-colors duration-1000`}>
+      <div className={`relative overflow-hidden border-b border-border mb-8 bg-gradient-to-br ${currentBg} transition-colors duration-1000`}>
         <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 60%)'
+          backgroundImage: 'radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.05) 0%, transparent 60%)'
         }} />
         
         <div className="relative container px-4 sm:px-6 py-10 sm:py-14">
@@ -147,13 +147,13 @@ function SeasonsContent() {
             transition={{ duration: 0.5 }}
             className="flex flex-col items-center text-center max-w-3xl mx-auto"
           >
-            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 mb-6 shadow-xl">
-              <Calendar className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 rounded-2xl bg-card/80 backdrop-blur-md flex items-center justify-center border border-border mb-6 shadow-xl">
+              <Calendar className="w-8 h-8 text-foreground" />
             </div>
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white mb-4">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-foreground mb-4">
               Anime Seasons
             </h1>
-            <p className="text-white/60 text-base">
+            <p className="text-muted-foreground text-base">
               Travel through time to discover anime by release season.
             </p>
           </motion.div>
@@ -177,7 +177,7 @@ function SeasonsContent() {
                   className={`relative overflow-hidden rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center gap-3 transition-all duration-300 border ${
                     isActive 
                       ? `bg-gradient-to-br ${colorClass} border-transparent text-white scale-105 z-10` 
-                      : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/90 hover:border-white/20'
+                      : 'bg-card border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   }`}
                 >
                   <Icon className={`w-8 h-8 ${isActive ? 'text-white' : 'opacity-70'}`} />
@@ -212,10 +212,10 @@ function SeasonsContent() {
                   key={year}
                   data-active={isActive}
                   onClick={() => handleYearChange(year)}
-                  className={`flex-none px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
+                  className={`flex-none px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 border ${
                     isActive
-                      ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] scale-110 mx-2'
-                      : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/80 border border-white/5'
+                      ? 'bg-foreground text-background shadow-lg scale-110 mx-2 border-transparent'
+                      : 'bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground border-border'
                   }`}
                 >
                   {year}
@@ -231,12 +231,12 @@ function SeasonsContent() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
-            className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/10"
+            className="flex items-center justify-between p-6 rounded-2xl bg-card border border-border"
           >
             <div>
-              <h2 className="text-2xl font-black capitalize tracking-tight flex items-center gap-3">
+              <h2 className="text-2xl font-black capitalize tracking-tight flex items-center gap-3 text-foreground">
                 {seasonInfo.season} {seasonInfo.year}
-                <span className="text-sm font-semibold px-2.5 py-1 rounded-full bg-white/10 text-white/70">
+                <span className="text-sm font-semibold px-2.5 py-1 rounded-full bg-accent text-accent-foreground">
                   {loading ? '...' : totalResults} shows
                 </span>
               </h2>
@@ -259,12 +259,12 @@ function SeasonsContent() {
           <ErrorMessage message={error} />
         ) : anime.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-              <Calendar className="w-9 h-9 text-white/20" />
+            <div className="w-20 h-20 rounded-2xl bg-card border border-border flex items-center justify-center">
+              <Calendar className="w-9 h-9 text-muted-foreground opacity-50" />
             </div>
             <div className="text-center">
-              <p className="text-white/50 font-semibold text-base">No anime found</p>
-              <p className="text-white/25 text-sm mt-1">No anime available for {selectedSeason} {selectedYear}</p>
+              <p className="text-muted-foreground font-semibold text-base">No anime found</p>
+              <p className="text-muted-foreground/60 text-sm mt-1">No anime available for {selectedSeason} {selectedYear}</p>
             </div>
           </div>
         ) : (

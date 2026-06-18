@@ -93,19 +93,19 @@ function FilterDropdown({
           'flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap',
           'border backdrop-blur-sm',
           isActive
-            ? 'bg-purple-600/30 border-purple-500/50 text-purple-200 shadow-[0_0_12px_rgba(139,92,246,0.2)]'
-            : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20 hover:text-white'
+            ? 'bg-purple-600/30 border-purple-500/50 text-purple-600 dark:text-purple-200 shadow-[0_0_12px_rgba(139,92,246,0.2)]'
+            : 'bg-card border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground'
         )}
       >
         <span className="text-xs font-semibold uppercase tracking-wider opacity-60">{config.label}:</span>
-        <span className={isActive ? 'text-purple-200' : 'text-white/90'}>{selected.label}</span>
+        <span className={isActive ? 'text-purple-600 dark:text-purple-200' : 'text-foreground/90'}>{selected.label}</span>
         <ChevronDown className={cn('w-3.5 h-3.5 opacity-50 transition-transform duration-200', open && 'rotate-180')} />
       </button>
 
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-full left-0 mt-2 z-50 min-w-[160px] rounded-xl border border-white/10 bg-[#14111f]/95 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden">
+          <div className="absolute top-full left-0 mt-2 z-50 min-w-[160px] rounded-xl border border-border bg-card/95 backdrop-blur-xl shadow-xl overflow-hidden">
             {config.options.map((opt) => (
               <button
                 key={opt.value}
@@ -117,8 +117,8 @@ function FilterDropdown({
                 className={cn(
                   'w-full text-left px-4 py-2.5 text-sm transition-colors duration-150',
                   opt.value === value
-                    ? 'bg-purple-600/30 text-purple-200 font-semibold'
-                    : 'text-white/70 hover:bg-white/8 hover:text-white'
+                    ? 'bg-purple-600/30 text-purple-600 dark:text-purple-200 font-semibold'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                 )}
               >
                 {opt.label}
@@ -162,7 +162,7 @@ export function AnimeFilter({ onFilterChange, currentFilters = {} }: AnimeFilter
     <div className="space-y-3">
       {/* Desktop Filter Row */}
       <div className="hidden lg:flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5 text-white/40 mr-1">
+        <div className="flex items-center gap-1.5 text-muted-foreground mr-1">
           <SlidersHorizontal className="w-4 h-4" />
           <span className="text-xs font-semibold uppercase tracking-wider">Filters</span>
         </div>
@@ -193,7 +193,7 @@ export function AnimeFilter({ onFilterChange, currentFilters = {} }: AnimeFilter
         <button
           type="button"
           onClick={() => setMobileOpen((p) => !p)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 transition-colors w-full justify-between"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-card border border-border text-muted-foreground hover:bg-accent transition-colors w-full justify-between"
         >
           <span className="flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4" />
@@ -208,19 +208,19 @@ export function AnimeFilter({ onFilterChange, currentFilters = {} }: AnimeFilter
         </button>
 
         {mobileOpen && (
-          <div className="mt-2 p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm grid grid-cols-2 gap-3">
+          <div className="mt-2 p-4 rounded-xl border border-border bg-card/50 backdrop-blur-sm grid grid-cols-2 gap-3 shadow-md">
             {(Object.keys(filterOptions) as (keyof FilterState)[]).map((key) => (
               <div key={key} className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   {filterOptions[key].label}
                 </label>
                 <select
                   value={getValue(key)}
                   onChange={(e) => handleChange(key, e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white/80 focus:outline-none focus:border-purple-500/50"
+                  className="w-full bg-card border border-input rounded-lg px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-purple-500/50"
                 >
                   {filterOptions[key].options.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-[#14111f]">
+                    <option key={opt.value} value={opt.value} className="bg-card text-foreground">
                       {opt.label}
                     </option>
                   ))}
@@ -242,7 +242,7 @@ export function AnimeFilter({ onFilterChange, currentFilters = {} }: AnimeFilter
               return (
                 <div
                   key={key}
-                  className="flex items-center gap-1.5 pl-3 pr-2 py-1 rounded-full text-xs font-semibold bg-purple-600/20 border border-purple-500/30 text-purple-200"
+                  className="flex items-center gap-1.5 pl-3 pr-2 py-1 rounded-full text-xs font-semibold bg-purple-600/20 border border-purple-500/30 text-purple-700 dark:text-purple-200"
                 >
                   <span className="opacity-60 capitalize">{filterOptions[key]?.label}:</span>
                   <span>{label}</span>

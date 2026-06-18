@@ -77,7 +77,7 @@ export function Footer() {
   }
 
   return (
-    <footer className="w-full bg-background border-t border-white/5 pt-16 pb-24 md:pb-12 overflow-hidden relative">
+    <footer className="w-full bg-background border-t border-border pt-16 pb-24 md:pb-12 overflow-hidden relative">
       {/* Subtle Background Accent */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
 
@@ -104,7 +104,7 @@ export function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(
-                      "h-11 w-11 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 text-muted-foreground transition-all duration-300 hover:scale-105 hover:border-white/10",
+                      "h-11 w-11 flex items-center justify-center rounded-2xl bg-card border border-border text-muted-foreground transition-all duration-300 hover:scale-105 hover:bg-accent hover:text-accent-foreground",
                       social.color
                     )}
                     aria-label={social.label}
@@ -134,7 +134,7 @@ export function Footer() {
                   <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] text-foreground/40">{section.title}</h4>
                   <motion.div
                     animate={{ rotate: openSection === section.title ? 180 : 0 }}
-                    className="md:hidden p-1.5 bg-white/5 rounded-xl border border-white/5"
+                    className="md:hidden p-1.5 bg-card rounded-xl border border-border"
                   >
                     <ChevronDown size={14} className="text-muted-foreground" />
                   </motion.div>
@@ -175,7 +175,7 @@ export function Footer() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mt-10 pt-6 border-t border-white/5 space-y-4"
+          className="mt-10 pt-6 border-t border-border space-y-4"
         >
           {/* Legal Disclaimer & Content Notice */}
           <div className="max-w-4xl mx-auto text-center space-y-4">
@@ -185,10 +185,10 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-4 border-t border-white/[0.02]">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-4 border-t border-border">
             <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-[13px] text-muted-foreground/60">
               <span>© {currentYear} <span className="text-foreground/80 font-semibold tracking-tight">Animy</span>. All Rights Reserved.</span>
-              <span className="hidden md:block h-1 w-1 rounded-full bg-white/10" />
+              <span className="hidden md:block h-1 w-1 rounded-full bg-border" />
               <span className="flex items-center gap-1">
                 Built by <Link href="https://github.com/Ilyas-Nour" target="_blank" className="text-foreground/80 hover:text-primary transition-colors font-medium">Ilyas Nour</Link>
               </span>

@@ -103,7 +103,7 @@ function MangaContent() {
     return (
         <div className="min-h-screen">
             {/* Hero Banner */}
-            <div className="relative overflow-hidden border-b border-white/5 mb-8">
+            <div className="relative overflow-hidden border-b border-border mb-8">
                 <div className="absolute inset-0 bg-gradient-to-br from-pink-950/50 via-rose-900/25 to-transparent" />
                 <div className="absolute inset-0" style={{
                     backgroundImage: 'radial-gradient(ellipse at 25% 50%, rgba(236,72,153,0.12) 0%, transparent 60%), radial-gradient(ellipse at 75% 20%, rgba(139,92,246,0.08) 0%, transparent 50%)'
@@ -124,13 +124,13 @@ function MangaContent() {
                             </div>
                             <span className="text-xs font-bold uppercase tracking-[0.2em] text-pink-400">Library</span>
                         </div>
-                        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white mb-2">
+                        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground mb-2">
                             Browse{' '}
-                            <span className="bg-gradient-to-r from-pink-400 via-rose-400 to-purple-400 bg-clip-text text-transparent">
+                            <span className="bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500 bg-clip-text text-transparent">
                                 Manga
                             </span>
                         </h1>
-                        <p className="text-white/50 text-sm">
+                        <p className="text-muted-foreground text-sm">
                             Explore thousands of manga, manhwa, and manhua titles.
                         </p>
                     </motion.div>
@@ -144,19 +144,19 @@ function MangaContent() {
                         className="mt-6 max-w-xl"
                     >
                         <div className="relative flex items-center">
-                            <Search className="absolute left-4 w-4 h-4 text-white/30 pointer-events-none" />
+                            <Search className="absolute left-4 w-4 h-4 text-muted-foreground pointer-events-none" />
                             <input
                                 type="text"
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
                                 placeholder="Search manga titles..."
-                                className="w-full bg-white/8 backdrop-blur-sm border border-white/12 rounded-xl pl-11 pr-28 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50 focus:bg-white/10 transition-all duration-200"
+                                className="w-full bg-card border border-input rounded-xl pl-11 pr-28 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-pink-500/50 focus:ring-1 focus:ring-pink-500/50 transition-all duration-200"
                             />
                             {searchInput && (
                                 <button
                                     type="button"
                                     onClick={handleClearSearch}
-                                    className="absolute right-20 text-white/30 hover:text-white/70 transition-colors"
+                                    className="absolute right-20 text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -190,11 +190,11 @@ function MangaContent() {
                         transition={{ delay: 0.3 }}
                         className="flex items-center gap-2"
                     >
-                        <div className="h-px flex-1 bg-white/5" />
-                        <span className="text-xs font-semibold text-white/25 uppercase tracking-wider">
+                        <div className="h-px flex-1 bg-border" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {totalResults > 0 ? `${manga.length} results${totalResults > manga.length ? ` of ${totalResults.toLocaleString()}` : ''}` : 'No results'}
                         </span>
-                        <div className="h-px flex-1 bg-white/5" />
+                        <div className="h-px flex-1 bg-border" />
                     </motion.div>
                 )}
 

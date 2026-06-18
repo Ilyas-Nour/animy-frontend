@@ -8,6 +8,7 @@ import { SocketProvider } from '@/contexts/SocketContext'
 import { Toaster } from 'sonner'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { LazyMotion, domAnimation } from 'framer-motion'
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
 
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
@@ -35,15 +36,17 @@ export default function ClientLayoutWrapper({ children }: { children: ReactNode 
   return (
     <AuthProvider>
       <SocketProvider>
-        <LazyMotion features={domAnimation}>
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <main className="flex-1">{children}</main>
-            {!shouldHideFooter && <Footer />}
-          </div>
-          <MobileNav />
-          <Toaster position="top-right" richColors />
-        </LazyMotion>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          <LazyMotion features={domAnimation}>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <main className="flex-1">{children}</main>
+              {!shouldHideFooter && <Footer />}
+            </div>
+            <MobileNav />
+            <Toaster position="top-right" richColors />
+          </LazyMotion>
+        </ThemeProvider>
       </SocketProvider>
     </AuthProvider>
   )
