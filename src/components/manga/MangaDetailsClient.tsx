@@ -26,7 +26,9 @@ interface MangaDetailsClientProps {
     initialChapters?: any[]
 }
 
-export default function MangaDetailsClient({ manga, characters, initialChapters = [] }: MangaDetailsClientProps) {
+const EMPTY_ARRAY: any[] = []
+
+export default function MangaDetailsClient({ manga, characters, initialChapters = EMPTY_ARRAY }: MangaDetailsClientProps) {
     const { isAuthenticated, user, updateUser } = useAuth()
     const [isInMangaList, setIsInMangaList] = useState(false)
     const [mangaListStatus, setMangaListStatus] = useState('PLAN_TO_READ')
