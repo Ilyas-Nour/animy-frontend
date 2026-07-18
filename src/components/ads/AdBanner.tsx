@@ -7,14 +7,14 @@ interface AdBannerProps {
   className?: string;
 }
 
-export function AdBanner({ zoneId = "261105", className = "" }: AdBannerProps) {
+export function AdBanner({ zoneId = "11344161", className = "" }: AdBannerProps) {
   const adContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Check if the script is already appended to prevent duplicates in React strict mode
     if (adContainerRef.current && adContainerRef.current.children.length === 0) {
       const script = document.createElement('script')
-      script.src = `https://quge5.com/88/tag.min.js`
+      script.src = `https://nap5k.com/tag.min.js`
       script.async = true
       script.setAttribute('data-zone', zoneId)
       script.setAttribute('data-cfasync', 'false')
