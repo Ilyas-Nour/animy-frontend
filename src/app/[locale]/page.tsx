@@ -3,6 +3,7 @@ export const runtime = 'edge';
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Anime } from '@/types/anime'
 import { Manga } from '@/types/manga'
 import { AnimeGrid } from '@/components/anime/AnimeGrid'
@@ -26,7 +27,8 @@ import { UserHomeSection } from '@/components/home/UserHomeSection'
 let globalHomeCache: any = null;
 
 export default function HomePage() {
-  const { isAuthenticated } = useAuth()
+  const router = useRouter()
+  const { isAuthenticated, login } = useAuth()
   const [hasMounted, setHasMounted] = useState(false)
   const [topAnime, setTopAnime] = useState<Anime[]>(globalHomeCache?.popularAnime || [])
   const [trendingHighlight, setTrendingHighlight] = useState<Anime[]>(globalHomeCache?.trendingAnime || [])
@@ -46,6 +48,18 @@ export default function HomePage() {
 
   useEffect(() => {
     setHasMounted(true)
+
+    // Handle Google OAuth callback token
+    const searchParams = new URLSearchParams(window.location.search);
+    const token = searchParams.get('token');
+    if (token) {
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // We don't have the user object yet, so we just set the token and let AuthContext fetch the profile
+      localStorage.setItem('token', token);
+      window.location.reload(); // Force full reload so AuthContext picks it up properly
+      return;
+    }
     
     const loadAllData = async () => {
       try {

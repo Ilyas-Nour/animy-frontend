@@ -8,6 +8,7 @@ import { Mail, Lock, User, UserPlus, ArrowRight, Sparkles, Shield, Eye, EyeOff, 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { FaGoogle } from 'react-icons/fa'
 import { authService } from '@/lib/auth'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -367,6 +368,29 @@ export default function RegisterPage() {
                   )}
                 </Button>
               </form>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-white/10" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-11 text-base font-medium border-white/10 hover:bg-white/5"
+                onClick={() => {
+                  window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+                }}
+              >
+                <FaGoogle className="mr-2 h-4 w-4" />
+                Google
+              </Button>
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
