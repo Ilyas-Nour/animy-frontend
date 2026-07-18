@@ -26,7 +26,7 @@ export async function GET(
         }
 
         const data = await response.json()
-        return NextResponse.json(data.data)
+        return NextResponse.json(data)
     } catch (error: any) {
         console.error('Seasons error:', error)
         return NextResponse.json({ error: error.message, data: { data: [], pagination: {} } }, { status: 500 })
