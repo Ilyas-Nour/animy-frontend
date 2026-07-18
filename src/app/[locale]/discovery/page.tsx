@@ -83,7 +83,7 @@ export default function DiscoveryPage() {
                     </div>
                 </header>
 
-                <AdBanner zoneId="261105" className="mb-8" />
+                <AdBanner className="mb-8" />
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col items-center justify-center">

@@ -150,12 +150,12 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
     return (
         <>
             <JsonLd data={jsonLd} />
-            <AdBanner zoneId="261105" className="max-w-7xl mx-auto px-4" />
+            <AdBanner className="max-w-7xl mx-auto px-4" />
             <MangaDetailsClient 
                 manga={manga} 
                 characters={characters} 
             />
-            <AdBanner zoneId="261105" className="max-w-7xl mx-auto px-4 mt-12" />
+            <AdBanner className="max-w-7xl mx-auto px-4 mt-12" />
         </>
     )
 }

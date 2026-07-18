@@ -115,7 +115,7 @@ export default function HomePage() {
       <CategorySwiper onCategoryChange={setActiveCategory} />
 
       <div className="container mt-8">
-        <AdBanner zoneId="261105" className="mb-12" />
+        <AdBanner className="mb-12" />
       </div>
 
       {/* 3. High-Impact Interaction Area (Guest vs User) */}

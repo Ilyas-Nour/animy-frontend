@@ -76,8 +76,8 @@ export function StreamingContainer({
         )
     }
 
-    // VidLink URL format — uses the real MAL ID
-    const vidLinkUrl = `https://vidlink.pro/anime/${malId}/${currentEpNumber}?player=primary&autoplay=false&type=${subDub}`
+    // VidLink URL format — uses the real MAL ID with sub/dub in path
+    const vidLinkUrl = `https://vidlink.pro/anime/${malId}/${currentEpNumber}/${subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`
 
     return (
         <div className="space-y-5">

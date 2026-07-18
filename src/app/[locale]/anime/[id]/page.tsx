@@ -113,11 +113,11 @@ export default async function AnimeDetailPage({ params }: { params: Promise<{ id
   return (
     <>
       <JsonLd data={jsonLd} />
-      <AdBanner zoneId="261105" className="max-w-7xl mx-auto px-4" />
+      <AdBanner className="max-w-7xl mx-auto px-4" />
       <AnimeDetailsClient
         anime={anime}
       />
-      <AdBanner zoneId="261105" className="max-w-7xl mx-auto px-4 mt-12" />
+      <AdBanner className="max-w-7xl mx-auto px-4 mt-12" />
     </>
   )
 }
