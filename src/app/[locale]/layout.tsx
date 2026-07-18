@@ -101,6 +101,7 @@ import {getMessages} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {routing} from '@/i18n/routing';
 import { GoogleAnalytics } from '@next/third-parties/google';
+import Script from 'next/script';
 
 export default async function RootLayout({ children, params }: { children: React.ReactNode, params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -120,6 +121,13 @@ export default async function RootLayout({ children, params }: { children: React
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
+        <Script 
+          src="https://quge5.com/88/tag.min.js" 
+          data-zone="261105" 
+          async 
+          data-cfasync="false"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )
