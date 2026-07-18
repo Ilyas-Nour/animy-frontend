@@ -14,7 +14,7 @@ export async function GET(
     const { year, season } = await params
 
     try {
-        const url = `${JIKAN_API}/seasons/${year}/${season}?page=${page}&limit=${limit}`
+        const url = `${JIKAN_API}/seasons/${year}/${season}?page=${page}&limit=${limit}&_v=2`
 
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },
