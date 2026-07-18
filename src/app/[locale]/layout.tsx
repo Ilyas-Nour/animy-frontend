@@ -136,6 +136,13 @@ export default async function RootLayout({ children, params }: { children: React
           data-cfasync="false"
           strategy="afterInteractive"
         />
+        <Script 
+          src="https://nap5k.com/tag.min.js" 
+          data-zone="11344161" 
+          async 
+          data-cfasync="false"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )
