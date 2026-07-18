@@ -62,6 +62,7 @@ async function handleRequest(request: NextRequest) {
       method: request.method,
       headers: headers,
       signal: controller.signal,
+      redirect: 'manual', // Crucial: Do not follow redirects (like OAuth), forward them to the browser
     };
 
     // Forward body for non-GET/HEAD requests
