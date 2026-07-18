@@ -5,6 +5,7 @@ import { EpisodeGrid } from './EpisodeGrid'
 import { ChevronLeft, ChevronRight, Subtitles, Mic } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 interface Episode {
     id: string
@@ -179,6 +180,11 @@ export function StreamingContainer({
                         <ChevronRight className="w-4 h-4" />
                     </Button>
                 </div>
+            </div>
+
+            {/* Post-Video Ad Placement */}
+            <div className="py-2">
+                <AdBanner />
             </div>
 
             {/* ── Episode Grid ── */}

@@ -121,9 +121,17 @@ export default async function RootLayout({ children, params }: { children: React
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
+        {/* Global Monetag Scripts */}
         <Script 
-          src="https://quge5.com/88/tag.min.js" 
-          data-zone="261105" 
+          src="https://al5sm.com/tag.min.js" 
+          data-zone="11344223" 
+          async 
+          data-cfasync="false"
+          strategy="afterInteractive"
+        />
+        <Script 
+          src="https://al5sm.com/tag.min.js" 
+          data-zone="11343530" 
           async 
           data-cfasync="false"
           strategy="afterInteractive"
