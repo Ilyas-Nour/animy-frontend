@@ -100,6 +100,7 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getMessages} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {routing} from '@/i18n/routing';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 export default async function RootLayout({ children, params }: { children: React.ReactNode, params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -116,6 +117,9 @@ export default async function RootLayout({ children, params }: { children: React
         <NextIntlClientProvider messages={messages}>
           <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
         </NextIntlClientProvider>
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
       </body>
     </html>
   )
