@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Github, Linkedin, ChevronDown, ExternalLink } from 'lucide-react'
+import { Github, Twitter, ChevronDown, ExternalLink } from 'lucide-react'
 import { AnimatedLogo } from './AnimatedLogo'
 import { cn } from '@/lib/utils'
 
