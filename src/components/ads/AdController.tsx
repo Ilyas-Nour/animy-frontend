@@ -38,6 +38,15 @@ export function AdController() {
         data-cfasync="false"
         strategy="afterInteractive"
       />
+      
+      {/* High-paying Vignette Ad */}
+      <Script 
+        src="https://n6wxm.com/vignette.min.js" 
+        data-zone="11344751" 
+        async 
+        data-cfasync="false"
+        strategy="afterInteractive"
+      />
     </>
   );
 }
