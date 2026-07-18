@@ -17,7 +17,16 @@ export async function GET(request: NextRequest) {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 55000)
 
-        const url = `${BACKEND_API}/manga?q=${q}&type=${type}&status=${status}&order_by=${order_by}&sort=${sort}&limit=${limit}&page=${page}`
+        const queryParams = new URLSearchParams()
+        if (q) queryParams.set('q', q)
+        if (type) queryParams.set('type', type)
+        if (status) queryParams.set('status', status)
+        if (order_by) queryParams.set('order_by', order_by)
+        if (sort) queryParams.set('sort', sort)
+        if (limit) queryParams.set('limit', limit)
+        if (page) queryParams.set('page', page)
+
+        const url = `${BACKEND_API}/manga?${queryParams.toString()}`
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },
             next: { revalidate: 3600 },

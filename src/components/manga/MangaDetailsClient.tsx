@@ -246,7 +246,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                         <div className="p-5 space-y-3 hidden lg:block bg-card border border-border rounded-2xl shadow-xl">
                             {chapters.length > 0 && (
                                 <Link 
-                                    href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}&type=${manga.type}`}
+                                    href={`/manga/read/${encodeURIComponent(chapters[chapters.length - 1].id)}?mangaId=${manga.mal_id}&type=${manga.type}`}
                                     className="block"
                                 >
                                     <Button className="w-full h-12 gap-2 font-black text-sm bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02]">
@@ -469,7 +469,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                         {sortedChapters.map((chapter) => (
                                             <Link 
                                                 key={chapter.id} 
-                                                href={`/manga/read/${chapter.id}?mangaId=${manga.mal_id}&type=${manga.type}`}
+                                                href={`/manga/read/${encodeURIComponent(chapter.id)}?mangaId=${manga.mal_id}&type=${manga.type}`}
                                                 className="flex flex-col p-5 bg-card hover:bg-accent hover:text-accent-foreground transition-all duration-200 group relative overflow-hidden"
                                             >
                                                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -605,7 +605,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 >
                     <div className="bg-background/95 backdrop-blur-2xl border border-border rounded-2xl p-4 shadow-2xl flex flex-col gap-3 ring-1 ring-border/50">
                         {chapters.length > 0 && (
-                            <Link href={`/manga/read/${chapters[chapters.length - 1].id}?mangaId=${manga.mal_id}&type=${manga.type}`} className="w-full">
+                            <Link href={`/manga/read/${encodeURIComponent(chapters[chapters.length - 1].id)}?mangaId=${manga.mal_id}&type=${manga.type}`} className="w-full">
                                 <Button className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-white font-black uppercase tracking-widest shadow-lg shadow-orange-500/20 active:scale-95 transition-transform">
                                     <BookOpen className="h-6 w-6 mr-2" /> Start Reading
                                 </Button>

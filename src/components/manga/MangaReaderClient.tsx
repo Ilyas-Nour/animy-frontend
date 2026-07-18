@@ -112,6 +112,11 @@ function MangaReaderContent() {
         }
     }, [mangaType])
 
+    // On mount, decode the chapter ID from the URL param
+    useEffect(() => {
+        setSelectedChapter(decodeURIComponent(chapterId))
+    }, [chapterId])
+
     // Save mode preference when it changes
     useEffect(() => {
         if (isMounted) {
@@ -148,7 +153,8 @@ function MangaReaderContent() {
                 setLoading(true)
                 const timestamp = new Date().getTime()
                 // Use our internal proxy to bypass CORS and improve reliability
-                const res = await fetch(`/api/proxy?url=/manga/read/${chapterId}&t=${timestamp}`)
+                const encodedPath = encodeURIComponent(`/manga/read/${chapterId}`)
+                const res = await fetch(`/api/proxy?url=${encodedPath}&t=${timestamp}`)
                 
                 if (!res.ok) {
                     throw new Error(`Server returned ${res.status}`)
@@ -203,16 +209,16 @@ function MangaReaderContent() {
     const nextChapter = useCallback(() => {
         const currentIndex = chapters.findIndex(c => c.id === chapterId)
         if (currentIndex > 0) {
-            const nextId = chapters[currentIndex - 1].id
-            router.push(`/manga/read/${nextId}?mangaId=${mangaId}`)
+                    const nextId = chapters[currentIndex - 1].id
+            router.push(`/manga/read/${encodeURIComponent(nextId)}?mangaId=${mangaId}`)
         }
     }, [chapters, chapterId, mangaId, router])
 
     const prevChapter = useCallback(() => {
         const currentIndex = chapters.findIndex(c => c.id === chapterId)
         if (currentIndex !== -1 && currentIndex < chapters.length - 1) {
-            const prevId = chapters[currentIndex + 1].id
-            router.push(`/manga/read/${prevId}?mangaId=${mangaId}`)
+                    const prevId = chapters[currentIndex + 1].id
+            router.push(`/manga/read/${encodeURIComponent(prevId)}?mangaId=${mangaId}`)
         }
     }, [chapters, chapterId, mangaId, router])
 
@@ -309,7 +315,7 @@ function MangaReaderContent() {
                                 {chapters.length > 0 && (
                                     <select
                                         value={chapterId}
-                                        onChange={(e) => router.push(`/manga/read/${e.target.value}?mangaId=${mangaId}`)}
+                                        onChange={(e) => router.push(`/manga/read/${encodeURIComponent(e.target.value)}?mangaId=${mangaId}`)}
                                         className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-primary/50 max-w-[150px] md:max-w-[200px]"
                                     >
                                         {chapters.map((c) => (

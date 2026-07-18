@@ -45,7 +45,7 @@ const SOURCE_CONFIG: Record<string, { label: string; accent: string; dot: string
     otakuusa:     { label: 'Otaku USA',    accent: 'text-orange-400',    dot: 'bg-orange-400' },
     crunchyroll:  { label: 'Crunchyroll',  accent: 'text-amber-400',     dot: 'bg-amber-400' },
     animeherald:  { label: 'Anime Herald', accent: 'text-emerald-400',   dot: 'bg-emerald-400' },
-    comicbook:    { label: 'Comic Book',   accent: 'text-rose-400',      dot: 'bg-rose-400' },
+    comicbook:    { label: 'ComicBook',   accent: 'text-rose-400',      dot: 'bg-rose-400' },
 }
 const SOURCES = Object.keys(SOURCE_CONFIG)
 
@@ -66,6 +66,7 @@ export function NewsFeed() {
     const [searchInput, setSearchInput] = useState('')
     const [searchQuery, setSearchQuery] = useState('')
     const [cursor, setCursor] = useState<string | undefined>()
+    const [hasError, setHasError] = useState(false)
     const [selectedArticle, setSelectedArticle] = useState<AniNewsItem | null>(null)
     const debounceRef = useRef<NodeJS.Timeout>()
 
@@ -73,27 +74,29 @@ export function NewsFeed() {
         source?: string; query?: string; cursor?: string; append?: boolean
     } = {}) => {
         const { source = activeSource, query = searchQuery, cursor: cur, append = false } = opts
-        if (!append) { setIsLoading(true); setArticles([]) }
+        if (!append) { setIsLoading(true); setArticles([]); setHasError(false) }
         else setIsLoadingMore(true)
 
         try {
-            const p = new URLSearchParams({ limit: '16' })
+            const p = new URLSearchParams({ limit: '20' })
             if (source !== 'all') p.set('source', source)
             if (query) p.set('q', query)
             if (cur) p.set('cursor', cur)
 
             const res = await fetch(`/api/news?${p}`)
-            if (!res.ok) throw new Error()
+            if (!res.ok) throw new Error(`News fetch failed: ${res.status}`)
             const json = await res.json()
 
             const items: AniNewsItem[] = json.data || []
             const newMeta: NewsMeta = json.meta || { total: 0, returned: 0, hasMore: false }
 
+            if (items.length === 0 && !append) setHasError(true)
             setArticles(prev => append ? [...prev, ...items] : items)
             setMeta(newMeta)
             setCursor(newMeta.nextCursor)
-        } catch {
-            // silent
+        } catch (err) {
+            console.error('[NewsFeed] Failed to fetch news:', err)
+            if (!append) setHasError(true)
         } finally {
             setIsLoading(false)
             setIsLoadingMore(false)
@@ -107,6 +110,7 @@ export function NewsFeed() {
         setActiveSource(src)
         setSearchInput('')
         setSearchQuery('')
+        setCursor(undefined)
         fetchNews({ source: src, query: '' })
     }
 
