@@ -83,6 +83,12 @@ async function handleRequest(request: NextRequest) {
     responseHeaders.delete('content-encoding');
     responseHeaders.delete('transfer-encoding');
 
+    // Inject massive-scale Edge Caching for public GET requests
+    if (request.method === 'GET' && !request.headers.has('authorization') && response.ok) {
+      // Tell Vercel/Cloudflare CDN to cache this for 5 minutes, and serve stale for up to 1 day while fetching fresh in background
+      responseHeaders.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
+    }
+
     return new NextResponse(responseBody, {
       status: response.status,
       statusText: response.statusText,
