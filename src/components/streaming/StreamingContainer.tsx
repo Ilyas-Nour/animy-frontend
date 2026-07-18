@@ -32,6 +32,11 @@ export function StreamingContainer({
     const [selectedEp, setSelectedEp] = useState<Episode | null>(null)
     const [episodes, setEpisodes] = useState<Episode[]>([])
     const [subDub, setSubDub] = useState<'sub' | 'dub'>('sub')
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+
+    const sortedEpisodes = sortOrder === 'asc' 
+        ? episodes 
+        : [...episodes].reverse()
 
     useEffect(() => {
         setMounted(true)
@@ -183,9 +188,20 @@ export function StreamingContainer({
                         <h3 className="text-[10px] font-black text-white/25 uppercase tracking-[0.2em]">Episodes</h3>
                         <div className="h-px flex-1 bg-white/5" />
                         <span className="text-[10px] font-bold text-white/20">{episodes.length} total</span>
+                        
+                        {episodes.length > 0 && (
+                            <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                                className="h-6 px-2 text-[10px] uppercase font-bold tracking-wider text-white/40 hover:text-white"
+                            >
+                                {sortOrder === 'asc' ? 'Oldest First' : 'Newest First'}
+                            </Button>
+                        )}
                     </div>
                     <EpisodeGrid
-                        episodes={episodes}
+                        episodes={sortedEpisodes}
                         currentEpisode={currentEpNumber}
                         onEpisodeSelect={(ep) => setSelectedEp(ep)}
                         fallbackImage={animePoster}

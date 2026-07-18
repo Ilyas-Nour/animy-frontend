@@ -40,11 +40,9 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
     const [isMounted, setIsMounted] = useState(false)
     const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
 
-    const sortedChapters = [...chapters].sort((a, b) => {
-        const numA = parseFloat(a.chapterNumber || a.chapter) || 0
-        const numB = parseFloat(b.chapterNumber || b.chapter) || 0
-        return sortOrder === 'desc' ? numB - numA : numA - numB
-    })
+    const sortedChapters = sortOrder === 'desc' 
+        ? chapters 
+        : [...chapters].reverse()
 
     useEffect(() => {
         setIsMounted(true)

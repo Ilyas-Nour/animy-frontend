@@ -2,7 +2,7 @@
 export const runtime = 'edge';
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, MessageSquare, Send, CheckCircle, Loader2, MapPin, Phone, Github, Linkedin } from 'lucide-react'
+import { Mail, MessageSquare, Send, CheckCircle, Loader2, MapPin, Phone, Github, Twitter } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -111,7 +111,8 @@ export default function ContactPage() {
 
             <div className="flex space-x-4">
               {[
-                { icon: Github, href: 'https://github.com/animy-xyz' },
+                { icon: Github, href: 'https://github.com/Ilyas-Nour' },
+                { icon: Twitter, href: 'https://x.com/ElislamIlyas' },
               ].map((item, i) => (
                 <a
                   key={i}

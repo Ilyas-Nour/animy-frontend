@@ -44,13 +44,13 @@ export function Footer() {
   const socialIcons = [
     {
       icon: Github,
-      href: 'https://github.com/animy-xyz',
+      href: 'https://github.com/Ilyas-Nour',
       label: 'GitHub',
       color: 'hover:text-white hover:bg-white/10'
     },
     {
       icon: Twitter,
-      href: 'https://twitter.com/animy_xyz',
+      href: 'https://x.com/ElislamIlyas',
       label: 'Twitter',
       color: 'hover:text-[#1DA1F2] hover:bg-[#1DA1F2]/10'
     },

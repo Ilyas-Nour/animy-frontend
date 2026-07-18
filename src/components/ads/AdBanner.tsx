@@ -25,7 +25,6 @@ export function AdBanner({ zoneId = "261105", className = "" }: AdBannerProps) {
 
   return (
     <div className={`w-full flex flex-col items-center justify-center my-8 ${className}`}>
-      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mb-2 font-bold">Advertisement</span>
       <div 
         className="w-full max-w-4xl min-h-[90px] md:min-h-[120px] bg-card/30 backdrop-blur-sm border border-white/5 rounded-2xl flex items-center justify-center overflow-hidden shadow-inner relative"
       >
