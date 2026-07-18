@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 // import { Inter } from 'next/font/google'
 import './globals.css'
 import ClientLayoutWrapper from './ClientLayoutWrapper'
-
+import { AdController } from '@/components/ads/AdController'
 
 
 // const inter = Inter({ subsets: ['latin'] })
@@ -121,28 +121,7 @@ export default async function RootLayout({ children, params }: { children: React
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
-        {/* Global Monetag Scripts */}
-        <Script 
-          src="https://al5sm.com/tag.min.js" 
-          data-zone="11344223" 
-          async 
-          data-cfasync="false"
-          strategy="afterInteractive"
-        />
-        <Script 
-          src="https://al5sm.com/tag.min.js" 
-          data-zone="11343530" 
-          async 
-          data-cfasync="false"
-          strategy="afterInteractive"
-        />
-        <Script 
-          src="https://nap5k.com/tag.min.js" 
-          data-zone="11344161" 
-          async 
-          data-cfasync="false"
-          strategy="afterInteractive"
-        />
+        <AdController />
       </body>
     </html>
   )
