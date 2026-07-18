@@ -65,7 +65,16 @@ export default function PrivacyPage() {
                                     <hr className="border-white/5" />
 
                                     <section>
-                                        <h2 className="text-2xl font-bold text-primary mb-4">3. Use of Data</h2>
+                                        <h2 className="text-2xl font-bold text-primary mb-4">3. Third-Party Advertising</h2>
+                                        <p className="text-muted-foreground leading-relaxed mb-4">
+                                            We use third-party advertising companies (such as Adsterra) to serve ads when you visit our website. These companies may use information (not including your name, address, email address, or telephone number) about your visits to this and other websites in order to provide advertisements about goods and services of interest to you.
+                                        </p>
+                                    </section>
+
+                                    <hr className="border-white/5" />
+
+                                    <section>
+                                        <h2 className="text-2xl font-bold text-primary mb-4">4. Use of Data</h2>
                                         <p className="text-muted-foreground leading-relaxed mb-4">
                                             Animy uses the collected data for various purposes:
                                         </p>

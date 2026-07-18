@@ -44,15 +44,15 @@ export function Footer() {
   const socialIcons = [
     {
       icon: Github,
-      href: 'https://github.com/Ilyas-Nour',
+      href: 'https://github.com/animy-xyz',
       label: 'GitHub',
       color: 'hover:text-white hover:bg-white/10'
     },
     {
-      icon: Linkedin,
-      href: 'https://www.linkedin.com/in/ilyasnour/',
-      label: 'LinkedIn',
-      color: 'hover:text-[#0077B5] hover:bg-[#0077B5]/10'
+      icon: Twitter,
+      href: 'https://twitter.com/animy_xyz',
+      label: 'Twitter',
+      color: 'hover:text-[#1DA1F2] hover:bg-[#1DA1F2]/10'
     },
     {
       icon: (props: any) => (
@@ -190,7 +190,7 @@ export function Footer() {
               <span>© {currentYear} <span className="text-foreground/80 font-semibold tracking-tight">Animy</span>. All Rights Reserved.</span>
               <span className="hidden md:block h-1 w-1 rounded-full bg-border" />
               <span className="flex items-center gap-1">
-                Built by <Link href="https://github.com/Ilyas-Nour" target="_blank" className="text-foreground/80 hover:text-primary transition-colors font-medium">Ilyas Nour</Link>
+                Built by <Link href="https://github.com/animy-xyz" target="_blank" className="text-foreground/80 hover:text-primary transition-colors font-medium">Animy Team</Link>
               </span>
             </div>
 

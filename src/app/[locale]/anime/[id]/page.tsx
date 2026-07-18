@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { AnimeDetailsClient } from '@/components/anime/AnimeDetailsClient'
 import { notFound } from 'next/navigation'
 import JsonLd from '@/components/seo/JsonLd'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
@@ -107,9 +108,11 @@ export default async function AnimeDetailPage({ params }: { params: Promise<{ id
   return (
     <>
       <JsonLd data={jsonLd} />
+      <AdBanner zoneId="261105" className="max-w-7xl mx-auto px-4" />
       <AnimeDetailsClient
         anime={anime}
       />
+      <AdBanner zoneId="261105" className="max-w-7xl mx-auto px-4 mt-12" />
     </>
   )
 }

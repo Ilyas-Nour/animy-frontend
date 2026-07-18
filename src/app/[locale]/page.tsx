@@ -12,6 +12,7 @@ import { ErrorMessage } from '@/components/common/ErrorMessage'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
 import { StructuredData, generateOrganizationSchema, generateWebSiteSchema } from '@/components/seo/StructuredData'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 // Modular Components
 import { HeroSpotlight } from '@/components/home/HeroSpotlight'
@@ -112,6 +113,10 @@ export default function HomePage() {
 
       {/* 2. Mobile Category Swiper - Sticky */}
       <CategorySwiper onCategoryChange={setActiveCategory} />
+
+      <div className="container mt-8">
+        <AdBanner zoneId="261105" className="mb-12" />
+      </div>
 
       {/* 3. High-Impact Interaction Area (Guest vs User) */}
       {!hasMounted ? (

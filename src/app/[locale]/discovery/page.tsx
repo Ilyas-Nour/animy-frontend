@@ -8,6 +8,7 @@ import { InterestGrid } from '@/components/discovery/InterestGrid'
 import { DiscoveryFeed } from '@/components/discovery/DiscoveryFeed'
 import api from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 export default function DiscoveryPage() {
     const { user, refreshProfile, isLoading: authLoading } = useAuth()
@@ -81,6 +82,8 @@ export default function DiscoveryPage() {
                         </div>
                     </div>
                 </header>
+
+                <AdBanner zoneId="261105" className="mb-8" />
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col items-center justify-center">

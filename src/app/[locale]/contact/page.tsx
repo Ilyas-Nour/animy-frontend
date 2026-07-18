@@ -111,8 +111,7 @@ export default function ContactPage() {
 
             <div className="flex space-x-4">
               {[
-                { icon: Github, href: 'https://github.com/Ilyas-Nour' },
-                { icon: Linkedin, href: 'https://www.linkedin.com/in/ilyasnour/' }
+                { icon: Github, href: 'https://github.com/animy-xyz' },
               ].map((item, i) => (
                 <a
                   key={i}

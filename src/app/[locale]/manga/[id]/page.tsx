@@ -5,6 +5,7 @@ import { Manga } from '@/types/manga'
 import { notFound } from 'next/navigation'
 import MangaDetailsClient from '@/components/manga/MangaDetailsClient'
 import JsonLd from '@/components/seo/JsonLd'
+import { AdBanner } from '@/components/ads/AdBanner'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
@@ -145,10 +146,12 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
     return (
         <>
             <JsonLd data={jsonLd} />
+            <AdBanner zoneId="261105" className="max-w-7xl mx-auto px-4" />
             <MangaDetailsClient 
                 manga={manga} 
                 characters={characters} 
             />
+            <AdBanner zoneId="261105" className="max-w-7xl mx-auto px-4 mt-12" />
         </>
     )
 }
