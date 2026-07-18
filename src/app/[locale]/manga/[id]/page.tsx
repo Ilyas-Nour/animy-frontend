@@ -9,19 +9,19 @@ import { AdBanner } from '@/components/ads/AdBanner'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-    const { id } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string, id: string }> }): Promise<Metadata> {
+    const { locale, id } = await params;
     const manga = await getMangaFull(id)
     if (!manga) return { title: 'Manga Not Found | Animy' }
     
     const title = `Read ${manga.title} Manga Online Free - All Chapters | Animy`
     const description = manga.synopsis 
-        ? `${manga.synopsis.slice(0, 150)}... Read ${manga.title} online in high quality on Animy.`
-        : `Read ${manga.title} manga online for free on Animy. Latest chapters, characters, and reviews.`
+        ? `${manga.synopsis.slice(0, 150)}... Read ${manga.title} manga online for free in high quality on Animy.`
+        : `Read ${manga.title} manga online for free in high quality on Animy. Latest chapters, characters, and reviews.`
     
     const keywords = [
         manga.title,
-        `read ${manga.title} online`,
+        `read ${manga.title} online free`,
         `${manga.title} chapters`,
         `${manga.title} manga online`,
         `${manga.title} english`,
@@ -31,16 +31,20 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         'free manga'
     ]
 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz';
+    const canonicalUrl = locale === 'en' ? `${baseUrl}/manga/${id}` : `${baseUrl}/${locale}/manga/${id}`;
+
     return {
         title,
         description,
         keywords,
         alternates: {
-            canonical: `https://animy.xyz/manga/${id}`,
+            canonical: canonicalUrl,
             languages: {
-                'en': `https://animy.xyz/manga/${id}`,
-                'es': `https://animy.xyz/es/manga/${id}`,
-                'fr': `https://animy.xyz/fr/manga/${id}`,
+                'en': `${baseUrl}/manga/${id}`,
+                'es': `${baseUrl}/es/manga/${id}`,
+                'fr': `${baseUrl}/fr/manga/${id}`,
+                'x-default': `${baseUrl}/manga/${id}`
             }
         },
         openGraph: {

@@ -23,38 +23,43 @@ async function getAnimeFull(id: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string, id: string }> }): Promise<Metadata> {
+  const { locale, id } = await params;
   const anime = await getAnimeFull(id)
   if (!anime) return { title: 'Anime Not Found | Animy' }
   
-  const title = `Watch ${anime.title} Online - All Episodes Free | Animy`
+  const title = `Watch ${anime.title} (English Sub/Dub) Online Free in HD | Animy`
   const description = anime.synopsis 
-    ? `${anime.synopsis.slice(0, 150)}... Watch ${anime.title} in high quality with English sub and dub on Animy.`
-    : `Watch ${anime.title} online for free on Animy. Get the latest episodes, characters, and reviews.`
+    ? `${anime.synopsis.slice(0, 150)}... Watch ${anime.title} episodes online in high quality with English sub and dub on Animy for free.`
+    : `Watch ${anime.title} online for free in HD on Animy. Get the latest episodes, characters, and reviews.`
   
   const keywords = [
     anime.title,
-    `watch ${anime.title} online`,
+    `watch ${anime.title} online free`,
     `${anime.title} episodes`,
     `${anime.title} english sub`,
     `${anime.title} english dub`,
+    `${anime.title} hd`,
     ...(anime.genres?.map((g: any) => g.name) || []),
     ...(anime.studios?.map((s: any) => s.name) || []),
     'anime streaming',
     'free anime'
   ]
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz';
+  const canonicalUrl = locale === 'en' ? `${baseUrl}/anime/${id}` : `${baseUrl}/${locale}/anime/${id}`;
+
   return {
     title,
     description,
     keywords,
     alternates: {
-      canonical: `https://animy.xyz/anime/${id}`,
+      canonical: canonicalUrl,
       languages: {
-        'en': `https://animy.xyz/anime/${id}`,
-        'es': `https://animy.xyz/es/anime/${id}`,
-        'fr': `https://animy.xyz/fr/anime/${id}`,
+        'en': `${baseUrl}/anime/${id}`,
+        'es': `${baseUrl}/es/anime/${id}`,
+        'fr': `${baseUrl}/fr/anime/${id}`,
+        'x-default': `${baseUrl}/anime/${id}`
       }
     },
     openGraph: {

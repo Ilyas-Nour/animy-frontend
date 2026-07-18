@@ -49,6 +49,8 @@ export function EpisodeGrid({ episodes, currentEpisode, onEpisodeSelect, fallbac
                                 <img
                                     src={episode.image || fallbackImage}
                                     alt={`Episode ${episode.number}`}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />

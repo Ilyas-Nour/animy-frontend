@@ -64,8 +64,8 @@ export async function GET(
       addUrl(page.path, page.changefreq, page.priority);
     }
   }
-  // Shards 1-50: Anime Pages
-  else if (shardId >= 1 && shardId <= 50) {
+  // Shards 1-1000: Anime Pages
+  else if (shardId >= 1 && shardId <= 1000) {
     try {
       const page = shardId;
       const animeRes = await fetch(`${apiUrl}/anime/popular?page=${page}`, { next: { revalidate: 3600 } });
@@ -85,10 +85,10 @@ export async function GET(
       console.error(`Sitemap anime shard ${shardId} failed:`, error);
     }
   }
-  // Shards 51-100: Manga Pages
-  else if (shardId >= 51 && shardId <= 100) {
+  // Shards 1001-2000: Manga Pages
+  else if (shardId >= 1001 && shardId <= 2000) {
     try {
-      const page = shardId - 50;
+      const page = shardId - 1000;
       const mangaRes = await fetch(`${apiUrl}/manga/top?filter=bypopularity&page=${page}`, { next: { revalidate: 3600 } });
       if (mangaRes.ok) {
         const mangaData = await mangaRes.json();

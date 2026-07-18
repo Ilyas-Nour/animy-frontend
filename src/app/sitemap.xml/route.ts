@@ -9,7 +9,7 @@ export async function GET() {
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
   xml += `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
   
-  for (let i = 0; i <= 100; i++) {
+  for (let i = 0; i <= 2000; i++) {
     xml += `  <sitemap>\n`;
     xml += `    <loc>${baseUrl}/sitemap/${i}.xml</loc>\n`;
     xml += `    <lastmod>${currentDate}</lastmod>\n`;

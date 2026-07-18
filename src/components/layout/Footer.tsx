@@ -19,6 +19,7 @@ export function Footer() {
         { name: 'Seasonal Chart', href: '/seasons' },
         { name: 'Manga Library', href: '/manga' },
         { name: 'Movie Archive', href: '/movies' },
+        { name: 'A-Z Directory', href: '/directory' },
       ],
     },
     {
