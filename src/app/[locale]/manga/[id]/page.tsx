@@ -67,11 +67,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 async function getMangaFull(id: string) {
     try {
         const res = await fetch(`${API_URL}/manga/${id}/full`)
-        if (!res.ok) return null
+        if (!res.ok) {
+            if (res.status === 404) return null
+            throw new Error('Failed to fetch manga')
+        }
         const json = await res.json()
         return json.data
     } catch (error) {
-        return null
+        console.error('Fetch error:', error)
+        throw error // Let Next.js handle the error to prevent caching 500s as 404s
     }
 }
 

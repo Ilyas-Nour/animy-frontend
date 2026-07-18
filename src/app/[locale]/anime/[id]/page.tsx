@@ -18,7 +18,7 @@ async function getAnimeFull(id: string) {
     return json.data
   } catch (error) {
     console.error('Fetch error:', error)
-    return null
+    throw error // Let Next.js handle the error to prevent caching 500s as 404s
   }
 }
 
