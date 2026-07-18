@@ -53,11 +53,24 @@ export default function HomePage() {
     const searchParams = new URLSearchParams(window.location.search);
     const token = searchParams.get('token');
     if (token) {
-      // Clean up URL
+      // Clean up URL without reloading
       window.history.replaceState({}, document.title, window.location.pathname);
-      // We don't have the user object yet, so we just set the token and let AuthContext fetch the profile
+      
+      // Save token and fetch profile smoothly
       localStorage.setItem('token', token);
-      window.location.reload(); // Force full reload so AuthContext picks it up properly
+      import('@/lib/auth').then(({ authService }) => {
+        authService.getProfile().then(user => {
+          login(token, user);
+          
+          // If first time login, redirect to discovery
+          if (!user.interests || user.interests.length === 0) {
+            router.push('/discovery');
+          }
+        }).catch(err => {
+          console.error("Failed to fetch profile after Google Login:", err);
+          window.location.reload(); // Fallback
+        });
+      });
       return;
     }
     
