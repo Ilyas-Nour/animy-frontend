@@ -6,12 +6,11 @@ import Script from 'next/script';
 export function AdController() {
   const pathname = usePathname();
 
-  // Disable pop-under ads entirely on the manga reader and anime watch pages
-  // to prevent interrupting the user experience when scrolling or interacting with the player
-  const isReadingManga = pathname?.includes('/manga/read');
-  const isWatchingAnime = pathname?.includes('/watch') || pathname?.includes('/anime/watch');
+  // Disable pop-under ads on auth and discovery pages
+  const isAuthPage = pathname?.includes('/auth/login') || pathname?.includes('/auth/register');
+  const isDiscoveryPage = pathname?.includes('/discovery');
 
-  if (isReadingManga || isWatchingAnime) {
+  if (isAuthPage || isDiscoveryPage) {
     return null;
   }
 
