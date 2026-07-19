@@ -386,7 +386,7 @@ export function SignupPopup({ isOpen, onClose }: SignupPopupProps) {
                       <div>
                         <h2 className="text-2xl font-black text-white">Check your email!</h2>
                         <p className="text-white/50 text-sm mt-2 max-w-xs mx-auto">
-                          We've sent a verification link to your inbox. Click it to activate your Animy account!
+                          We&apos;ve sent a verification link to your inbox. Click it to activate your Animy account!
                         </p>
                       </div>
                       <button
