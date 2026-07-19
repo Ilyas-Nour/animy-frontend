@@ -269,6 +269,7 @@ export async function GET(request: NextRequest) {
         const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 50)
         const source = searchParams.get('source') || ''
         const q = searchParams.get('q') || ''
+        const imagesOnly = searchParams.get('imagesOnly') === 'true'
         const cursor = parseInt(searchParams.get('cursor') || '0', 10)
 
         // Fetch from all sources in parallel
@@ -289,6 +290,11 @@ export async function GET(request: NextRequest) {
         ]
 
         let merged = mergeAndSort(allItems)
+
+        // Filter by image presence if requested
+        if (imagesOnly) {
+            merged = merged.filter(i => !!i.image)
+        }
 
         // Filter by source
         if (source && source !== 'all') {

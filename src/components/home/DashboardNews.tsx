@@ -126,7 +126,7 @@ export function DashboardNews() {
     useEffect(() => {
         async function fetchLatestNews() {
             try {
-                const res = await fetch('/api/news?limit=4')
+                const res = await fetch('/api/news?limit=4&imagesOnly=true')
                 if (!res.ok) throw new Error()
                 const json = await res.json()
                 setArticles(json.data || [])
