@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         const url = `${BACKEND_API}/manga?${queryParams.toString()}`
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 3600 },
+            next: { revalidate: 0 },
             signal: controller.signal
         })
 
