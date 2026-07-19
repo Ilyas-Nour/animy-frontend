@@ -16,6 +16,7 @@ import { AnimatedLogo } from './AnimatedLogo'
 import { GlobalSearch } from './GlobalSearch'
 import { NotificationBell } from '@/components/Notifications/NotificationBell'
 import { ThemeToggle } from '@/components/providers/ThemeToggle'
+import { SignupPopup } from '@/components/auth/SignupPopup'
 import { useTheme } from 'next-themes'
 
 import {
@@ -29,6 +30,7 @@ import {
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isSignupOpen, setIsSignupOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { theme, setTheme } = useTheme()
@@ -319,12 +321,14 @@ export function Header() {
                   Log in
                 </Button>
               </Link>
-              <Link href="/auth/register" onClick={() => setIsMenuOpen(false)}>
-                <Button className="font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30 rounded-full px-6 transition-all duration-300 hover:-translate-y-0.5">
-                  Sign Up
-                </Button>
-              </Link>
+              <Button
+                onClick={() => { setIsMenuOpen(false); setIsSignupOpen(true) }}
+                className="font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30 rounded-full px-6 transition-all duration-300 hover:-translate-y-0.5"
+              >
+                Sign Up
+              </Button>
             </div>
+            <SignupPopup isOpen={isSignupOpen} onClose={() => setIsSignupOpen(false)} />
           )}
         </div>
 
