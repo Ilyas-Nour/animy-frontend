@@ -270,32 +270,7 @@ export function Header() {
                         <span className="font-medium">Favorite Characters</span>
                       </DropdownMenuItem>
                     </Link>
-                    <Link href="/dashboard/friends">
-                      <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 focus:bg-blue-500/10 focus:text-blue-500 transition-colors flex justify-between items-center">
-                        <div className="flex items-center">
-                          <Users className="mr-2 h-4 w-4" />
-                          <span className="font-medium">Friends</span>
-                        </div>
-                        {requestCount > 0 && (
-                          <span className="bg-red-500/10 text-red-500 text-xs font-bold px-2 py-0.5 rounded-full">
-                            {requestCount} new
-                          </span>
-                        )}
-                      </DropdownMenuItem>
-                    </Link>
-                    <Link href="/chat">
-                      <DropdownMenuItem className="cursor-pointer rounded-md py-2.5 focus:bg-purple-500/10 focus:text-purple-500 transition-colors flex justify-between items-center">
-                        <div className="flex items-center">
-                          <MessageCircle className="mr-2 h-4 w-4" />
-                          <span className="font-medium">Messages</span>
-                        </div>
-                        {unreadCount > 0 && (
-                          <span className="bg-purple-500/10 text-purple-500 text-xs font-bold px-2 py-0.5 rounded-full">
-                            {unreadCount} unread
-                          </span>
-                        )}
-                      </DropdownMenuItem>
-                    </Link>
+
                   </div>
 
                   <DropdownMenuSeparator className="bg-border/50" />
