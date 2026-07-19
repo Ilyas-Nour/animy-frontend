@@ -466,12 +466,11 @@ export function Header() {
                         Log in
                       </Button>
                     </Link>
-                    <Button
-                      onClick={() => { setIsMenuOpen(false); setIsSignupOpen(true) }}
-                      className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 text-sm tracking-wide"
-                    >
-                      Join Now
-                    </Button>
+                    <Link href="/auth/register" onClick={() => setIsMenuOpen(false)} className="w-full">
+                      <Button className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 text-sm tracking-wide">
+                        Join Now
+                      </Button>
+                    </Link>
                   </div>
                 )}
               </div>
