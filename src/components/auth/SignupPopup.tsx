@@ -16,6 +16,7 @@ import {
   PiArrowRightBold,
 } from 'react-icons/pi'
 import { FcGoogle } from 'react-icons/fc'
+import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
 
 const benefits = [
   {
@@ -91,111 +92,112 @@ export function GuestSignupBanner({ delaySeconds = 45 }: GuestSignupBannerProps)
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35 }}
-            className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-md"
             onClick={dismiss}
           />
 
           {/* Modal */}
           <motion.div
             key="card"
-            initial={{ opacity: 0, y: 50, scale: 0.96 }}
+            initial={{ opacity: 0, y: 30, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.96 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 26 }}
-            className="fixed inset-0 z-[201] flex items-center justify-center p-4 pointer-events-none"
+            exit={{ opacity: 0, y: 20, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            className="fixed inset-0 z-[201] flex items-center justify-center p-4 md:p-6 pointer-events-none"
           >
             <div
-              className="pointer-events-auto relative w-full max-w-3xl rounded-[28px] overflow-hidden shadow-[0_32px_100px_rgba(0,0,0,0.8)] border border-white/[0.08]"
+              className="pointer-events-auto relative w-full max-w-[1100px] h-auto md:min-h-[600px] rounded-[32px] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.9)] border border-white/10"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* ─── Anime Background ─────────────────────────────────────── */}
-              <div className="absolute inset-0">
+              {/* ─── Anime Background (Landscape Image) ──────────────── */}
+              <div className="absolute inset-0 bg-[#0a0a14]">
                 <Image
-                  src="/MULTIPLE.jpg"
+                  src="/all.jpg"
                   alt="Anime community"
                   fill
-                  className="object-cover object-center scale-105"
+                  className="object-cover object-[70%_30%] scale-100"
                   priority
                 />
-                {/* Premium multi-layer gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a14]/98 via-[#0a0a14]/85 to-[#0a0a14]/30" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14]/80 via-transparent to-[#0a0a14]/40" />
+                {/* 
+                  Heavy dark gradient on the left half to ensure text is 100% readable.
+                  Fades out smoothly to the right side where the characters are visible.
+                */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#07070c] via-[#07070c]/90 to-transparent w-full md:w-[65%]" />
+                
+                {/* Subtle vignette around the edges of the whole modal */}
+                <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.8)]" />
               </div>
-
-              {/* Top accent bar */}
-              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-violet-500/70 to-transparent" />
 
               {/* ─── Close Button ─────────────────────────────────────────── */}
               <button
                 onClick={dismiss}
                 aria-label="Close"
-                className="absolute top-5 right-5 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] hover:border-white/[0.15] text-white/50 hover:text-white transition-all duration-200 backdrop-blur-sm"
+                className="absolute top-6 right-6 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/80 border border-white/20 hover:border-white/40 text-white/70 hover:text-white transition-all duration-300 backdrop-blur-md"
               >
-                <IoClose className="w-5 h-5" />
+                <IoClose className="w-6 h-6" />
               </button>
 
-              {/* ─── Content ──────────────────────────────────────────────── */}
-              <div className="relative z-10 p-9 md:p-12">
-                {/* Header section */}
-                <div className="mb-7">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-500/[0.12] border border-violet-500/20 mb-5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-                    <span className="text-violet-300 text-xs font-semibold tracking-wide uppercase">Free Forever</span>
-                  </div>
+              {/* ─── Content Container ────────────────────────────────────── */}
+              <div className="relative z-10 flex flex-col justify-center h-full p-8 sm:p-10 md:p-14 md:w-[60%]">
+                
+                {/* Branding */}
+                <div className="mb-8">
+                  <AnimatedLogo innerClassName="text-white scale-125 origin-left" />
+                </div>
 
-                  <h2 className="text-4xl md:text-5xl font-black text-white leading-[1.1] tracking-tight mb-3">
+                {/* Header section */}
+                <div className="mb-8">
+                  <h2 className="text-4xl sm:text-5xl lg:text-[54px] font-black text-white leading-[1.05] tracking-tight mb-4 drop-shadow-xl">
                     Join the{' '}
-                    <span className="relative">
-                      <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+                    <span className="relative inline-block">
+                      <span className="absolute inset-0 bg-gradient-to-r from-violet-500 to-blue-500 blur-lg opacity-50"></span>
+                      <span className="relative bg-gradient-to-r from-violet-300 via-pink-300 to-blue-300 bg-clip-text text-transparent">
                         Animy
                       </span>
                     </span>
-                    {' '}Universe
+                    <br />
+                    Universe
                   </h2>
-                  <p className="text-white/50 text-base leading-relaxed max-w-md">
-                    Your ultimate destination for anime & manga. Create your free account and unlock the full experience.
+                  <p className="text-white/70 text-lg leading-relaxed max-w-[420px] font-medium drop-shadow-md">
+                    Your ultimate destination for anime & manga. Create your free account and unlock the full experience today.
                   </p>
                 </div>
 
                 {/* Benefits grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10 max-w-[500px]">
                   {benefits.map((b, i) => (
                     <motion.div
                       key={b.label}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.05 + i * 0.06 }}
-                      className={`flex items-start gap-3 p-3.5 rounded-2xl bg-gradient-to-br ${b.color} border border-white/[0.06] backdrop-blur-sm`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 + i * 0.05, duration: 0.4 }}
+                      className="flex items-center gap-3.5 group"
                     >
-                      <div className="shrink-0 mt-0.5">
+                      <div className={`shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br ${b.color} border border-white/5 shadow-inner shadow-white/10 flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
                         <b.icon className={`w-5 h-5 ${b.iconColor}`} />
                       </div>
-                      <div>
-                        <p className="text-white/90 text-xs font-bold leading-snug">{b.label}</p>
-                        <p className="text-white/40 text-[11px] mt-0.5 leading-snug">{b.desc}</p>
+                      <div className="flex flex-col">
+                        <span className="text-white/95 text-[13px] font-bold leading-tight tracking-wide">{b.label}</span>
+                        <span className="text-white/40 text-[11px] leading-snug mt-0.5">{b.desc}</span>
                       </div>
                     </motion.div>
                   ))}
                 </div>
 
-                {/* Divider */}
-                <div className="w-full h-px bg-white/[0.06] mb-7" />
-
                 {/* CTA buttons */}
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-4 max-w-[500px]">
                   {/* Primary CTA */}
                   <Link
                     href="/auth/register"
                     onClick={dismiss}
-                    className="flex-1 group relative flex items-center justify-center gap-2.5 h-13 px-6 py-3.5 rounded-2xl overflow-hidden font-bold text-sm text-white transition-all duration-300"
+                    className="flex-1 group relative flex items-center justify-center gap-2.5 h-14 px-8 rounded-2xl overflow-hidden font-bold text-base text-white transition-all duration-300 shadow-[0_0_40px_rgba(139,92,246,0.3)] hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] hover:-translate-y-0.5"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-violet-600 to-pink-600 group-hover:from-blue-500 group-hover:via-violet-500 group-hover:to-pink-500 transition-all duration-300" />
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-blue-400/20 via-violet-400/20 to-pink-400/20 transition-opacity duration-300" />
-                    <div className="absolute inset-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-violet-600 to-pink-600 transition-all duration-300" />
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-blue-400 via-violet-400 to-pink-400 mix-blend-overlay transition-opacity duration-300" />
                     <span className="relative flex items-center gap-2.5">
-                      <PiLightningFill className="w-4 h-4 text-yellow-300" />
-                      Create Free Account
-                      <PiArrowRightBold className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                      <PiLightningFill className="w-5 h-5 text-yellow-300" />
+                      Create Account
+                      <PiArrowRightBold className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                     </span>
                   </Link>
 
@@ -205,29 +207,26 @@ export function GuestSignupBanner({ delaySeconds = 45 }: GuestSignupBannerProps)
                       dismiss()
                       window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`
                     }}
-                    className="flex-1 group relative flex items-center justify-center gap-3 h-13 px-6 py-3.5 rounded-2xl font-semibold text-sm text-white/90 hover:text-white bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.10] hover:border-white/[0.20] transition-all duration-200 backdrop-blur-sm overflow-hidden"
+                    className="flex-1 group relative flex items-center justify-center gap-3 h-14 px-6 rounded-2xl font-bold text-[15px] text-white/90 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300 backdrop-blur-md hover:-translate-y-0.5"
                   >
-                    <div className="absolute inset-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]" />
-                    <FcGoogle className="w-5 h-5 shrink-0" />
-                    <span>Continue with Google</span>
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <FcGoogle className="w-6 h-6 shrink-0 drop-shadow-md" />
+                    <span>Google</span>
                   </button>
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-white/30 text-xs mt-5">
-                  Already have an account?{' '}
+                <div className="mt-6 flex items-center gap-6 text-sm">
+                  <span className="text-white/40">Already a member?</span>
                   <Link
                     href="/auth/login"
                     onClick={dismiss}
-                    className="text-violet-400 hover:text-violet-300 font-semibold transition-colors"
+                    className="text-violet-400 hover:text-violet-300 font-bold transition-colors"
                   >
-                    Sign in
+                    Sign in here
                   </Link>
-                  {' · '}
-                  <button onClick={dismiss} className="text-white/30 hover:text-white/50 transition-colors">
-                    Maybe later
-                  </button>
-                </p>
+                </div>
+
               </div>
             </div>
           </motion.div>
