@@ -191,7 +191,7 @@ export function Header() {
               >
                 <MessageCircle className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold text-white bg-red-500 rounded-full shadow-[0_0_0_2px_hsl(var(--background))] px-1">
+                  <span className="absolute top-0.5 right-0.5 flex items-center justify-center min-w-[14px] h-[14px] text-[8px] font-bold text-white bg-red-500 rounded-full shadow-[0_0_0_2px_hsl(var(--background))] px-0.5">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
@@ -205,7 +205,7 @@ export function Header() {
               >
                 <Users className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                 {requestCount > 0 && (
-                  <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold text-white bg-primary rounded-full shadow-[0_0_0_2px_hsl(var(--background))] px-1">
+                  <span className="absolute top-0.5 right-0.5 flex items-center justify-center min-w-[14px] h-[14px] text-[8px] font-bold text-white bg-primary rounded-full shadow-[0_0_0_2px_hsl(var(--background))] px-0.5">
                     {requestCount > 99 ? '99+' : requestCount}
                   </span>
                 )}
