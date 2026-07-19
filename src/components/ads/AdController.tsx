@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import Script from 'next/script';
 
 export function AdController() {
@@ -9,6 +10,20 @@ export function AdController() {
   // Disable pop-under ads on auth and discovery pages
   const isAuthPage = pathname?.includes('/auth/login') || pathname?.includes('/auth/register');
   const isDiscoveryPage = pathname?.includes('/discovery');
+
+  useEffect(() => {
+    // If we navigate to a no-ad page, but ads are already loaded in memory (SPA navigation),
+    // force a hard reload to completely clear them from the browser.
+    if (isAuthPage || isDiscoveryPage) {
+      const adScriptsExist = document.querySelector('script[src*="al5sm.com"]') || 
+                             document.querySelector('script[src*="nap5k.com"]') || 
+                             document.querySelector('script[src*="n6wxm.com"]');
+      
+      if (adScriptsExist) {
+        window.location.reload();
+      }
+    }
+  }, [isAuthPage, isDiscoveryPage]);
 
   if (isAuthPage || isDiscoveryPage) {
     return null;
