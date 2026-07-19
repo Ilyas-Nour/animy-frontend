@@ -315,22 +315,19 @@ export function Header() {
 
             </div>
           ) : (
-            <>
-              <div className="flex items-center space-x-3 ml-2">
-                <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="ghost" className="font-semibold hover:bg-accent hover:text-primary rounded-full px-5 transition-colors duration-300">
-                    Log in
-                  </Button>
-                </Link>
-                <Button
-                  onClick={() => { setIsMenuOpen(false); setIsSignupOpen(true) }}
-                  className="font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30 rounded-full px-6 transition-all duration-300 hover:-translate-y-0.5"
-                >
-                  Sign Up
+            <div className="flex items-center space-x-3 ml-2">
+              <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>
+                <Button variant="ghost" className="font-semibold hover:bg-accent hover:text-primary rounded-full px-5 transition-colors duration-300">
+                  Log in
                 </Button>
-              </div>
-              <SignupPopup isOpen={isSignupOpen} onClose={() => setIsSignupOpen(false)} />
-            </>
+              </Link>
+              <Button
+                onClick={() => { setIsMenuOpen(false); setIsSignupOpen(true) }}
+                className="font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30 rounded-full px-6 transition-all duration-300 hover:-translate-y-0.5"
+              >
+                Sign Up
+              </Button>
+            </div>
           )}
         </div>
 
@@ -472,11 +469,12 @@ export function Header() {
                         Log in
                       </Button>
                     </Link>
-                    <Link href="/auth/register" onClick={() => setIsMenuOpen(false)} className="w-full">
-                      <Button className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 text-sm tracking-wide">
-                        Join Now
-                      </Button>
-                    </Link>
+                    <Button
+                      onClick={() => { setIsMenuOpen(false); setIsSignupOpen(true) }}
+                      className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 text-sm tracking-wide"
+                    >
+                      Join Now
+                    </Button>
                   </div>
                 )}
               </div>
@@ -484,6 +482,8 @@ export function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SignupPopup isOpen={isSignupOpen} onClose={() => setIsSignupOpen(false)} />
     </header>
   )
 }
