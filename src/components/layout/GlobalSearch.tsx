@@ -69,8 +69,8 @@ export function GlobalSearch() {
 
         if (animeRes.status === 'fulfilled' && animeRes.value.ok) {
           const json = await animeRes.value.json()
-          // Backend returns { data: [...], pagination: {...} }
-          const items = json?.data || []
+          // Backend returns { success: true, data: { pagination: {...}, data: [...] } }
+          const items = json?.data?.data || json?.data || []
           setAnimeResults(Array.isArray(items) ? items.slice(0, 4) : [])
         } else {
           setAnimeResults([])
@@ -78,7 +78,7 @@ export function GlobalSearch() {
 
         if (mangaRes.status === 'fulfilled' && mangaRes.value.ok) {
           const json = await mangaRes.value.json()
-          const items = json?.data || []
+          const items = json?.data?.data || json?.data || []
           setMangaResults(Array.isArray(items) ? items.slice(0, 4) : [])
         } else {
           setMangaResults([])
