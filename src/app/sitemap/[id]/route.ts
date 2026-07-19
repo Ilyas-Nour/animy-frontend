@@ -75,14 +75,21 @@ export async function GET(
           ? animeData.data
           : (Array.isArray(animeData.data?.data) ? animeData.data.data : []);
         
+        if (items.length === 0) {
+          return new NextResponse('Empty sitemap shard', { status: 404 });
+        }
+        
         for (const anime of items) {
           if (anime && anime.mal_id) {
             addUrl(`/anime/${anime.mal_id}`, 'weekly', '0.8');
           }
         }
+      } else {
+        return new NextResponse('Backend error', { status: 500 });
       }
     } catch (error) {
       console.error(`Sitemap anime shard ${shardId} failed:`, error);
+      return new NextResponse('Internal error', { status: 500 });
     }
   }
   // Shards 1001-2000: Manga Pages
@@ -96,14 +103,21 @@ export async function GET(
           ? mangaData.data
           : (Array.isArray(mangaData.data?.data) ? mangaData.data.data : []);
         
+        if (items.length === 0) {
+          return new NextResponse('Empty sitemap shard', { status: 404 });
+        }
+        
         for (const manga of items) {
           if (manga && manga.mal_id) {
             addUrl(`/manga/${manga.mal_id}`, 'weekly', '0.8');
           }
         }
+      } else {
+        return new NextResponse('Backend error', { status: 500 });
       }
     } catch (error) {
       console.error(`Sitemap manga shard ${shardId} failed:`, error);
+      return new NextResponse('Internal error', { status: 500 });
     }
   }
 

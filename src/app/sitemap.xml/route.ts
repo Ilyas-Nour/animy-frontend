@@ -9,11 +9,17 @@ export async function GET() {
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
   xml += `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
   
-  for (let i = 0; i <= 2000; i++) {
-    xml += `  <sitemap>\n`;
-    xml += `    <loc>${baseUrl}/sitemap/${i}.xml</loc>\n`;
-    xml += `    <lastmod>${currentDate}</lastmod>\n`;
-    xml += `  </sitemap>\n`;
+  // Shard 0 is static pages
+  xml += `  <sitemap>\n    <loc>${baseUrl}/sitemap/0.xml</loc>\n    <lastmod>${currentDate}</lastmod>\n  </sitemap>\n`;
+  
+  // Shards 1-10 for top anime (pages 1-10)
+  for (let i = 1; i <= 10; i++) {
+    xml += `  <sitemap>\n    <loc>${baseUrl}/sitemap/${i}.xml</loc>\n    <lastmod>${currentDate}</lastmod>\n  </sitemap>\n`;
+  }
+  
+  // Shards 1001-1010 for top manga (pages 1-10)
+  for (let i = 1001; i <= 1010; i++) {
+    xml += `  <sitemap>\n    <loc>${baseUrl}/sitemap/${i}.xml</loc>\n    <lastmod>${currentDate}</lastmod>\n  </sitemap>\n`;
   }
   
   xml += `</sitemapindex>`;
