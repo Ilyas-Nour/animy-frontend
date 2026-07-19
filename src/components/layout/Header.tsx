@@ -183,12 +183,40 @@ export function Header() {
             <div className="h-10 w-32 bg-accent animate-pulse rounded-full opacity-20" />
           ) : user ? (
             <div className="flex items-center space-x-1">
+              {/* Messages */}
+              <Link
+                href="/chat"
+                className="relative p-2 rounded-full hover:bg-accent transition-colors duration-300 group"
+                title="Messages"
+              >
+                <MessageCircle className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold text-white bg-red-500 rounded-full shadow-[0_0_0_2px_hsl(var(--background))] px-1">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Friends */}
+              <Link
+                href="/dashboard/friends"
+                className="relative p-2 rounded-full hover:bg-accent transition-colors duration-300 group"
+                title="Friends"
+              >
+                <Users className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                {requestCount > 0 && (
+                  <span className="absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold text-white bg-primary rounded-full shadow-[0_0_0_2px_hsl(var(--background))] px-1">
+                    {requestCount > 99 ? '99+' : requestCount}
+                  </span>
+                )}
+              </Link>
+
               {/* Notifications */}
               <div className="relative p-1">
                 <NotificationBell />
               </div>
 
-              <div className="h-6 w-[1px] bg-border/60 mx-2" />
+              <div className="h-6 w-[1px] bg-border/60 mx-1" />
 
               {/* User Dropdown */}
               <DropdownMenu>
