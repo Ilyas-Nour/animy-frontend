@@ -18,59 +18,53 @@ interface StreamingContainerProps {
     animeTitle: string
     animeTitleEnglish?: string
     animePoster?: string
-    malId: number          // This should be idMal (real MAL ID) — passed as anime.idMal || anime.mal_id
-    anilistId?: number     // The AniList ID (same as anime.mal_id in the page)
+    malId: number          // This should be idMal (real MAL ID)
+    anilistId?: number     // The AniList ID
     totalEpisodes?: number
     tmdbId?: string | number
 }
 
-// ── Mirror definitions ──────────────────────────────────────────────────────
-// Each mirror is tried in order. "malId" and "anilistId" are substituted at runtime.
-// All of these are proven to work as of 2026.
+// ── Embed Context & Mirror Definitions ──────────────────────────────────────
+interface EmbedContext {
+    malId: number
+    anilistId: number
+    ep: number
+    subDub: 'sub' | 'dub'
+    tmdbId?: string
+    season?: number
+    tmdbEp?: number
+}
+
 interface Mirror {
     name: string
-    buildUrl: (malId: number, anilistId: number, ep: number, subDub: 'sub' | 'dub') => string
-    requiresMalId?: boolean  // If true, skip when malId is 0 or same as anilistId
+    buildUrl: (ctx: EmbedContext) => string | null
 }
 
 const MIRRORS: Mirror[] = [
     {
         name: 'VidLink',
-        requiresMalId: true,
-        buildUrl: (malId, _, ep, subDub) =>
-            `https://vidlink.pro/anime/${malId}/${ep}/${subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`,
+        buildUrl: (ctx) => `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`
+    },
+    {
+        name: 'VidLink (MAL)',
+        buildUrl: (ctx) => ctx.malId ? `https://vidlink.pro/anime/${ctx.malId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true` : null
     },
     {
         name: '2Embed',
-        requiresMalId: true,
-        buildUrl: (malId, _, ep) =>
-            `https://www.2embed.skin/embedtv/${malId}&s=1&e=${ep}`,
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://www.2embed.skin/embedtv/${ctx.tmdbId}&s=${ctx.season}&e=${ctx.tmdbEp}` : null
     },
     {
         name: 'VidSrc',
-        requiresMalId: true,
-        buildUrl: (malId, _, ep) =>
-            `https://vidsrc.me/embed/anime/${malId}/${ep}`,
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.me/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&ep=${ctx.tmdbEp}` : null
     },
     {
         name: 'VidSrc.to',
-        requiresMalId: true,
-        buildUrl: (malId, _, ep) =>
-            `https://vidsrc.to/embed/anime/${malId}/${ep}`,
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.to/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}` : null
     },
     {
         name: 'Embed.su',
-        requiresMalId: true,
-        buildUrl: (malId, _, ep) =>
-            `https://embed.su/embed/anime/${malId}/${ep}`,
-    },
-    // AniList-ID-based fallbacks (work even without MAL ID)
-    {
-        name: 'VidLink (AL)',
-        requiresMalId: false,
-        buildUrl: (_, anilistId, ep, subDub) =>
-            `https://vidlink.pro/anime/${anilistId}/${ep}/${subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`,
-    },
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://embed.su/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}` : null
+    }
 ]
 
 export function StreamingContainer({
@@ -79,6 +73,7 @@ export function StreamingContainer({
     malId,
     anilistId,
     totalEpisodes = 0,
+    tmdbId: initialTmdbId,
 }: StreamingContainerProps) {
     const [mounted, setMounted] = useState(false)
     const [selectedEp, setSelectedEp] = useState<Episode | null>(null)
@@ -88,11 +83,13 @@ export function StreamingContainer({
     const [mirrorIndex, setMirrorIndex] = useState(0)
     const [iframeKey, setIframeKey] = useState(0) // Force iframe refresh
 
-    // The real AniList ID — fallback to malId if anilistId not explicitly passed
+    // AniZip mappings: Maps absolute episode number -> { season, tmdbEp, tmdbId }
+    const [aniZipMap, setAniZipMap] = useState<Record<number, { s: number, e: number, tId: string }>>({})
+
     const realAnilistId = anilistId || malId
-    // The real MAL ID — if malId equals anilistId, it means the backend returned the AniList ID as mal_id
-    // In that case malId is NOT a valid MAL ID for VidLink etc.
-    const realMalId = malId && malId !== realAnilistId ? malId : 0
+    // Some endpoints pass anilistId as malId when MAL ID is unknown.
+    // If malId is 0 or equal to anilistId (and we know it's not a valid MAL match for some reason), it's safe to just use malId.
+    const realMalId = malId
 
     const sortedEpisodes = sortOrder === 'asc'
         ? episodes
@@ -110,13 +107,48 @@ export function StreamingContainer({
         setSelectedEp(virtualEpisodes[0])
     }, [totalEpisodes, realAnilistId])
 
-    // Build available mirrors based on what IDs we have
-    const availableMirrors = MIRRORS.filter(m => {
-        if (m.requiresMalId && realMalId === 0) return false
-        return true
-    })
+    // Fetch AniZip mapping dynamically
+    useEffect(() => {
+        if (!realAnilistId) return
+        fetch(`https://api.ani.zip/mappings?anilist_id=${realAnilistId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data?.episodes) {
+                    const newMap: Record<number, { s: number, e: number, tId: string }> = {}
+                    const baseTmdbId = data.mappings?.themoviedb_id || initialTmdbId
+                    
+                    Object.keys(data.episodes).forEach(key => {
+                        const ep = data.episodes[key]
+                        if (ep.seasonNumber !== undefined && ep.episodeNumber !== undefined) {
+                            newMap[ep.absoluteEpisodeNumber || Number(key)] = {
+                                s: ep.seasonNumber,
+                                e: ep.episodeNumber,
+                                tId: String(baseTmdbId)
+                            }
+                        }
+                    })
+                    setAniZipMap(newMap)
+                }
+            })
+            .catch(err => console.error("AniZip fetch failed:", err))
+    }, [realAnilistId, initialTmdbId])
 
     const currentEpNumber = selectedEp?.number ?? 1
+    
+    // Build the current context
+    const epMapping = aniZipMap[currentEpNumber]
+    const currentContext: EmbedContext = {
+        malId: realMalId,
+        anilistId: realAnilistId,
+        ep: currentEpNumber,
+        subDub,
+        tmdbId: epMapping?.tId || (initialTmdbId ? String(initialTmdbId) : undefined),
+        season: epMapping?.s,
+        tmdbEp: epMapping?.e
+    }
+
+    // Filter working mirrors
+    const availableMirrors = MIRRORS.filter(m => m.buildUrl(currentContext) !== null)
 
     const prevEp = () => {
         const prev = episodes.find(e => e.number === currentEpNumber - 1)
@@ -151,7 +183,7 @@ export function StreamingContainer({
     }
 
     const activeMirror = availableMirrors[Math.min(mirrorIndex, availableMirrors.length - 1)]
-    const embedUrl = activeMirror.buildUrl(realMalId, realAnilistId, currentEpNumber, subDub)
+    const embedUrl = activeMirror.buildUrl(currentContext) || ''
 
     return (
         <div className="space-y-5">
