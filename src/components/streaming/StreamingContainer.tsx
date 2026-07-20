@@ -42,18 +42,6 @@ interface Mirror {
 
 const MIRRORS: Mirror[] = [
     {
-        name: 'VidLink',
-        buildUrl: (ctx) => `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`
-    },
-    {
-        name: 'VidLink (MAL)',
-        buildUrl: (ctx) => ctx.malId ? `https://vidlink.pro/anime/${ctx.malId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true` : null
-    },
-    {
-        name: '2Embed',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://www.2embed.skin/embedtv/${ctx.tmdbId}&s=${ctx.season}&e=${ctx.tmdbEp}` : null
-    },
-    {
         name: 'VidSrc',
         buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.me/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&ep=${ctx.tmdbEp}` : null
     },
@@ -62,8 +50,16 @@ const MIRRORS: Mirror[] = [
         buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.to/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}` : null
     },
     {
-        name: 'Embed.su',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://embed.su/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}` : null
+        name: '2Embed',
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://www.2embed.skin/embedtv/${ctx.tmdbId}&s=${ctx.season}&e=${ctx.tmdbEp}` : null
+    },
+    {
+        name: 'VidLink',
+        buildUrl: (ctx) => `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`
+    },
+    {
+        name: 'VidLink (MAL)',
+        buildUrl: (ctx) => ctx.malId ? `https://vidlink.pro/anime/${ctx.malId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true` : null
     }
 ]
 
@@ -248,6 +244,8 @@ export function StreamingContainer({
                     src={embedUrl}
                     className="w-full h-full border-0 bg-black"
                     allowFullScreen
+                    webkitAllowFullScreen={true}
+                    mozAllowFullScreen={true}
                     allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
                     referrerPolicy="no-referrer-when-downgrade"
                 />
