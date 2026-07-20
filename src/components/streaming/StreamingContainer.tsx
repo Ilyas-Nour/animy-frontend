@@ -244,8 +244,6 @@ export function StreamingContainer({
                     src={embedUrl}
                     className="w-full h-full border-0 bg-black"
                     allowFullScreen
-                    webkitAllowFullScreen={true}
-                    mozAllowFullScreen={true}
                     allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
                     referrerPolicy="no-referrer-when-downgrade"
                 />
