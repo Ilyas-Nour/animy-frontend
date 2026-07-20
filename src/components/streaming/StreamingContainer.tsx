@@ -64,24 +64,12 @@ const MIRRORS: Mirror[] = [
         buildUrl: (malId, _, ep) =>
             `https://embed.su/embed/anime/${malId}/${ep}`,
     },
-    {
-        name: 'VidSrc.xyz',
-        requiresMalId: true,
-        buildUrl: (malId, _, ep) =>
-            `https://vidsrc.xyz/embed/anime?mal=${malId}&season=1&episode=${ep}`,
-    },
     // AniList-ID-based fallbacks (work even without MAL ID)
     {
         name: 'VidLink (AL)',
         requiresMalId: false,
         buildUrl: (_, anilistId, ep, subDub) =>
             `https://vidlink.pro/anime/${anilistId}/${ep}/${subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`,
-    },
-    {
-        name: 'AnimeFlix',
-        requiresMalId: false,
-        buildUrl: (_, anilistId, ep) =>
-            `https://animeflixplus.com/embed/anime/${anilistId}/${ep}`,
     },
 ]
 
@@ -230,7 +218,6 @@ export function StreamingContainer({
                     allowFullScreen
                     allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
                     referrerPolicy="no-referrer-when-downgrade"
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-presentation"
                 />
             </div>
 
