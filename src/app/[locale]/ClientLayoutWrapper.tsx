@@ -41,6 +41,13 @@ export default function ClientLayoutWrapper({ children }: { children: ReactNode 
 
   useEffect(() => {
     setMounted(true)
+
+    // Keep-alive: ping backend every 4 minutes to prevent
+    // Hugging Face Spaces free-tier from sleeping (causes blank pages).
+    const ping = () => fetch('/api/ping', { method: 'GET', cache: 'no-store' }).catch(() => null)
+    ping() // Immediate ping on mount
+    const interval = setInterval(ping, 4 * 60 * 1000) // Every 4 minutes
+    return () => clearInterval(interval)
   }, [])
 
   if (!mounted) {

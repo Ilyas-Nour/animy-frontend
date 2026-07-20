@@ -70,18 +70,37 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 async function getMangaFull(id: string) {
-    try {
-        const res = await fetch(`${API_URL}/manga/${id}/full`)
-        if (!res.ok) {
-            if (res.status === 404) return null
-            throw new Error('Failed to fetch manga')
+    const maxRetries = 3
+    let lastError: Error | null = null
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 20000)
+
+            const res = await fetch(`${API_URL}/manga/${id}/full`, {
+                signal: controller.signal,
+                cache: 'no-store',
+            })
+            clearTimeout(timeoutId)
+
+            if (!res.ok) {
+                if (res.status === 404) return null
+                throw new Error(`Backend error: ${res.status}`)
+            }
+            const json = await res.json()
+            return json.data
+        } catch (error: any) {
+            lastError = error
+            if (error?.message?.includes('404')) return null
+            if (attempt < maxRetries) {
+                await new Promise(r => setTimeout(r, attempt * 1000))
+            }
         }
-        const json = await res.json()
-        return json.data
-    } catch (error) {
-        console.error('Fetch error:', error)
-        throw error // Let Next.js handle the error to prevent caching 500s as 404s
     }
+
+    console.error('getMangaFull failed after retries:', lastError?.message)
+    throw lastError
 }
 
 async function getCharacters(id: string) {
