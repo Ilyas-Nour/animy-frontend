@@ -20,7 +20,7 @@ export function constructMetadata({
   title = SITE_NAME,
   description = SITE_DESCRIPTION,
   image = '/og-image.png',
-  icons = '/favicon.ico',
+  icons = '/FINAL-LOGO.png',
   noIndex = false,
   type = 'website',
   keywords = ['anime', 'manga', 'watch anime', 'read manga', 'anime community'],
