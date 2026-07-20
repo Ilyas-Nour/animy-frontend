@@ -33,6 +33,7 @@ import { getAvatarUrl, cn } from '@/lib/utils'
 import Image from 'next/image'
 import UserAvatar from '@/components/common/UserAvatar'
 import Link from 'next/link'
+import { GlobalSettingsModal } from '@/components/admin/GlobalSettingsModal'
 
 interface AnalyticsItem {
     id: number
@@ -69,12 +70,18 @@ interface Stats {
 export default function AdminDashboard() {
     const [stats, setStats] = useState<Stats | null>(null)
     const [loading, setLoading] = useState(true)
+    const [activities, setActivities] = useState<any[]>([])
+    const [settingsOpen, setSettingsOpen] = useState(false)
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await api.get('/admin/stats')
-                setStats(res.data?.data || res.data)
+                const [resStats, resActs] = await Promise.all([
+                    api.get('/admin/stats'),
+                    api.get('/admin/activities')
+                ])
+                setStats(resStats.data?.data || resStats.data)
+                setActivities(resActs.data?.data || resActs.data || [])
             } catch (error) {
                 console.error('Failed to fetch admin stats', error)
             } finally {
@@ -535,16 +542,50 @@ export default function AdminDashboard() {
                         </div>
                         <h4 className="text-primary-foreground font-black text-xs uppercase tracking-widest mb-4 relative z-10">Admin Tools</h4>
                         <div className="grid gap-2 relative z-10">
-                            <Button variant="secondary" size="sm" className="w-full justify-start gap-2 h-9 rounded-lg font-bold">
+                            <Button variant="secondary" size="sm" onClick={() => setSettingsOpen(true)} className="w-full justify-start gap-2 h-9 rounded-lg font-bold">
                                 <Settings className="w-3.5 h-3.5" /> Site Global Settings
-                            </Button>
-                            <Button variant="secondary" size="sm" className="w-full justify-start gap-2 h-9 rounded-lg font-bold">
-                                <Database className="w-3.5 h-3.5" /> Maintenance Mode
                             </Button>
                         </div>
                     </Card>
+
+                    {/* Recent Activities */}
+                    <Card className="shadow-md bg-background/40 backdrop-blur-sm rounded-3xl mt-8 overflow-hidden">
+                        <CardHeader className="bg-muted/30 pb-4">
+                            <CardTitle className="text-[11px] font-black flex items-center gap-2 uppercase tracking-[0.2em] opacity-50">
+                                <Activity className="w-4 h-4" />
+                                Recent Activity
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="divide-y divide-border/20 max-h-[400px] overflow-y-auto">
+                                {activities.length > 0 ? activities.map((act) => (
+                                    <div key={act.id} className="p-4 flex items-start gap-3 hover:bg-muted/10 transition-colors">
+                                        <UserAvatar user={act.user} size="sm" />
+                                        <div className="flex-1 space-y-1">
+                                            <p className="text-sm font-medium">
+                                                <span className="font-bold">{act.user?.username || 'System'}</span> 
+                                                {' '}performed{' '}
+                                                <span className="font-bold text-primary">{act.action}</span>
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {new Date(act.createdAt).toLocaleString()}
+                                                {act.ipAddress && ` • ${act.ipAddress}`}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="p-8 text-center text-muted-foreground text-sm italic">
+                                        No recent activities.
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+
                 </div>
             </div>
+
+            <GlobalSettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
         </div>
     )
 }

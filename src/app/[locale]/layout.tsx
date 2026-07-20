@@ -96,11 +96,56 @@ import {routing} from '@/i18n/routing';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import Script from 'next/script';
 
+import { cookies } from 'next/headers';
+
+async function getSystemSettings() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'}/admin/settings`, {
+      next: { revalidate: 60 }
+    });
+    if (!res.ok) return {};
+    return await res.json();
+  } catch (error) {
+    return {};
+  }
+}
+
 export default async function RootLayout({ children, params }: { children: React.ReactNode, params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   
   if (!routing.locales.includes(locale as any)) {
     notFound();
+  }
+
+  const settings = await getSystemSettings();
+  const isMaintenance = settings.MAINTENANCE_MODE === true;
+
+  if (isMaintenance) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value || cookieStore.get('token')?.value;
+    let isAdmin = false;
+    if (token) {
+      try {
+        const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+        isAdmin = payload.role === 'ADMIN';
+      } catch (e) {}
+    }
+
+    if (!isAdmin) {
+      return (
+        <html lang={locale}>
+          <body className="antialiased bg-background text-foreground flex items-center justify-center min-h-screen p-4">
+              <div className="text-center space-y-4 max-w-md">
+                <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                </div>
+                <h1 className="text-3xl font-black text-primary uppercase tracking-wider">Maintenance Mode</h1>
+                <p className="text-muted-foreground">Animy is currently undergoing scheduled maintenance to improve your experience. We will be back online shortly!</p>
+              </div>
+          </body>
+        </html>
+      );
+    }
   }
 
   const messages = await getMessages();
