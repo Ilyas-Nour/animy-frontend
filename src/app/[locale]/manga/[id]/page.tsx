@@ -7,6 +7,8 @@ import MangaDetailsClient from '@/components/manga/MangaDetailsClient'
 import JsonLd from '@/components/seo/JsonLd'
 import { AdBanner } from '@/components/ads/AdBanner'
 
+import { constructMetadata } from '@/lib/seo-utils'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string, id: string }> }): Promise<Metadata> {
@@ -14,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     const manga = await getMangaFull(id)
     if (!manga) return { title: 'Manga Not Found | Animy' }
     
-    const title = `Read ${manga.title} Manga Online Free - All Chapters | Animy`
+    const title = `Read ${manga.title} Manga Online Free - All Chapters`
     const description = manga.synopsis 
         ? `${manga.synopsis.slice(0, 150)}... Read ${manga.title} manga online for free in high quality on Animy.`
         : `Read ${manga.title} manga online for free in high quality on Animy. Latest chapters, characters, and reviews.`
@@ -31,42 +33,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         'free manga'
     ]
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz';
-    const canonicalUrl = locale === 'en' ? `${baseUrl}/manga/${id}` : `${baseUrl}/${locale}/manga/${id}`;
-
-    return {
-        title,
-        description,
-        keywords,
-        alternates: {
-            canonical: canonicalUrl,
-            languages: {
-                'en': `${baseUrl}/manga/${id}`,
-                'es': `${baseUrl}/es/manga/${id}`,
-                'fr': `${baseUrl}/fr/manga/${id}`,
-                'x-default': `${baseUrl}/manga/${id}`
-            }
-        },
-        openGraph: {
-            title,
-            description,
-            type: 'book',
-            images: [
-                {
-                    url: manga.images?.jpg?.large_image_url || '',
-                    width: 600,
-                    height: 900,
-                    alt: manga.title,
-                }
-            ]
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title,
-            description,
-            images: [manga.images?.jpg?.large_image_url || ''],
-        }
-    }
+    return constructMetadata({
+      title,
+      description,
+      keywords,
+      image: manga.images?.jpg?.large_image_url || '/og-image.png',
+      type: 'book',
+      canonicalPath: `manga/${id}`,
+      locale
+    });
 }
 
 async function getMangaFull(id: string) {
@@ -127,8 +102,8 @@ async function getChapters(id: string) {
     }
 }
 
-export default async function MangaDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
+export default async function MangaDetailPage({ params }: { params: Promise<{ id: string, locale: string }> }) {
+    const { id, locale } = await params;
     
     // Fetch core data in parallel for speed, but leave chapters for the client
     const [rawManga, characters] = await Promise.all([
@@ -148,23 +123,51 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
         external: rawManga.external || []
     }
 
-    const jsonLd = {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz';
+
+    const jsonLd = [
+      {
+          '@context': 'https://schema.org',
+          '@type': 'Book',
+          name: manga.title,
+          description: manga.synopsis,
+          image: manga.images?.jpg?.large_image_url,
+          genre: manga.genres?.map((g: any) => g.name),
+          author: manga.authors?.map((a: any) => ({ '@type': 'Person', name: a.name })),
+          datePublished: manga.published?.from,
+          aggregateRating: manga.score ? {
+              '@type': 'AggregateRating',
+              ratingValue: manga.score,
+              reviewCount: manga.scored_by || 50,
+              bestRating: 10,
+              worstRating: 1
+          } : undefined
+      },
+      {
         '@context': 'https://schema.org',
-        '@type': 'Book',
-        name: manga.title,
-        description: manga.synopsis,
-        image: manga.images?.jpg?.large_image_url,
-        genre: manga.genres?.map((g: any) => g.name),
-        author: manga.authors?.map((a: any) => ({ '@type': 'Person', name: a.name })),
-        datePublished: manga.published?.from,
-        aggregateRating: manga.score ? {
-            '@type': 'AggregateRating',
-            ratingValue: manga.score,
-            reviewCount: manga.scored_by || 50,
-            bestRating: 10,
-            worstRating: 1
-        } : undefined
-    }
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: baseUrl
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Manga',
+            item: `${baseUrl}/manga`
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: manga.title,
+            item: `${baseUrl}/manga/${id}`
+          }
+        ]
+      }
+    ];
 
     return (
         <>

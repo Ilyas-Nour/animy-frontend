@@ -1,25 +1,23 @@
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz'
 
     return {
         rules: [
             {
                 userAgent: '*',
-                allow: '/',
+                allow: ['/', '/_next/static/', '/api/og/'],
                 disallow: [
-                    '/api/',
                     '/admin/',
                     '/dashboard/settings',
-                    '/_next/',
                     '/private/',
                 ],
             },
             {
                 userAgent: 'Googlebot',
-                allow: '/',
-                disallow: ['/api/', '/admin/', '/dashboard/settings'],
+                allow: ['/', '/_next/static/'],
+                disallow: ['/admin/', '/dashboard/settings', '/private/'],
             },
         ],
         sitemap: `${baseUrl}/sitemap.xml`,

@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { NewsArticleModal } from './NewsArticleModal'
 import { ShareNewsModal } from './ShareNewsModal'
 import { toast } from 'sonner'
+import Image from 'next/image'
 
 // ─────────────────────────────────────────────────────────
 // Types
@@ -360,10 +361,13 @@ function FeaturedCard({ article, onOpen }: { article: AniNewsItem; onOpen: (a: A
                 <>
                     {/* Responsive image height */}
                     <div className="relative w-full h-52 sm:h-72 md:h-80 overflow-hidden">
-                        <img
+                        <Image
                             src={article.image!}
                             alt={article.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
+                            priority
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
                             onError={() => setImgError(true)}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
@@ -429,12 +433,13 @@ function ImageCard({ article, index, onOpen }: { article: AniNewsItem; index: nu
             className="group flex flex-col rounded-2xl overflow-hidden cursor-pointer bg-card border border-border/30 hover:border-border/60 transition-all duration-300 hover:-translate-y-0.5"
         >
             <div className="relative w-full aspect-video overflow-hidden bg-secondary/30 shrink-0">
-                <img
+                <Image
                     src={article.image!}
                     alt={article.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                     onError={() => setImgError(true)}
-                    loading="lazy"
                 />
             </div>
             <div className="flex flex-col flex-1 p-4">

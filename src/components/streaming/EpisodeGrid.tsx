@@ -2,6 +2,7 @@
 
 import { Play, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 interface Episode {
     id: string
@@ -46,12 +47,12 @@ export function EpisodeGrid({ episodes, currentEpisode, onEpisodeSelect, fallbac
                         {/* Episode Image (if available or fallback) */}
                         {(episode.image || fallbackImage) && (
                             <div className="absolute inset-0">
-                                <img
-                                    src={episode.image || fallbackImage}
+                                <Image
+                                    src={episode.image || fallbackImage!}
                                     alt={`Episode ${episode.number}`}
-                                    loading="lazy"
-                                    decoding="async"
-                                    className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity"
+                                    fill
+                                    className="object-cover opacity-40 group-hover:opacity-60 transition-opacity"
+                                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                             </div>

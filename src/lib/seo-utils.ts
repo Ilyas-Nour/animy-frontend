@@ -1,204 +1,91 @@
-/**
- * SEO Utility Functions
- * Helper functions for generating SEO-friendly content
- */
+import { Metadata } from 'next';
 
 const SITE_NAME = 'Animy';
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://animy.com';
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz';
 const SITE_DESCRIPTION = 'Discover, track, and discuss your favorite anime and manga. Join the ultimate anime community.';
 
-export interface SEOConfig {
-    title?: string;
-    description?: string;
-    keywords?: string[];
-    image?: string;
-    type?: 'website' | 'article' | 'profile';
-    author?: string;
-    publishedTime?: string;
-    modifiedTime?: string;
+export interface SEOProps {
+  title?: string;
+  description?: string;
+  image?: string;
+  icons?: string;
+  noIndex?: boolean;
+  type?: 'website' | 'article' | 'video.tv_show' | 'book' | 'profile';
+  keywords?: string[];
+  canonicalPath?: string;
+  locale?: string;
 }
 
-/**
- * Generate page title with site name
- */
-export function generateTitle(pageTitle?: string): string {
-    if (!pageTitle) return `${SITE_NAME} - Discover Your Next Favorite Anime`;
-    return `${pageTitle} | ${SITE_NAME}`;
-}
+export function constructMetadata({
+  title = SITE_NAME,
+  description = SITE_DESCRIPTION,
+  image = '/og-image.png',
+  icons = '/favicon.ico',
+  noIndex = false,
+  type = 'website',
+  keywords = ['anime', 'manga', 'watch anime', 'read manga', 'anime community'],
+  canonicalPath = '',
+  locale = 'en',
+}: SEOProps = {}): Metadata {
+  const fullTitle = title === SITE_NAME ? SITE_NAME : `${title} | ${SITE_NAME}`;
+  
+  // Clean canonical path (remove leading slash if present)
+  const cleanPath = canonicalPath.startsWith('/') ? canonicalPath.slice(1) : canonicalPath;
+  
+  // Base Canonical URL (e.g., https://animy.xyz/anime/123)
+  const canonicalUrl = locale === 'en' 
+    ? `${SITE_URL}/${cleanPath}`
+    : `${SITE_URL}/${locale}/${cleanPath}`;
 
-/**
- * Generate meta description with proper length
- */
-export function generateDescription(content: string, maxLength: number = 160): string {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength - 3) + '...';
-}
-
-/**
- * Generate keywords from content
- */
-export function generateKeywords(items: string[]): string {
-    return items.join(', ');
-}
-
-/**
- * Generate canonical URL
- */
-export function generateCanonicalUrl(path: string): string {
-    const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    return `${SITE_URL}${cleanPath}`;
-}
-
-/**
- * Generate Open Graph metadata
- */
-export function generateOpenGraph(config: SEOConfig) {
-    return {
-        title: config.title || SITE_NAME,
-        description: config.description || SITE_DESCRIPTION,
-        url: SITE_URL,
-        siteName: SITE_NAME,
-        images: config.image ? [
-            {
-                url: config.image,
-                width: 1200,
-                height: 630,
-                alt: config.title || SITE_NAME,
-            }
-        ] : [],
-        locale: 'en_US',
-        type: config.type || 'website',
-    };
-}
-
-/**
- * Generate Twitter Card metadata
- */
-export function generateTwitterCard(config: SEOConfig) {
-    return {
-        card: 'summary_large_image',
-        title: config.title || SITE_NAME,
-        description: config.description || SITE_DESCRIPTION,
-        images: config.image ? [config.image] : [],
-        creator: '@animy',
-    };
-}
-
-/**
- * Generate anime-specific metadata
- */
-export function generateAnimeMetadata(anime: {
-    title: string;
-    synopsis?: string;
-    image?: string;
-    genres?: string[];
-    score?: number;
-}) {
-    const title = generateTitle(anime.title);
-    const description = generateDescription(
-        anime.synopsis || `Watch ${anime.title} and discover more anime on Animy.`,
-        160
-    );
-    const keywords = [
-        anime.title,
-        'anime',
-        'watch anime',
-        'anime streaming',
-        ...(anime.genres || []),
-    ];
-
-    return {
-        title,
-        description,
-        keywords: generateKeywords(keywords),
-        openGraph: generateOpenGraph({
-            title: anime.title,
-            description,
-            image: anime.image,
-            type: 'website',
-        }),
-        twitter: generateTwitterCard({
-            title: anime.title,
-            description,
-            image: anime.image,
-        }),
-    };
-}
-
-/**
- * Generate manga-specific metadata
- */
-export function generateMangaMetadata(manga: {
-    title: string;
-    synopsis?: string;
-    image?: string;
-    genres?: string[];
-    score?: number;
-}) {
-    const title = generateTitle(manga.title);
-    const description = generateDescription(
-        manga.synopsis || `Read ${manga.title} and discover more manga on Animy.`,
-        160
-    );
-    const keywords = [
-        manga.title,
-        'manga',
-        'read manga',
-        'manga online',
-        ...(manga.genres || []),
-    ];
-
-    return {
-        title,
-        description,
-        keywords: generateKeywords(keywords),
-        openGraph: generateOpenGraph({
-            title: manga.title,
-            description,
-            image: manga.image,
-            type: 'website',
-        }),
-        twitter: generateTwitterCard({
-            title: manga.title,
-            description,
-            image: manga.image,
-        }),
-    };
-}
-
-/**
- * Generate character-specific metadata
- */
-export function generateCharacterMetadata(character: {
-    name: string;
-    about?: string;
-    image?: string;
-}) {
-    const title = generateTitle(character.name);
-    const description = generateDescription(
-        character.about || `Learn about ${character.name} and discover more anime characters on Animy.`,
-        160
-    );
-
-    return {
-        title,
-        description,
-        openGraph: generateOpenGraph({
-            title: character.name,
-            description,
-            image: character.image,
-            type: 'profile',
-        }),
-        twitter: generateTwitterCard({
-            title: character.name,
-            description,
-            image: character.image,
-        }),
-    };
+  return {
+    title: fullTitle,
+    description,
+    keywords,
+    openGraph: {
+      title: fullTitle,
+      description,
+      type,
+      url: canonicalUrl,
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: fullTitle,
+        }
+      ],
+      siteName: SITE_NAME,
+      locale: locale === 'en' ? 'en_US' : locale === 'es' ? 'es_ES' : locale === 'fr' ? 'fr_FR' : 'en_US',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: fullTitle,
+      description,
+      images: [image],
+      creator: '@animy',
+    },
+    icons,
+    metadataBase: new URL(SITE_URL),
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        'en': `${SITE_URL}/${cleanPath}`,
+        'es': `${SITE_URL}/es/${cleanPath}`,
+        'fr': `${SITE_URL}/fr/${cleanPath}`,
+        'x-default': `${SITE_URL}/${cleanPath}`,
+      }
+    },
+    ...(noIndex && {
+      robots: {
+        index: false,
+        follow: false,
+      }
+    })
+  }
 }
 
 export const SEO_CONSTANTS = {
-    SITE_NAME,
-    SITE_URL,
-    SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  SITE_DESCRIPTION,
 };

@@ -6,6 +6,8 @@ import { notFound } from 'next/navigation'
 import JsonLd from '@/components/seo/JsonLd'
 import { AdBanner } from '@/components/ads/AdBanner'
 
+import { constructMetadata } from '@/lib/seo-utils'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
 async function getAnimeFull(id: string) {
@@ -48,7 +50,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const anime = await getAnimeFull(id)
   if (!anime) return { title: 'Anime Not Found | Animy' }
   
-  const title = `Watch ${anime.title} (English Sub/Dub) Online Free in HD | Animy`
+  const title = `Watch ${anime.title} (English Sub/Dub) Online Free in HD`
   const description = anime.synopsis 
     ? `${anime.synopsis.slice(0, 150)}... Watch ${anime.title} episodes online in high quality with English sub and dub on Animy for free.`
     : `Watch ${anime.title} online for free in HD on Animy. Get the latest episodes, characters, and reviews.`
@@ -66,69 +68,70 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     'free anime'
   ]
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz';
-  const canonicalUrl = locale === 'en' ? `${baseUrl}/anime/${id}` : `${baseUrl}/${locale}/anime/${id}`;
-
-  return {
+  return constructMetadata({
     title,
     description,
     keywords,
-    alternates: {
-      canonical: canonicalUrl,
-      languages: {
-        'en': `${baseUrl}/anime/${id}`,
-        'es': `${baseUrl}/es/anime/${id}`,
-        'fr': `${baseUrl}/fr/anime/${id}`,
-        'x-default': `${baseUrl}/anime/${id}`
-      }
-    },
-    openGraph: {
-      title,
-      description,
-      type: 'video.tv_show',
-      images: [
-        {
-          url: anime.images?.jpg?.large_image_url || '',
-          width: 600,
-          height: 900,
-          alt: anime.title,
-        }
-      ]
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [anime.images?.jpg?.large_image_url || ''],
-    }
-  }
+    image: anime.images?.jpg?.large_image_url || '/og-image.png',
+    type: 'video.tv_show',
+    canonicalPath: `anime/${id}`,
+    locale
+  });
 }
 
-export default async function AnimeDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function AnimeDetailPage({ params }: { params: Promise<{ id: string, locale: string }> }) {
+  const { id, locale } = await params;
   const anime = await getAnimeFull(id)
 
   if (!anime) {
     notFound()
   }
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': anime.type === 'Movie' ? 'Movie' : 'TVSeries',
-    name: anime.title,
-    description: anime.synopsis,
-    image: anime.images?.jpg?.large_image_url,
-    genre: anime.genres?.map((g: any) => g.name),
-    datePublished: anime.aired?.from,
-    author: anime.studios?.map((s: any) => ({ '@type': 'Organization', name: s.name })),
-    aggregateRating: anime.score ? {
-      '@type': 'AggregateRating',
-      ratingValue: anime.score,
-      reviewCount: anime.scored_by || 100,
-      bestRating: 10,
-      worstRating: 1
-    } : undefined
-  }
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz';
+
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': anime.type === 'Movie' ? 'Movie' : 'TVSeries',
+      name: anime.title,
+      description: anime.synopsis,
+      image: anime.images?.jpg?.large_image_url,
+      genre: anime.genres?.map((g: any) => g.name),
+      datePublished: anime.aired?.from,
+      author: anime.studios?.map((s: any) => ({ '@type': 'Organization', name: s.name })),
+      aggregateRating: anime.score ? {
+        '@type': 'AggregateRating',
+        ratingValue: anime.score,
+        reviewCount: anime.scored_by || 100,
+        bestRating: 10,
+        worstRating: 1
+      } : undefined
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: baseUrl
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Anime',
+          item: `${baseUrl}/anime`
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: anime.title,
+          item: `${baseUrl}/anime/${id}`
+        }
+      ]
+    }
+  ];
 
   return (
     <>

@@ -46,9 +46,6 @@ export const metadata: Metadata = {
   creator: 'Animy',
   publisher: 'Animy',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://animy-frontend.pages.dev'),
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     title: 'Animy | Discover Anime, Read Manga & Share with Friends',
     description: 'Discover the best anime series, read the latest manga chapters, and share your favorites with friends on Animy. Your ultimate anime and manga community.',
@@ -112,8 +109,30 @@ export default async function RootLayout({ children, params }: { children: React
 
   const messages = await getMessages();
 
+  // Root JSON-LD for WebSite and SearchAction
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Animy',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz'}/discovery?q={search_term_string}`
+      },
+      'query-input': 'required name=search_term_string'
+    }
+  };
+
   return (
     <html lang={locale}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           <ClientLayoutWrapper>{children}</ClientLayoutWrapper>

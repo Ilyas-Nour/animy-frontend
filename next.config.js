@@ -78,6 +78,11 @@ const nextConfig = {
         hostname: 'i.animepahe.si',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: '**',
+        pathname: '/**',
+      },
     ],
   },
   async headers() {
