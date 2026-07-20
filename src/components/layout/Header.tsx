@@ -146,7 +146,7 @@ export function Header() {
         </nav>
 
         {/* Global Search - Takes up remaining space gracefully */}
-        <div className="flex-1 max-w-md hidden md:block px-4">
+        <div className="flex-1 max-w-xl hidden md:block px-4">
           <GlobalSearch />
         </div>
 

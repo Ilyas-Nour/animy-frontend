@@ -186,7 +186,7 @@ export function GlobalSearch() {
 
           {/* Dropdown */}
           {showResults && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-background/97 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl overflow-hidden z-50">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden z-50">
               {isLoading ? (
                 <div className="flex items-center justify-center p-6 gap-3">
                   <Loader2 className="w-5 h-5 text-primary animate-spin" />
@@ -298,43 +298,43 @@ function ResultItem({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 p-2 w-full text-left rounded-xl hover:bg-accent/50 transition-colors group",
+        "flex items-center gap-4 p-3 w-full text-left rounded-xl hover:bg-accent/80 transition-colors group",
       )}
     >
-      <div className="relative w-10 h-14 rounded-lg overflow-hidden shrink-0 bg-secondary border border-border/30">
+      <div className="relative w-14 h-20 rounded-lg overflow-hidden shrink-0 bg-secondary border border-border/50">
         {imgUrl ? (
-          <Image src={imgUrl} alt={item.title} fill className="object-cover" sizes="40px" />
+          <Image src={imgUrl} alt={item.title} fill className="object-cover" sizes="56px" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             {mediaType === 'anime'
-              ? <Tv className="w-4 h-4 text-muted-foreground/40" />
-              : <BookOpen className="w-4 h-4 text-muted-foreground/40" />}
+              ? <Tv className="w-5 h-5 text-muted-foreground/40" />
+              : <BookOpen className="w-5 h-5 text-muted-foreground/40" />}
           </div>
         )}
       </div>
       <div className="flex flex-col flex-1 min-w-0">
         <span className={cn(
-          "text-sm font-bold truncate transition-colors",
+          "text-base font-bold truncate transition-colors",
           mediaType === 'anime' ? "group-hover:text-primary" : "group-hover:text-purple-500"
         )}>
           {item.title}
         </span>
         {item.title_english && item.title_english !== item.title && (
-          <span className="text-[11px] text-muted-foreground truncate">{item.title_english}</span>
+          <span className="text-sm text-muted-foreground truncate">{item.title_english}</span>
         )}
-        <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
           {item.score ? (
-            <div className="flex items-center gap-1 text-yellow-500 font-semibold">
-              <Star className="w-3 h-3 fill-yellow-500" />
+            <div className="flex items-center gap-1 text-yellow-500 font-bold">
+              <Star className="w-3.5 h-3.5 fill-yellow-500" />
               {item.score}
             </div>
           ) : null}
           {item.type && (
-            <span className="uppercase text-[9px] font-black tracking-wider bg-secondary px-1.5 py-0.5 rounded">
+            <span className="uppercase text-[10px] font-black tracking-wider bg-secondary px-2 py-0.5 rounded">
               {item.type}
             </span>
           )}
-          {year && <span>{year}</span>}
+          {year && <span className="font-medium">{year}</span>}
         </div>
       </div>
     </button>
