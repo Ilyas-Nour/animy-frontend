@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
-import { Settings, Save, AlertCircle } from 'lucide-react'
+import { Settings, Save, AlertCircle, Megaphone, UserPlus, PlayCircle } from 'lucide-react'
 import api from '@/lib/api'
 import { toast } from 'sonner'
 
@@ -16,6 +16,9 @@ interface GlobalSettingsModalProps {
 export function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProps) {
     const [settings, setSettings] = useState<Record<string, any>>({
         MAINTENANCE_MODE: false,
+        ENABLE_REGISTRATION: true,
+        ANNOUNCEMENT_BANNER: '',
+        FEATURED_ANIME_ID: '',
     })
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -31,7 +34,10 @@ export function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProp
         try {
             const res = await api.get('/admin/settings')
             setSettings({
-                MAINTENANCE_MODE: res.data?.MAINTENANCE_MODE === true || res.data?.MAINTENANCE_MODE === 'true'
+                MAINTENANCE_MODE: res.data?.MAINTENANCE_MODE === true || res.data?.MAINTENANCE_MODE === 'true',
+                ENABLE_REGISTRATION: res.data?.ENABLE_REGISTRATION !== false && res.data?.ENABLE_REGISTRATION !== 'false',
+                ANNOUNCEMENT_BANNER: res.data?.ANNOUNCEMENT_BANNER || '',
+                FEATURED_ANIME_ID: res.data?.FEATURED_ANIME_ID || '',
             })
         } catch (error) {
             console.error('Failed to fetch settings', error)
@@ -74,6 +80,7 @@ export function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProp
                     </div>
                 ) : (
                     <div className="space-y-6 py-4">
+                        {/* Maintenance Mode */}
                         <div className="flex items-center justify-between space-x-4 rounded-xl border border-border/40 bg-muted/20 p-4">
                             <div className="space-y-1">
                                 <Label className="flex items-center gap-2 text-base font-bold text-red-500">
@@ -81,7 +88,7 @@ export function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProp
                                     Maintenance Mode
                                 </Label>
                                 <p className="text-xs text-muted-foreground">
-                                    When enabled, normal users will see a maintenance page. Admins can still access the site.
+                                    When enabled, normal users will see a maintenance page.
                                 </p>
                             </div>
                             <Switch
@@ -89,6 +96,54 @@ export function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProp
                                 onCheckedChange={(checked) => setSettings({ ...settings, MAINTENANCE_MODE: checked })}
                                 className="data-[state=checked]:bg-red-500"
                             />
+                        </div>
+
+                        {/* Enable Registration */}
+                        <div className="flex items-center justify-between space-x-4 rounded-xl border border-border/40 bg-muted/20 p-4">
+                            <div className="space-y-1">
+                                <Label className="flex items-center gap-2 text-base font-bold">
+                                    <UserPlus className="w-4 h-4 text-primary" />
+                                    Allow New Registrations
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Toggle this off to prevent new users from signing up.
+                                </p>
+                            </div>
+                            <Switch
+                                checked={settings.ENABLE_REGISTRATION}
+                                onCheckedChange={(checked) => setSettings({ ...settings, ENABLE_REGISTRATION: checked })}
+                            />
+                        </div>
+
+                        {/* Announcement Banner */}
+                        <div className="space-y-3 rounded-xl border border-border/40 bg-muted/20 p-4">
+                            <Label className="flex items-center gap-2 text-base font-bold">
+                                <Megaphone className="w-4 h-4 text-yellow-500" />
+                                Global Announcement Banner
+                            </Label>
+                            <input 
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                placeholder="E.g., Welcome to the new V2 update!" 
+                                value={settings.ANNOUNCEMENT_BANNER}
+                                onChange={(e) => setSettings({ ...settings, ANNOUNCEMENT_BANNER: e.target.value })}
+                            />
+                            <p className="text-xs text-muted-foreground">Leave empty to hide the banner from the top of the site.</p>
+                        </div>
+
+                        {/* Featured Hero Anime */}
+                        <div className="space-y-3 rounded-xl border border-border/40 bg-muted/20 p-4">
+                            <Label className="flex items-center gap-2 text-base font-bold">
+                                <PlayCircle className="w-4 h-4 text-purple-500" />
+                                Featured Hero Anime ID
+                            </Label>
+                            <input 
+                                type="number"
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                placeholder="E.g., 21 (One Piece ID)" 
+                                value={settings.FEATURED_ANIME_ID}
+                                onChange={(e) => setSettings({ ...settings, FEATURED_ANIME_ID: e.target.value })}
+                            />
+                            <p className="text-xs text-muted-foreground">Enter the ID of the anime you want to feature heavily on the homepage.</p>
                         </div>
                     </div>
                 )}

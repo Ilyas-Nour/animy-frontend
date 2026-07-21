@@ -33,7 +33,19 @@ import { getAvatarUrl, cn } from '@/lib/utils'
 import Image from 'next/image'
 import UserAvatar from '@/components/common/UserAvatar'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { GlobalSettingsModal } from '@/components/admin/GlobalSettingsModal'
+
+// Dynamically import charts to ensure the dashboard loads instantly (Zero JS bloat on initial render)
+const AdminCharts = dynamic(() => import('@/components/admin/AdminCharts'), {
+    ssr: false,
+    loading: () => (
+        <div className="grid gap-6 md:grid-cols-2">
+            <div className="h-[400px] bg-muted/20 animate-pulse rounded-2xl" />
+            <div className="h-[400px] bg-muted/20 animate-pulse rounded-2xl" />
+        </div>
+    )
+})
 
 interface AnalyticsItem {
     id: number
@@ -184,6 +196,11 @@ export default function AdminDashboard() {
             <div className="grid gap-8 lg:grid-cols-12">
                 {/* Left Column: Analytics */}
                 <div className="lg:col-span-8 space-y-8">
+                    
+                    {/* Dynamic Recharts (Highly Performant) */}
+                    <div className="w-full">
+                        <AdminCharts stats={stats} />
+                    </div>
 
                     {/* Top Anime Analytics */}
                     <div className="grid gap-6 md:grid-cols-2">
