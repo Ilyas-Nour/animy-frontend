@@ -76,17 +76,20 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [resStats, resActs] = await Promise.all([
-                    api.get('/admin/stats'),
-                    api.get('/admin/activities')
-                ])
+                const resStats = await api.get('/admin/stats')
                 setStats(resStats.data?.data || resStats.data)
-                setActivities(resActs.data?.data || resActs.data || [])
             } catch (error) {
                 console.error('Failed to fetch admin stats', error)
-            } finally {
-                setLoading(false)
             }
+            
+            try {
+                const resActs = await api.get('/admin/activities')
+                setActivities(resActs.data?.data || resActs.data || [])
+            } catch (error) {
+                console.error('Failed to fetch admin activities', error)
+            }
+            
+            setLoading(false)
         }
         fetchStats()
     }, [])
