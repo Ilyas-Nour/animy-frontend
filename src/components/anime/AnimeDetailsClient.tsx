@@ -39,6 +39,8 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
     const [actionLoading, setActionLoading] = useState(false)
     const [favoriteCharacters, setFavoriteCharacters] = useState<number[]>([])
     const [scrolled, setScrolled] = useState(false)
+    const [isSynopsisExpanded, setIsSynopsisExpanded] = useState(false)
+    const primaryColor = anime.color || '#8b5cf6'
 
     useEffect(() => {
         const handleScroll = () => {
@@ -437,17 +439,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
                     {/* Left Sidebar: Meta Details */}
                     <div className="lg:col-span-3 space-y-8">
-                        {/* Mobile Actions Only */}
-                        <div className="flex md:hidden flex-col gap-3">
-                            <Button 
-                                size="lg"
-                                className="w-full h-14 rounded-xl bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-lg shadow-primary/30 group"
-                                onClick={() => document.getElementById('streaming-section')?.scrollIntoView({ behavior: 'smooth' })}
-                            >
-                                <Play className="h-6 w-6 mr-3 fill-current group-hover:scale-110 transition-transform" />
-                                WATCH NOW
-                            </Button>
-                        </div>
+                        
 
                         {/* Metadata Sidebar */}
                         <div className="bg-secondary/20 backdrop-blur-xl rounded-2xl p-6 border border-white/10 space-y-6 shadow-xl">
@@ -487,35 +479,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
 
                     {/* Right Content Area */}
                     <div className="lg:col-span-9 space-y-12">
-                        {/* Stats Ribbons */}
-                        <div className="flex flex-wrap gap-4 items-center justify-center lg:justify-start">
-                            {anime.score && (
-                                <StatCard
-                                    color="yellow"
-                                    icon={<Star className="h-6 w-6 fill-current" />}
-                                    value={getAnimeScore(anime.score)}
-                                    label="Global Score"
-                                />
-                            )}
-                            <StatCard
-                                color="blue"
-                                icon={<TrendingUp className="h-6 w-6" />}
-                                value={`#${anime.rank || 'N/A'}`}
-                                label="Ranked"
-                            />
-                            <StatCard
-                                color="purple"
-                                icon={<Users className="h-6 w-6" />}
-                                value={anime.members?.toLocaleString() || 'N/A'}
-                                label="Members"
-                            />
-                            <StatCard
-                                color="green"
-                                icon={<Heart className="h-6 w-6" />}
-                                value={anime.favorites?.toLocaleString() || 'N/A'}
-                                label="Favorites"
-                            />
-                        </div>
+                        
 
                         {/* Mobile Synopsis */}
                         {anime.synopsis && (
@@ -685,78 +649,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                 </div>
             </div>
 
-            {/* Mobile Bottom Bar */}
-            <AnimatePresence>
-                <motion.div
-                    initial={{ y: 100 }}
-                    animate={{ y: 0 }}
-                    exit={{ y: 100 }}
-                    className="fixed bottom-[72px] left-4 right-4 z-[40] lg:hidden"
-                >
-                    <div className="bg-secondary/90 backdrop-blur-3xl border border-white/10 rounded-3xl p-4 shadow-2xl flex items-center gap-3">
-                        <div className="flex-1">
-                            {isInWatchlist ? (
-                                <select
-                                    value={watchlistStatus}
-                                    onChange={handleUpdateWatchlistStatus}
-                                    className="w-full h-14 px-6 rounded-2xl border border-white/10 bg-white/5 text-sm font-black focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-                                >
-                                    {statusOptions.map(option => (
-                                        <option key={option.value} value={option.value} className="bg-background">
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                    <option value="REMOVE" className="bg-destructive/10 text-destructive font-bold">Remove</option>
-                                </select>
-                            ) : (
-                                <AuthGuard
-                                    title="Watchlist"
-                                    description="Add this to your watchlist."
-                                    fallback={
-                                        <Button className="w-full h-14 rounded-2xl font-black opacity-50">
-                                            <Plus className="h-5 w-5 mr-2" /> Add to List
-                                        </Button>
-                                    }
-                                >
-                                    <Button
-                                        className="w-full h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20"
-                                        onClick={() => handleAddToWatchlist('PLAN_TO_WATCH')}
-                                        disabled={actionLoading}
-                                    >
-                                        {actionLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-6 w-6 mr-2" />}
-                                        Add to List
-                                    </Button>
-                                </AuthGuard>
-                            )}
-                        </div>
-
-                        <div className="flex gap-2">
-                            <AuthGuard
-                                title="Favorite"
-                                description="Add to your favorites."
-                                fallback={
-                                    <Button variant="outline" size="icon" className="h-14 w-14 rounded-2xl opacity-50">
-                                        <Heart className="h-6 w-6" />
-                                    </Button>
-                                }
-                            >
-                                <Button
-                                    size="icon"
-                                    variant="outline"
-                                    className={cn(
-                                        "h-14 w-14 rounded-2xl border-white/10 bg-white/5 shrink-0 transition-all",
-                                        isFavorited && "bg-red-500/20 border-red-500/50 text-red-500"
-                                    )}
-                                    onClick={handleToggleFavorite}
-                                    disabled={actionLoading}
-                                >
-                                    <Heart className={cn("h-6 w-6", isFavorited && "fill-current")} />
-                                </Button>
-                            </AuthGuard>
-                        </div>
-                    </div>
-                </motion.div>
-            </AnimatePresence>
+            
         </div>
     )
 }

@@ -34,6 +34,7 @@ export interface Manga {
     favorites?: number;
     synopsis?: string;
     background?: string;
+    color?: string;
     authors: Author[];
     serializations: Serialization[];
     genres: Genre[];
