@@ -42,24 +42,34 @@ interface Mirror {
 
 const MIRRORS: Mirror[] = [
     {
+        // VidLink via MAL ID — most reliable anime player, supports sub/dub toggle
+        name: 'VidLink',
+        buildUrl: (ctx) => ctx.malId ? `https://vidlink.pro/anime/${ctx.malId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true&multiSub=1` : null
+    },
+    {
+        // VidLink via AniList ID — fallback if MAL ID is unavailable
+        name: 'VidLink (AL)',
+        buildUrl: (ctx) => ctx.anilistId ? `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true&multiSub=1` : null
+    },
+    {
+        // VidSrc.cc — native anime endpoint using MAL ID directly, no TMDB needed
         name: 'VidSrc',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.me/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&ep=${ctx.tmdbEp}` : null
+        buildUrl: (ctx) => ctx.malId ? `https://vidsrc.cc/v2/embed/anime/${ctx.malId}/${ctx.ep}/sub` : null
     },
     {
+        // VidSrc.to — native anime endpoint using MAL ID directly
         name: 'VidSrc.to',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.to/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}` : null
+        buildUrl: (ctx) => ctx.malId ? `https://vidsrc.to/embed/anime/${ctx.malId}/${ctx.ep}` : null
     },
     {
+        // AutoEmbed via player.vidsrc.nl — MAL ID based, reliable fallback
+        name: 'AutoEmbed',
+        buildUrl: (ctx) => ctx.malId ? `https://player.vidsrc.nl/embed/anime/${ctx.malId}/${ctx.ep}` : null
+    },
+    {
+        // 2Embed — TMDB-based, only shown when full TMDB mapping is available
         name: '2Embed',
         buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://www.2embed.skin/embedtv/${ctx.tmdbId}&s=${ctx.season}&e=${ctx.tmdbEp}` : null
-    },
-    {
-        name: 'VidLink',
-        buildUrl: (ctx) => `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`
-    },
-    {
-        name: 'VidLink (MAL)',
-        buildUrl: (ctx) => ctx.malId ? `https://vidlink.pro/anime/${ctx.malId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true` : null
     }
 ]
 
