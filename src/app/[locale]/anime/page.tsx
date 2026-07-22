@@ -42,8 +42,8 @@ function AnimeContent() {
           if (value) params.set(param, value)
         })
         if (!params.has('order_by') && !params.has('q')) {
-          params.set('order_by', 'popularity')
-          params.set('sort', 'asc')
+          params.set('order_by', 'score')
+          params.set('sort', 'desc')
         }
         const response = await fetch(`/api/anime/search?${params.toString()}`)
         const json = await response.json()
