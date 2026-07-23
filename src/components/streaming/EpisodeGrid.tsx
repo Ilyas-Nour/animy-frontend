@@ -9,6 +9,7 @@ interface Episode {
     number: number
     title?: string
     image?: string
+    isFiller?: boolean
 }
 
 interface EpisodeGridProps {
