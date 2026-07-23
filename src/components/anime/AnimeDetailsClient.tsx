@@ -19,10 +19,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getAnimeScore, getAnimeStatus, cn } from '@/lib/utils'
 import { ShareModal } from '@/components/common/ShareModal'
 import { AuthGuard } from '@/components/shared/AuthGuard'
-import { StreamingContainer } from '@/components/streaming/StreamingContainer'
-import { RelationCard } from './RelationCard'
-import { CharacterVoiceCard } from './CharacterVoiceCard'
-import { StaffCard } from './StaffCard'
+import dynamic from 'next/dynamic'
+
+const StreamingContainer = dynamic(() => import('@/components/streaming/StreamingContainer').then(mod => mod.StreamingContainer), {
+  loading: () => <div className="h-[600px] w-full animate-pulse bg-card rounded-lg flex items-center justify-center border border-border/40">Loading Player...</div>,
+  ssr: false
+})
+const RelationCard = dynamic(() => import('./RelationCard').then(mod => mod.RelationCard))
+const CharacterVoiceCard = dynamic(() => import('./CharacterVoiceCard').then(mod => mod.CharacterVoiceCard))
+const StaffCard = dynamic(() => import('./StaffCard').then(mod => mod.StaffCard))
 
 interface AnimeDetailsClientProps {
     anime: Anime

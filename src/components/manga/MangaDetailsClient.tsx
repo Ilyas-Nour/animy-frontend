@@ -13,12 +13,14 @@ import { Manga } from '@/types/manga'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import dynamic from 'next/dynamic'
 import { ShareModal } from '@/components/common/ShareModal'
-import { CharacterCard } from '@/components/characters/CharacterCard'
 import { AuthGuard } from '@/components/shared/AuthGuard'
 import { useAuth } from '@/context/AuthContext'
 import api from '@/lib/api'
 import { cn } from '@/lib/utils'
+
+const CharacterCard = dynamic(() => import('@/components/characters/CharacterCard').then(mod => mod.CharacterCard), { ssr: false })
 
 interface MangaDetailsClientProps {
     manga: Manga

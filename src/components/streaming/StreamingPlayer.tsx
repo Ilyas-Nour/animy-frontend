@@ -99,7 +99,9 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
                 capLevelToPlayerSize: true,
                 autoStartLoad: true,
                 enableWorker: true,
-                maxBufferLength: 30,
+                maxBufferLength: 120, // Buffer 2 minutes ahead
+                maxMaxBufferLength: 600, // Allow up to 10 minutes if memory allows
+                maxBufferSize: 60 * 1000 * 1000, // Allow 60MB RAM usage for buffering
             })
 
             hls.loadSource(videoUrl)
