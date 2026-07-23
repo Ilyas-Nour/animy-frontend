@@ -11,6 +11,7 @@ interface Episode {
     id: string
     number: number
     title?: string
+    image?: string
     isFiller?: boolean
 }
 
@@ -115,8 +116,9 @@ export function StreamingContainer({
                     
                     Object.keys(data.episodes).forEach(key => {
                         const ep = data.episodes[key]
+                        const absNum = ep.absoluteEpisodeNumber || Number(key)
                         if (ep.seasonNumber !== undefined && ep.episodeNumber !== undefined) {
-                            newMap[ep.absoluteEpisodeNumber || Number(key)] = {
+                            newMap[absNum] = {
                                 s: ep.seasonNumber,
                                 e: ep.episodeNumber,
                                 tId: String(baseTmdbId)
@@ -124,6 +126,22 @@ export function StreamingContainer({
                         }
                     })
                     setAniZipMap(newMap)
+
+                    // Enrich virtual episodes with real titles, thumbnails, and filler status
+                    setEpisodes(prev => prev.map(p => {
+                        const epData = data.episodes[String(p.number)]
+                        if (epData) {
+                            // Extract title (prefer English, fallback to Romaji)
+                            const title = epData.title?.en || epData.title?.['x-jat'] || epData.title?.ja || epData.title?.ro || p.title
+                            return {
+                                ...p,
+                                title: title,
+                                image: epData.image || p.image,
+                                isFiller: epData.isFiller || false
+                            }
+                        }
+                        return p;
+                    }))
                 }
             })
             .catch(err => console.error("AniZip fetch failed:", err))

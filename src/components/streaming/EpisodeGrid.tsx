@@ -40,7 +40,7 @@ export function EpisodeGrid({ episodes, currentEpisode, onEpisodeSelect, fallbac
             <div className="flex flex-col items-center justify-center py-24 text-center bg-card/30 rounded-2xl border border-white/5">
                 <AlertCircle className="w-12 h-12 text-white/20 mb-4" />
                 <h3 className="text-lg font-bold text-white/60">No Episodes Found</h3>
-                <p className="text-sm text-white/40 mt-1">This anime doesn't have any episodes available yet.</p>
+                <p className="text-sm text-white/40 mt-1">This anime doesn&apos;t have any episodes available yet.</p>
             </div>
         )
     }
