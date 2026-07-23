@@ -7,6 +7,7 @@ export interface Anime {
   bannerImage?: string
   color?: string
   url?: string
+  logo?: string
   images: {
     jpg: {
       image_url: string
