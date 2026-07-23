@@ -30,77 +30,73 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
         let mounted = true
         setIsFetching(true)
 
-        const fetchHighQualityAssets = async () => {
-            const validList: ValidHeroAnime[] = []
+        const loadHeroAnime = async () => {
+            let validList: ValidHeroAnime[] = []
             
-            // We want up to 10 valid anime for the hero section
-            // We'll iterate through the provided anime list and stop when we have 10 perfect matches
-            for (const item of anime) {
+            // Process in parallel batches of 10 for instant loading
+            for (let i = 0; i < anime.length; i += 10) {
                 if (validList.length >= 10) break;
-
-                const id = item.mal_id || item.anilistId || item.id
-                if (!id) continue
-
-                try {
-                    const res = await fetch(`https://api.ani.zip/mappings?mal_id=${id}`)
-                    if (!res.ok) continue
-                    
-                    const data = await res.json()
-                    
-                    // Look for Clearlogo
-                    const clearlogo = data.images?.find((img: any) => img.coverType === 'Clearlogo' || img.coverType === 'Clearart')
-                    // Look for Fanart (best quality 16:9), fallback to Banner
-                    const fanart = data.images?.find((img: any) => img.coverType === 'Fanart') || data.images?.find((img: any) => img.coverType === 'Banner')
-                    
-                    if (clearlogo?.url && fanart?.url) {
-                        validList.push({
-                            ...item,
-                            logoUrl: clearlogo.url,
-                            fanartUrl: fanart.url
-                        })
-                    }
-                } catch (err) {
-                    console.error("Failed to fetch assets for", item.title)
-                }
-            }
-
-            // If we couldn't find 10 perfect matches, fallback to items with at least a logo, 
-            // and use their default banner/image if no fanart.
-            if (validList.length < 10) {
-                for (const item of anime) {
-                    if (validList.length >= 10) break;
-                    if (validList.some(v => v.mal_id === item.mal_id)) continue;
-
+                
+                const batch = anime.slice(i, i + 10);
+                
+                const results = await Promise.all(batch.map(async (item) => {
                     const id = item.mal_id || item.anilistId || item.id
-                    if (!id) continue
+                    if (!id) return null;
+                    
                     try {
                         const res = await fetch(`https://api.ani.zip/mappings?mal_id=${id}`)
-                        if (!res.ok) continue
+                        if (!res.ok) return null;
+                        
                         const data = await res.json()
                         const clearlogo = data.images?.find((img: any) => img.coverType === 'Clearlogo' || img.coverType === 'Clearart')
+                        const fanart = data.images?.find((img: any) => img.coverType === 'Fanart') || data.images?.find((img: any) => img.coverType === 'Banner')
                         
-                        // User specifically wants ONLY anime with logos. 
-                        // If it has a logo but no fanart, we'll accept it and use the default image
-                        if (clearlogo?.url) {
-                            validList.push({
+                        // Use ani.zip fanart, fallback to anilist bannerImage, fallback to jikan large image
+                        const fanartUrl = fanart?.url || item.bannerImage || item.images?.webp?.large_image_url || item.images?.jpg?.large_image_url;
+                        
+                        // Only accept items that have a clearlogo
+                        if (clearlogo?.url && fanartUrl) {
+                            return {
                                 ...item,
                                 logoUrl: clearlogo.url,
-                                fanartUrl: item.bannerImage || item.images?.webp?.large_image_url || item.images?.jpg?.large_image_url
-                            })
+                                fanartUrl: fanartUrl
+                            } as ValidHeroAnime
                         }
                     } catch (err) {
-                        // ignore
+                        return null;
                     }
+                    return null;
+                }));
+
+                const validBatch = results.filter(Boolean) as ValidHeroAnime[];
+                
+                // Avoid duplicates just in case
+                for (const v of validBatch) {
+                    if (!validList.some(existing => existing.mal_id === v.mal_id)) {
+                        validList.push(v);
+                    }
+                }
+
+                // Render immediately as soon as we have at least 1 valid item!
+                if (mounted && validList.length > 0) {
+                    setValidAnimeList([...validList])
+                    setIsFetching(false)
                 }
             }
 
-            if (mounted) {
-                setValidAnimeList(validList)
+            // Fallback: If after checking ALL 40 anime we still have 0 valid items (API might be down)
+            if (mounted && validList.length === 0) {
+                const fallbackList = anime.slice(0, 5).map(item => ({
+                    ...item,
+                    logoUrl: '', // Will fallback to text
+                    fanartUrl: item.bannerImage || item.images?.webp?.large_image_url || item.images?.jpg?.large_image_url || ''
+                }))
+                setValidAnimeList(fallbackList)
                 setIsFetching(false)
             }
         }
 
-        fetchHighQualityAssets()
+        loadHeroAnime()
 
         return () => { mounted = false }
     }, [anime])
