@@ -33,10 +33,10 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
         const fetchHighQualityAssets = async () => {
             const validList: ValidHeroAnime[] = []
             
-            // We only need 5 valid anime for the hero section
-            // We'll iterate through the provided anime list (up to 20) and stop when we have 5 perfect matches
+            // We want up to 10 valid anime for the hero section
+            // We'll iterate through the provided anime list and stop when we have 10 perfect matches
             for (const item of anime) {
-                if (validList.length >= 5) break;
+                if (validList.length >= 10) break;
 
                 const id = item.mal_id || item.anilistId || item.id
                 if (!id) continue
@@ -64,11 +64,11 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                 }
             }
 
-            // If we couldn't find 5 perfect matches, fallback to items with at least a logo, 
+            // If we couldn't find 10 perfect matches, fallback to items with at least a logo, 
             // and use their default banner/image if no fanart.
-            if (validList.length < 5) {
+            if (validList.length < 10) {
                 for (const item of anime) {
-                    if (validList.length >= 5) break;
+                    if (validList.length >= 10) break;
                     if (validList.some(v => v.mal_id === item.mal_id)) continue;
 
                     const id = item.mal_id || item.anilistId || item.id
@@ -167,7 +167,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.1 }}
                             >
-                                <span className="text-primary font-bold text-[10px] md:text-xs tracking-widest uppercase">
+                                <span className="text-primary font-bold text-xs md:text-sm tracking-widest uppercase">
                                     #{current + 1} Spotlight
                                 </span>
                             </motion.div>
@@ -180,7 +180,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 className="min-h-[80px] md:min-h-[140px] flex items-end"
                             >
                                 {active.logoUrl ? (
-                                    <div className="relative h-[80px] sm:h-[120px] md:h-[150px] w-full max-w-[450px]">
+                                    <div className="relative h-[100px] sm:h-[140px] md:h-[180px] w-full max-w-[550px]">
                                         <Image
                                             src={active.logoUrl}
                                             alt={active.title}
@@ -191,7 +191,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                         />
                                     </div>
                                 ) : (
-                                    <h1 className="font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-4xl sm:text-5xl md:text-6xl">
+                                    <h1 className="font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-5xl sm:text-6xl md:text-7xl">
                                         {active.title}
                                     </h1>
                                 )}
@@ -204,20 +204,20 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 transition={{ delay: 0.3 }}
                                 className="flex flex-wrap items-center gap-2 pt-2"
                             >
-                                <div className="bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-sm text-[10px] sm:text-xs font-semibold text-white/90">
+                                <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-sm text-xs sm:text-sm font-semibold text-white/90">
                                     {active.type || 'TV'}
                                 </div>
-                                <div className="bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-sm text-[10px] sm:text-xs font-semibold text-white/90">
+                                <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-sm text-xs sm:text-sm font-semibold text-white/90">
                                     {active.status || 'Finished'}
                                 </div>
                                 {active.year && (
-                                    <div className="bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-sm text-[10px] sm:text-xs font-semibold text-white/90">
+                                    <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-sm text-xs sm:text-sm font-semibold text-white/90">
                                         {active.year}
                                     </div>
                                 )}
                                 {active.score && (
-                                    <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-sm text-[10px] sm:text-xs font-semibold text-white/90">
-                                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                    <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md px-3 py-1 rounded-sm text-xs sm:text-sm font-semibold text-white/90">
+                                        <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
                                         <span>{active.score.toFixed(1)}</span>
                                     </div>
                                 )}
@@ -228,7 +228,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.4 }}
-                                className="text-xs sm:text-sm font-semibold text-white/80"
+                                className="text-sm sm:text-base font-semibold text-white/80"
                             >
                                 {active.genres?.map(g => g.name).join(', ')}
                             </motion.div>
@@ -238,7 +238,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.5 }}
-                                className="text-xs sm:text-sm text-white/70 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-xl"
+                                className="text-sm sm:text-base text-white/70 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-2xl"
                                 dangerouslySetInnerHTML={{ __html: active.synopsis || '' }}
                             />
 
@@ -247,17 +247,17 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.6 }}
-                                className="flex flex-wrap items-center gap-3 pt-4"
+                                className="flex flex-wrap items-center gap-4 pt-4"
                             >
                                 <Link href={`/anime/${active.mal_id}`}>
-                                    <Button className="h-10 sm:h-12 px-5 sm:px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full gap-2 transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(var(--primary),0.3)]">
-                                        <Play className="w-4 h-4 fill-current" /> Watch Now
+                                    <Button className="h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full gap-2 transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(var(--primary),0.3)]">
+                                        <Play className="w-5 h-5 fill-current" /> Watch Now
                                     </Button>
                                 </Link>
 
                                 <Link href={`/anime/${active.mal_id}`}>
-                                    <Button variant="secondary" className="h-10 sm:h-12 px-5 sm:px-8 bg-white hover:bg-white/90 text-black font-bold rounded-full gap-2 transition-transform hover:scale-105 active:scale-95">
-                                        Details <ChevronRight className="w-4 h-4 text-black/70" />
+                                    <Button variant="secondary" className="h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg bg-white hover:bg-white/90 text-black font-bold rounded-full gap-2 transition-transform hover:scale-105 active:scale-95">
+                                        Details <ChevronRight className="w-5 h-5 text-black/70" />
                                     </Button>
                                 </Link>
                             </motion.div>

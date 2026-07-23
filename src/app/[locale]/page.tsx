@@ -92,7 +92,9 @@ export default function HomePage() {
 
           // Update local state
           setTopAnime(data.popularAnime || [])
-          setHeroAnime(data.popularAnime?.slice(0, 20) || [])
+          const heroPool = [...(data.trendingAnime || []), ...(data.popularAnime || [])]
+          const uniquePool = Array.from(new Map(heroPool.map(item => [item.mal_id || item.id, item])).values())
+          setHeroAnime(uniquePool.slice(0, 40))
           setTrendingHighlight(data.trendingAnime || [])
           setUpcomingAnime(data.upcomingAnime || [])
           setRecentEpisodes(data.recentEpisodes || [])
