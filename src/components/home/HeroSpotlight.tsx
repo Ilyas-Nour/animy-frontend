@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Star, Play, ChevronLeft, ChevronRight, Calendar, Info } from 'lucide-react'
+import { Star, Play, ChevronLeft, ChevronRight, Info } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Anime } from '@/types/anime'
 import { cn } from '@/lib/utils'
 
@@ -27,7 +26,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
         return () => clearInterval(timer)
     }, [anime.length])
 
-    // Fetch official clear logos for all hero anime dynamically via api.ani.zip
+    // Fetch official clear logos
     useEffect(() => {
         anime.forEach((item) => {
             const id = item.mal_id || item.anilistId || item.id
@@ -46,9 +45,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                         setLogos(prev => ({ ...prev, [id]: clearlogo.url }))
                     }
                 })
-                .catch(() => {
-                    // Silently ignore failures, will fallback to title text
-                })
+                .catch(() => {})
         })
     }, [anime])
 
@@ -58,7 +55,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
     const currentLogoUrl = logos[active.mal_id || active.anilistId || active.id] || active.logo
 
     return (
-        <section className="relative h-[650px] sm:h-[620px] md:h-[85vh] min-h-[580px] max-h-[850px] w-full overflow-hidden bg-background">
+        <section className="relative h-[80vh] min-h-[600px] w-full overflow-hidden bg-background group">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={current}
@@ -68,186 +65,177 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     transition={{ duration: 0.8 }}
                     className="absolute inset-0"
                 >
-                    <div className="absolute inset-0">
-                        {/* LAYERED BACKGROUND SYSTEM WITH BRAND DNA GRADIENTS */}
-                        <div className="absolute inset-0 z-0 overflow-hidden">
-                            {/* Ambient Blur Layer for atmosphere */}
-                            <Image
-                                src={active.bannerImage || active.images.jpg.large_image_url}
-                                alt=""
-                                fill
-                                className="object-cover blur-[90px] opacity-30 scale-110"
-                                priority
-                            />
-                            
-                            {/* Main High Quality Background Image */}
-                            <Image
-                                src={active.bannerImage || active.images.jpg.large_image_url}
-                                alt={active.title}
-                                fill
-                                className="object-cover object-center opacity-70 dark:opacity-60"
-                                priority
-                                quality={100}
-                            />
-                            
-                            {/* Brand DNA Radial & Linear Gradient Overlays */}
-                            <div 
-                                className="absolute inset-0 z-10 hidden md:block" 
-                                style={{ 
-                                    background: 'linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background)/0.95) 25%, hsl(var(--background)/0.6) 55%, transparent 100%)'
-                                }}
-                            />
-                            <div 
-                                className="absolute inset-0 z-10 md:hidden" 
-                                style={{ 
-                                    background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background)/0.9) 50%, hsl(var(--background)/0.4) 100%)'
-                                }}
-                            />
-                            
-                            {/* Edge & Ground Fade */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10" />
-                        </div>
+                    {/* FULL SCREEN BACKGROUND */}
+                    <div className="absolute inset-0 z-0">
+                        {/* High Quality Background Image */}
+                        <Image
+                            src={active.bannerImage || active.images.jpg.large_image_url}
+                            alt={active.title}
+                            fill
+                            className="object-cover object-top opacity-90 dark:opacity-80"
+                            priority
+                            quality={100}
+                        />
+                        
+                        {/* Gradients for text legibility (darkens left and bottom) */}
+                        <div className="absolute inset-0 z-10 bg-gradient-to-r from-background via-background/80 md:via-background/50 to-transparent w-full md:w-[65%]" />
+                        <div className="absolute inset-0 z-10 bg-gradient-to-t from-background via-background/20 to-transparent h-full" />
                     </div>
 
-                    {/* Content Layer */}
-                    <div className="container relative h-full z-20 flex flex-col justify-center pt-10 md:pt-16">
-                        <div className="max-w-3xl space-y-4 md:space-y-6">
+                    {/* CONTENT ALIGNED TO BOTTOM LEFT */}
+                    <div className="container relative h-full z-20 flex flex-col justify-end pb-20 sm:pb-28">
+                        <div className="max-w-2xl space-y-4">
                             
-                            {/* Badges: Trending + Score + Year + Genres */}
+                            {/* Spotlight Number */}
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.1 }}
-                                className="flex flex-wrap items-center gap-2.5"
                             >
-                                <Badge className="bg-primary/20 text-primary border-primary/30 backdrop-blur-xl px-2.5 py-1 text-[10px] md:text-xs font-black uppercase tracking-widest">
-                                    Trending #{current + 1}
-                                </Badge>
-
-                                {active.score && (
-                                    <div className="flex items-center gap-1.5 bg-yellow-500/10 dark:bg-yellow-500/20 backdrop-blur-md px-2.5 py-1 rounded-md border border-yellow-500/30 text-yellow-500 text-xs font-black">
-                                        <Star className="h-3.5 w-3.5 fill-yellow-500" />
-                                        <span>{active.score.toFixed(1)}</span>
-                                    </div>
-                                )}
-
-                                <div className="flex items-center gap-1 bg-muted/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-border/40 text-foreground/90 text-xs font-bold">
-                                    <Calendar className="h-3.5 w-3.5 text-primary" />
-                                    <span>{active.year || '2026'}</span>
-                                </div>
-
-                                {active.genres?.slice(0, 3).map(g => (
-                                    <Badge key={g.mal_id} variant="outline" className="backdrop-blur-md border-border/50 text-foreground/80 font-bold text-[10px] md:text-xs px-2.5 py-1">
-                                        {g.name}
-                                    </Badge>
-                                ))}
+                                <span className="text-primary font-bold text-[10px] md:text-xs tracking-widest uppercase">
+                                    #{current + 1} Spotlight
+                                </span>
                             </motion.div>
 
-                            {/* Title Section: Official Logo PNG or Gradient Typography fallback */}
+                            {/* Title/Logo */}
                             <motion.div
-                                initial={{ y: 25, opacity: 0 }}
+                                initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.2 }}
-                                className="min-h-[100px] md:min-h-[140px] flex items-center"
+                                className="min-h-[80px] md:min-h-[140px] flex items-end"
                             >
                                 {currentLogoUrl ? (
-                                    <div className="relative h-[110px] sm:h-[150px] md:h-[190px] lg:h-[220px] w-full max-w-[550px]">
+                                    <div className="relative h-[80px] sm:h-[120px] md:h-[150px] w-full max-w-[450px]">
                                         <Image
                                             src={currentLogoUrl}
                                             alt={active.title}
                                             fill
-                                            className="object-contain object-left filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] dark:drop-shadow-[0_10px_25px_rgba(0,0,0,0.9)]"
+                                            className="object-contain object-left-bottom filter drop-shadow-[0_10px_15px_rgba(0,0,0,0.8)]"
                                             priority
                                             unoptimized
                                         />
                                     </div>
                                 ) : (
-                                    <h1 className={`font-black leading-[0.95] tracking-tighter text-foreground drop-shadow-md dark:drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] line-clamp-2 md:line-clamp-3 ${active.title.length > 40 ? 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl' : 'text-4xl sm:text-5xl md:text-6xl lg:text-7xl'}`}>
-                                        <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-                                            {active.title}
-                                        </span>
+                                    <h1 className="font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-4xl sm:text-5xl md:text-6xl">
+                                        {active.title}
                                     </h1>
                                 )}
+                            </motion.div>
+
+                            {/* Small Tag Pills (Format, Dub/Sub equivalent, Status, Score) */}
+                            <motion.div
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.3 }}
+                                className="flex flex-wrap items-center gap-2 pt-2"
+                            >
+                                <div className="bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-sm text-[10px] sm:text-xs font-semibold text-white/90">
+                                    {active.type || 'TV'}
+                                </div>
+                                <div className="bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-sm text-[10px] sm:text-xs font-semibold text-white/90">
+                                    {active.status || 'Finished'}
+                                </div>
+                                {active.year && (
+                                    <div className="bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-sm text-[10px] sm:text-xs font-semibold text-white/90">
+                                        {active.year}
+                                    </div>
+                                )}
+                                {active.score && (
+                                    <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-sm text-[10px] sm:text-xs font-semibold text-white/90">
+                                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                        <span>{active.score.toFixed(1)}</span>
+                                    </div>
+                                )}
+                            </motion.div>
+
+                            {/* Genres as plain text */}
+                            <motion.div
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.4 }}
+                                className="text-xs sm:text-sm font-semibold text-white/80"
+                            >
+                                {active.genres?.map(g => g.name).join(', ')}
                             </motion.div>
 
                             {/* Synopsis */}
                             <motion.p
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.3 }}
-                                className="text-xs sm:text-sm md:text-base text-muted-foreground line-clamp-2 sm:line-clamp-3 leading-relaxed font-medium max-w-xl drop-shadow-sm"
+                                transition={{ delay: 0.5 }}
+                                className="text-xs sm:text-sm text-white/70 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-xl"
                                 dangerouslySetInnerHTML={{ __html: active.synopsis || '' }}
                             />
 
-                            {/* Action Buttons with Signature Animy DNA Colors */}
+                            {/* Action Buttons */}
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.4 }}
-                                className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2"
+                                transition={{ delay: 0.6 }}
+                                className="flex flex-wrap items-center gap-3 pt-4"
                             >
                                 <Link href={`/anime/${active.mal_id}`}>
-                                    <Button size="lg" className="h-12 sm:h-14 px-6 md:px-8 text-sm md:text-base font-black gap-2.5 bg-gradient-to-r from-primary via-purple-600 to-indigo-600 text-white shadow-[0_0_25px_rgba(139,92,246,0.4)] hover:shadow-[0_0_35px_rgba(139,92,246,0.6)] rounded-xl md:rounded-2xl border-0 overflow-hidden group/btn transition-all duration-300 hover:scale-105 active:scale-95">
-                                        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:250%_250%] animate-shimmer group-hover/btn:opacity-100 opacity-0 transition-opacity" />
-                                        <Play className="relative h-4 w-4 md:h-5 md:w-5 fill-current group-hover/btn:translate-x-0.5 transition-transform" />
-                                        <span className="relative">Watch Now</span>
+                                    <Button className="h-10 sm:h-12 px-5 sm:px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full gap-2 transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(var(--primary),0.3)]">
+                                        <Play className="w-4 h-4 fill-current" /> Watch Now
                                     </Button>
                                 </Link>
 
                                 <Link href={`/anime/${active.mal_id}`}>
-                                    <Button size="lg" variant="outline" className="h-12 sm:h-14 px-6 md:px-8 text-sm md:text-base font-black gap-2 border-foreground/15 bg-background/20 backdrop-blur-xl text-foreground hover:bg-background/40 hover:border-foreground/30 rounded-xl md:rounded-2xl transition-all duration-300 hover:scale-105 group/intel">
-                                        <Info className="h-4 w-4 md:h-5 md:w-5 text-primary group-hover/intel:scale-110 transition-transform" />
-                                        <span>Details</span>
+                                    <Button variant="secondary" className="h-10 sm:h-12 px-5 sm:px-8 bg-white hover:bg-white/90 text-black font-bold rounded-full gap-2 transition-transform hover:scale-105 active:scale-95">
+                                        Details <ChevronRight className="w-4 h-4 text-black/70" />
                                     </Button>
                                 </Link>
+                            </motion.div>
+
+                            {/* Left-Aligned Dash Indicators */}
+                            <motion.div
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.7 }}
+                                className="flex items-center gap-2 pt-6"
+                            >
+                                {anime.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrent(i)}
+                                        aria-label={`Go to slide ${i + 1}`}
+                                        className={cn(
+                                            "h-1.5 rounded-full transition-all duration-500 overflow-hidden relative",
+                                            current === i ? "w-8 bg-primary/30" : "w-4 bg-white/30 hover:bg-white/50"
+                                        )}
+                                    >
+                                        {current === i && (
+                                            <motion.div
+                                                layoutId="heroIndicator"
+                                                className="absolute inset-0 bg-primary"
+                                                initial={{ x: '-100%' }}
+                                                animate={{ x: '0%' }}
+                                                transition={{ duration: 8, ease: "linear" }}
+                                            />
+                                        )}
+                                    </button>
+                                ))}
                             </motion.div>
                         </div>
                     </div>
                 </motion.div>
             </AnimatePresence>
 
-            {/* Bottom Carousel Controls with Active Progress Indicator & Carets */}
-            <div className="absolute bottom-6 left-0 right-0 z-30 w-full flex justify-center items-center gap-4">
-                <button
-                    onClick={() => setCurrent((prev) => (prev - 1 + anime.length) % anime.length)}
-                    aria-label="Previous Slide"
-                    className="p-2 rounded-full bg-background/30 hover:bg-background/60 backdrop-blur-md text-foreground/70 hover:text-foreground border border-border/30 transition-all hover:scale-110 active:scale-95"
-                >
-                    <ChevronLeft size={18} />
-                </button>
-                
-                <div className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-background/30 backdrop-blur-md border border-border/30">
-                    {anime.map((_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => setCurrent(i)}
-                            aria-label={`Go to slide ${i + 1}`}
-                            className={cn(
-                                "relative h-2 rounded-full overflow-hidden transition-all duration-500",
-                                current === i ? "w-10 bg-primary/30" : "w-2 bg-foreground/20 hover:bg-foreground/40"
-                            )}
-                        >
-                            {current === i && (
-                                <motion.div
-                                    layoutId="heroProgress"
-                                    className="absolute inset-0 bg-primary rounded-full"
-                                    initial={{ x: '-100%' }}
-                                    animate={{ x: '0%' }}
-                                    transition={{ duration: 8, ease: "linear" }}
-                                />
-                            )}
-                        </button>
-                    ))}
-                </div>
-
-                <button
-                    onClick={() => setCurrent((prev) => (prev + 1) % anime.length)}
-                    aria-label="Next Slide"
-                    className="p-2 rounded-full bg-background/30 hover:bg-background/60 backdrop-blur-md text-foreground/70 hover:text-foreground border border-border/30 transition-all hover:scale-110 active:scale-95"
-                >
-                    <ChevronRight size={18} />
-                </button>
-            </div>
+            {/* Side Navigation Arrows (Far Edges) */}
+            <button
+                onClick={() => setCurrent((prev) => (prev - 1 + anime.length) % anime.length)}
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-2 text-white/50 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                aria-label="Previous Slide"
+            >
+                <ChevronLeft size={32} strokeWidth={2.5} />
+            </button>
+            <button
+                onClick={() => setCurrent((prev) => (prev + 1) % anime.length)}
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-2 text-white/50 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                aria-label="Next Slide"
+            >
+                <ChevronRight size={32} strokeWidth={2.5} />
+            </button>
         </section>
     )
 }
