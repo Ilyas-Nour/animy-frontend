@@ -192,7 +192,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 pb-20">
             {/* Unified Hero Section */}
-            <div className="relative w-full min-h-[500px] md:min-h-[600px] pb-12 mb-12">
+            <div className="relative w-full min-h-[400px] md:min-h-[600px] pb-6 md:pb-12 mb-6 md:mb-12">
                 {/* Background Banner */}
                 <div className="absolute inset-0 z-0 overflow-hidden">
                     {/* Sophisticated Gradients for blending */}
@@ -218,14 +218,14 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                 </div>
 
                 {/* Hero Content */}
-                <div className="container relative z-20 pt-24 md:pt-32 px-4 md:px-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                <div className="container relative z-20 pt-16 md:pt-32 px-4 md:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
                         {/* Left: Poster */}
                         <div className="lg:col-span-3 lg:col-start-1 flex flex-col gap-6 items-center lg:items-start shrink-0">
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="relative w-[220px] sm:w-[280px] lg:w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-secondary group"
+                                className="relative w-[160px] sm:w-[220px] lg:w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-secondary group"
                             >
                                 {anime.images?.jpg?.large_image_url ? (
                                     <Image
@@ -242,7 +242,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                         </div>
 
                         {/* Right: Info */}
-                        <div className="lg:col-span-9 flex flex-col gap-6 lg:pt-8 text-center lg:text-left">
+                        <div className="lg:col-span-9 flex flex-col gap-4 lg:gap-6 lg:pt-8 text-center lg:text-left">
                             {/* Title & Meta Row */}
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
@@ -623,29 +623,6 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                                 {rec.mediaRecommendation.title.english || rec.mediaRecommendation.title.romaji}
                                             </h4>
                                         </motion.div>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* External Links */}
-                        {anime.streaming && anime.streaming.length > 0 && (
-                            <section className="border-t border-white/5 pt-12">
-                                <h2 className="text-2xl font-black mb-6">Official Sources</h2>
-                                <div className="flex flex-wrap gap-4">
-                                    {anime.streaming.map((stream, index) => (
-                                        <a
-                                            key={index}
-                                            href={stream.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="group"
-                                        >
-                                            <Button variant="outline" className="gap-2 rounded-xl h-12 px-6 border-white/10 hover:border-primary/50 hover:bg-primary/10 transition-all">
-                                                <ExternalLink className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-                                                <span className="font-bold">{stream.name}</span>
-                                            </Button>
-                                        </a>
                                     ))}
                                 </div>
                             </section>

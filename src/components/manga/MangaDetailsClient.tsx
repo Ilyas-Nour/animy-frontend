@@ -207,7 +207,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 pb-20">
             {/* Unified Hero Section */}
-            <div className="relative w-full min-h-[500px] md:min-h-[600px] pb-12 mb-12">
+            <div className="relative w-full min-h-[400px] md:min-h-[600px] pb-6 md:pb-12 mb-6 md:mb-12">
                 {/* Background Banner */}
                 <div className="absolute inset-0 z-0 overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent z-10" />
@@ -233,14 +233,14 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 </div>
 
                 {/* Hero Content */}
-                <div className="container relative z-20 pt-24 md:pt-32 px-4 md:px-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                <div className="container relative z-20 pt-16 md:pt-32 px-4 md:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
                         {/* Left: Poster */}
                         <div className="lg:col-span-3 lg:col-start-1 flex flex-col gap-6 items-center lg:items-start shrink-0">
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="relative w-[220px] sm:w-[280px] lg:w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-secondary group"
+                                className="relative w-[160px] sm:w-[220px] lg:w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 bg-secondary group"
                             >
                                 {manga.images?.webp?.large_image_url || manga.images?.jpg?.large_image_url ? (
                                     <Image
@@ -257,7 +257,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                         </div>
 
                         {/* Right: Info */}
-                        <div className="lg:col-span-9 flex flex-col gap-6 lg:pt-8 text-center lg:text-left">
+                        <div className="lg:col-span-9 flex flex-col gap-4 lg:gap-6 lg:pt-8 text-center lg:text-left">
                             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="flex flex-col gap-4">
                                 <div>
                                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white drop-shadow-2xl mb-2 leading-tight">
@@ -271,7 +271,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                 </div>
 
                                 {/* Quick Meta Row */}
-                                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 md:gap-4">
+                                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
                                     {manga.score && (
                                         <div className="flex items-center gap-1.5 bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 px-3 py-1 rounded-full font-bold text-sm backdrop-blur-md">
                                             <Star className="h-4 w-4 fill-current" />
