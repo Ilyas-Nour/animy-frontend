@@ -30,70 +30,72 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
         let mounted = true
         setIsFetching(true)
 
-        const loadHeroAnime = async () => {
-            let validList: ValidHeroAnime[] = []
-            
-            // Process in parallel batches of 10 for instant loading
-            for (let i = 0; i < anime.length; i += 10) {
-                if (validList.length >= 10) break;
+        const loadHeroAnime = () => {
+            // Check top 25 items concurrently
+            const pool = anime.slice(0, 25);
+            let processedCount = 0;
+
+            pool.forEach(async (item) => {
+                const id = item.mal_id || item.anilistId || item.id
+                if (!id) {
+                    processedCount++;
+                    return;
+                }
                 
-                const batch = anime.slice(i, i + 10);
-                
-                const results = await Promise.all(batch.map(async (item) => {
-                    const id = item.mal_id || item.anilistId || item.id
-                    if (!id) return null;
-                    
-                    try {
-                        const res = await fetch(`https://api.ani.zip/mappings?mal_id=${id}`)
-                        if (!res.ok) return null;
-                        
+                try {
+                    const res = await fetch(`https://api.ani.zip/mappings?mal_id=${id}`)
+                    if (res.ok) {
                         const data = await res.json()
                         const clearlogo = data.images?.find((img: any) => img.coverType === 'Clearlogo' || img.coverType === 'Clearart')
                         const fanart = data.images?.find((img: any) => img.coverType === 'Fanart') || data.images?.find((img: any) => img.coverType === 'Banner')
                         
-                        // Use ani.zip fanart, fallback to anilist bannerImage, fallback to jikan large image
-                        const fanartUrl = fanart?.url || item.bannerImage || item.images?.webp?.large_image_url || item.images?.jpg?.large_image_url;
+                        // Strict requirement: MUST have a high-res fanart or banner for the premium look
+                        const fanartUrl = fanart?.url || item.bannerImage;
                         
-                        // Only accept items that have a clearlogo
-                        if (clearlogo?.url && fanartUrl) {
-                            return {
-                                ...item,
-                                logoUrl: clearlogo.url,
-                                fanartUrl: fanartUrl
-                            } as ValidHeroAnime
+                        if (fanartUrl) {
+                            if (mounted) {
+                                setValidAnimeList(prev => {
+                                    if (prev.length >= 10) return prev;
+                                    if (prev.some(p => p.mal_id === item.mal_id)) return prev;
+                                    
+                                    const newItem = {
+                                        ...item,
+                                        logoUrl: clearlogo?.url || '',
+                                        fanartUrl: fanartUrl
+                                    } as ValidHeroAnime;
+                                    
+                                    // Sort items with logos to the front of the carousel
+                                    const newList = [...prev, newItem].sort((a, b) => {
+                                        if (a.logoUrl && !b.logoUrl) return -1;
+                                        if (!a.logoUrl && b.logoUrl) return 1;
+                                        return 0;
+                                    });
+                                    
+                                    setIsFetching(false);
+                                    return newList;
+                                });
+                            }
                         }
-                    } catch (err) {
-                        return null;
                     }
-                    return null;
-                }));
-
-                const validBatch = results.filter(Boolean) as ValidHeroAnime[];
-                
-                // Avoid duplicates just in case
-                for (const v of validBatch) {
-                    if (!validList.some(existing => existing.mal_id === v.mal_id)) {
-                        validList.push(v);
+                } catch (err) {
+                    // ignore
+                } finally {
+                    processedCount++;
+                    if (processedCount === pool.length && mounted) {
+                        setValidAnimeList(prev => {
+                            if (prev.length === 0) {
+                                setIsFetching(false);
+                                return pool.slice(0, 5).map(i => ({
+                                    ...i,
+                                    logoUrl: '',
+                                    fanartUrl: i.bannerImage || i.images?.webp?.large_image_url || i.images?.jpg?.large_image_url || ''
+                                }));
+                            }
+                            return prev;
+                        });
                     }
                 }
-
-                // Render immediately as soon as we have at least 1 valid item!
-                if (mounted && validList.length > 0) {
-                    setValidAnimeList([...validList])
-                    setIsFetching(false)
-                }
-            }
-
-            // Fallback: If after checking ALL 40 anime we still have 0 valid items (API might be down)
-            if (mounted && validList.length === 0) {
-                const fallbackList = anime.slice(0, 5).map(item => ({
-                    ...item,
-                    logoUrl: '', // Will fallback to text
-                    fanartUrl: item.bannerImage || item.images?.webp?.large_image_url || item.images?.jpg?.large_image_url || ''
-                }))
-                setValidAnimeList(fallbackList)
-                setIsFetching(false)
-            }
+            })
         }
 
         loadHeroAnime()
