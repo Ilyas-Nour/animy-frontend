@@ -79,7 +79,8 @@ export default function HomePage() {
     const loadAllData = async () => {
       try {
         // Use the new unified home endpoint for instant, single-request loading
-        const res = await fetch('/api/proxy?url=/home')
+        // Added v=2 to bypass old Cloudflare Edge cache
+        const res = await fetch('/api/proxy?url=/home&v=2')
         if (!res.ok) throw new Error('Failed to fetch home data')
         
         const json = await res.json()
