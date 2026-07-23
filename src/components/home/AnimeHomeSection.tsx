@@ -6,13 +6,31 @@ import { Anime } from '@/types/anime'
 interface AnimeHomeSectionProps {
     topAnime: Anime[]
     upcomingAnime: Anime[]
+    recentEpisodes: Anime[]
     topLoading?: boolean
     upcomingLoading?: boolean
+    recentLoading?: boolean
 }
 
-export function AnimeHomeSection({ topAnime, upcomingAnime, topLoading, upcomingLoading }: AnimeHomeSectionProps) {
+export function AnimeHomeSection({ topAnime, upcomingAnime, recentEpisodes, topLoading, upcomingLoading, recentLoading }: AnimeHomeSectionProps) {
     return (
         <div className="space-y-16">
+            {/* Just Dropped / Recent Episodes */}
+            <section className="space-y-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div className="space-y-2">
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">
+                            Just <span className="text-purple-500 italic">Dropped</span>
+                        </h2>
+                        <p className="text-muted-foreground font-medium">The newest episodes, fresh out of the oven</p>
+                    </div>
+                </div>
+                {recentLoading ? (
+                    <AnimeGridSkeleton count={6} />
+                ) : (
+                    <AnimeGrid anime={recentEpisodes} />
+                )}
+            </section>
             {/* Top Airing Anime */}
             <section className="space-y-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">

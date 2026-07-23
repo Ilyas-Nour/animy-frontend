@@ -33,6 +33,7 @@ export default function HomePage() {
   const [topAnime, setTopAnime] = useState<Anime[]>(globalHomeCache?.popularAnime || [])
   const [trendingHighlight, setTrendingHighlight] = useState<Anime[]>(globalHomeCache?.trendingAnime || [])
   const [upcomingAnime, setUpcomingAnime] = useState<Anime[]>(globalHomeCache?.upcomingAnime || [])
+  const [recentEpisodes, setRecentEpisodes] = useState<Anime[]>(globalHomeCache?.recentEpisodes || [])
   const [heroAnime, setHeroAnime] = useState<Anime[]>(globalHomeCache?.popularAnime?.slice(0, 5) || [])
   const [topManga, setTopManga] = useState<Manga[]>(globalHomeCache?.topManga || [])
   const [publishingManga, setPublishingManga] = useState<Manga[]>(globalHomeCache?.publishingManga || [])
@@ -42,6 +43,7 @@ export default function HomePage() {
   const [heroLoading, setHeroLoading] = useState(!globalHomeCache)
   const [topAnimeLoading, setTopAnimeLoading] = useState(!globalHomeCache)
   const [upcomingLoading, setUpcomingLoading] = useState(!globalHomeCache)
+  const [recentLoading, setRecentLoading] = useState(!globalHomeCache)
   const [topMangaLoading, setTopMangaLoading] = useState(!globalHomeCache)
   const [pubMangaLoading, setPubMangaLoading] = useState(!globalHomeCache)
   const [error, setError] = useState<string | null>(null)
@@ -92,6 +94,7 @@ export default function HomePage() {
           setHeroAnime(data.popularAnime?.slice(0, 5) || [])
           setTrendingHighlight(data.trendingAnime || [])
           setUpcomingAnime(data.upcomingAnime || [])
+          setRecentEpisodes(data.recentEpisodes || [])
           setTopManga(data.topManga || [])
           setPublishingManga(data.publishingManga || [])
         }
@@ -104,6 +107,7 @@ export default function HomePage() {
         setHeroLoading(false)
         setTopAnimeLoading(false)
         setUpcomingLoading(false)
+        setRecentLoading(false)
         setTopMangaLoading(false)
         setPubMangaLoading(false)
       }
@@ -161,8 +165,10 @@ export default function HomePage() {
           <AnimeHomeSection
             topAnime={topAnime}
             upcomingAnime={upcomingAnime}
+            recentEpisodes={recentEpisodes}
             topLoading={topAnimeLoading}
             upcomingLoading={upcomingLoading}
+            recentLoading={recentLoading}
           />
           <MangaHomeSection
             topManga={topManga}
@@ -185,8 +191,10 @@ export default function HomePage() {
                 <AnimeHomeSection
                   topAnime={topAnime}
                   upcomingAnime={upcomingAnime}
+                  recentEpisodes={recentEpisodes}
                   topLoading={topAnimeLoading}
                   upcomingLoading={upcomingLoading}
+                  recentLoading={recentLoading}
                 />
               </motion.div>
             )}
