@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'Animy Team' }],
   creator: 'Animy',
   publisher: 'Animy',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://animy-frontend.pages.dev'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://animy.xyz'),
   openGraph: {
     title: 'Animy | Discover Anime, Read Manga & Share with Friends',
     description: 'Discover the best anime series, read the latest manga chapters, and share your favorites with friends on Animy. Your ultimate anime and manga community.',
