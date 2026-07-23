@@ -76,6 +76,8 @@ export default function HomePage() {
       return;
     }
     
+    let isMounted = true;
+    
     const loadAllData = async () => {
       try {
         // Use the new unified home endpoint for instant, single-request loading
@@ -86,15 +88,29 @@ export default function HomePage() {
         const json = await res.json()
         const data = json.data || json;
 
-        if (data) {
+        if (data && isMounted) {
           // Update global cache
           globalHomeCache = data;
 
           // Update local state
           setTopAnime(data.popularAnime || [])
-          const heroPool = [...(data.trendingAnime || []), ...(data.popularAnime || [])]
-          const uniquePool = Array.from(new Map(heroPool.map(item => [item.mal_id || item.id, item])).values())
-          setHeroAnime(uniquePool.slice(0, 40))
+          
+          // Fetch "All Time Popular" for the hero section because they are guaranteed to have 
+          // gorgeous high-res fanart and clearlogos in the TVDB/TMDB databases.
+          fetch('https://api.jikan.moe/v4/top/anime?filter=bypopularity&limit=25')
+            .then(r => r.json())
+            .then(topData => {
+              if (topData?.data && isMounted) {
+                setHeroAnime(topData.data);
+              }
+            })
+            .catch(() => {
+              // Fallback to our backend pool if Jikan fails
+              const heroPool = [...(data.trendingAnime || []), ...(data.popularAnime || [])]
+              const uniquePool = Array.from(new Map(heroPool.map(item => [item.mal_id || item.id, item])).values())
+              if (isMounted) setHeroAnime(uniquePool.slice(0, 40))
+            });
+
           setTrendingHighlight(data.trendingAnime || [])
           setUpcomingAnime(data.upcomingAnime || [])
           setRecentEpisodes(data.recentEpisodes || [])
@@ -103,20 +119,23 @@ export default function HomePage() {
         }
       } catch (err) {
         console.error('Home load error:', err)
-        if (!globalHomeCache) {
+        if (!globalHomeCache && isMounted) {
            setError('Failed to load portal content. Please try again.')
         }
       } finally {
-        setHeroLoading(false)
-        setTopAnimeLoading(false)
-        setUpcomingLoading(false)
-        setRecentLoading(false)
-        setTopMangaLoading(false)
-        setPubMangaLoading(false)
+        if (isMounted) {
+            setHeroLoading(false)
+            setTopAnimeLoading(false)
+            setUpcomingLoading(false)
+            setRecentLoading(false)
+            setTopMangaLoading(false)
+            setPubMangaLoading(false)
+        }
       }
     }
 
     loadAllData()
+    return () => { isMounted = false }
   }, [])
 
 
