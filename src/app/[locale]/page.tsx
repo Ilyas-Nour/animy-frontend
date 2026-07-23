@@ -92,7 +92,7 @@ export default function HomePage() {
 
           // Update local state
           setTopAnime(data.popularAnime || [])
-          setHeroAnime(data.popularAnime?.slice(0, 5) || [])
+          setHeroAnime(data.popularAnime?.slice(0, 20) || [])
           setTrendingHighlight(data.trendingAnime || [])
           setUpcomingAnime(data.upcomingAnime || [])
           setRecentEpisodes(data.recentEpisodes || [])
@@ -123,7 +123,7 @@ export default function HomePage() {
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://animy-frontend.pages.dev'
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <StructuredData 
         data={[
           generateOrganizationSchema(siteUrl),

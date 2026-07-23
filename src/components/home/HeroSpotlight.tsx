@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Star, Play, ChevronLeft, ChevronRight, Info } from 'lucide-react'
+import { Star, Play, ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -13,46 +13,121 @@ interface HeroSpotlightProps {
     anime: Anime[]
 }
 
+interface ValidHeroAnime extends Anime {
+    logoUrl: string
+    fanartUrl: string
+}
+
 export function HeroSpotlight({ anime }: HeroSpotlightProps) {
     const [current, setCurrent] = useState(0)
-    const [logos, setLogos] = useState<Record<number, string>>({})
+    const [validAnimeList, setValidAnimeList] = useState<ValidHeroAnime[]>([])
+    const [isFetching, setIsFetching] = useState(true)
+
+    // Fetch official clear logos and high quality fanart/banners
+    useEffect(() => {
+        if (!anime.length) return
+        
+        let mounted = true
+        setIsFetching(true)
+
+        const fetchHighQualityAssets = async () => {
+            const validList: ValidHeroAnime[] = []
+            
+            // We only need 5 valid anime for the hero section
+            // We'll iterate through the provided anime list (up to 20) and stop when we have 5 perfect matches
+            for (const item of anime) {
+                if (validList.length >= 5) break;
+
+                const id = item.mal_id || item.anilistId || item.id
+                if (!id) continue
+
+                try {
+                    const res = await fetch(`https://api.ani.zip/mappings?mal_id=${id}`)
+                    if (!res.ok) continue
+                    
+                    const data = await res.json()
+                    
+                    // Look for Clearlogo
+                    const clearlogo = data.images?.find((img: any) => img.coverType === 'Clearlogo' || img.coverType === 'Clearart')
+                    // Look for Fanart (best quality 16:9), fallback to Banner
+                    const fanart = data.images?.find((img: any) => img.coverType === 'Fanart') || data.images?.find((img: any) => img.coverType === 'Banner')
+                    
+                    if (clearlogo?.url && fanart?.url) {
+                        validList.push({
+                            ...item,
+                            logoUrl: clearlogo.url,
+                            fanartUrl: fanart.url
+                        })
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch assets for", item.title)
+                }
+            }
+
+            // If we couldn't find 5 perfect matches, fallback to items with at least a logo, 
+            // and use their default banner/image if no fanart.
+            if (validList.length < 5) {
+                for (const item of anime) {
+                    if (validList.length >= 5) break;
+                    if (validList.some(v => v.mal_id === item.mal_id)) continue;
+
+                    const id = item.mal_id || item.anilistId || item.id
+                    if (!id) continue
+                    try {
+                        const res = await fetch(`https://api.ani.zip/mappings?mal_id=${id}`)
+                        if (!res.ok) continue
+                        const data = await res.json()
+                        const clearlogo = data.images?.find((img: any) => img.coverType === 'Clearlogo' || img.coverType === 'Clearart')
+                        
+                        // User specifically wants ONLY anime with logos. 
+                        // If it has a logo but no fanart, we'll accept it and use the default image
+                        if (clearlogo?.url) {
+                            validList.push({
+                                ...item,
+                                logoUrl: clearlogo.url,
+                                fanartUrl: item.bannerImage || item.images?.webp?.large_image_url || item.images?.jpg?.large_image_url
+                            })
+                        }
+                    } catch (err) {
+                        // ignore
+                    }
+                }
+            }
+
+            if (mounted) {
+                setValidAnimeList(validList)
+                setIsFetching(false)
+            }
+        }
+
+        fetchHighQualityAssets()
+
+        return () => { mounted = false }
+    }, [anime])
 
     // Auto-advance carousel
     useEffect(() => {
-        if (!anime.length) return
+        if (!validAnimeList.length) return
         const timer = setInterval(() => {
-            setCurrent((prev) => (prev + 1) % anime.length)
+            setCurrent((prev) => (prev + 1) % validAnimeList.length)
         }, 8000)
         return () => clearInterval(timer)
-    }, [anime.length])
+    }, [validAnimeList.length])
 
-    // Fetch official clear logos
-    useEffect(() => {
-        anime.forEach((item) => {
-            const id = item.mal_id || item.anilistId || item.id
-            if (!id || logos[id]) return
+    if (isFetching || !validAnimeList.length) {
+        return (
+            <div className="h-[80vh] min-h-[600px] w-full bg-muted/20 animate-pulse flex items-center justify-center">
+                <div className="container space-y-8">
+                    <div className="w-1/4 h-10 bg-muted/40 rounded-lg" />
+                    <div className="w-2/3 h-24 bg-muted/40 rounded-lg" />
+                    <div className="w-1/2 h-8 bg-muted/40 rounded-lg" />
+                </div>
+            </div>
+        )
+    }
 
-            if (item.logo) {
-                setLogos(prev => ({ ...prev, [id]: item.logo! }))
-                return
-            }
-
-            fetch(`https://api.ani.zip/mappings?mal_id=${id}`)
-                .then(res => res.json())
-                .then(data => {
-                    const clearlogo = data.images?.find((img: any) => img.coverType === 'Clearlogo' || img.coverType === 'Clearart')
-                    if (clearlogo?.url) {
-                        setLogos(prev => ({ ...prev, [id]: clearlogo.url }))
-                    }
-                })
-                .catch(() => {})
-        })
-    }, [anime])
-
-    const active = anime[current]
+    const active = validAnimeList[current]
     if (!active) return null
-
-    const currentLogoUrl = logos[active.mal_id || active.anilistId || active.id] || active.logo
 
     return (
         <section className="relative h-[80vh] min-h-[600px] w-full overflow-hidden bg-background group">
@@ -69,7 +144,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     <div className="absolute inset-0 z-0">
                         {/* High Quality Background Image */}
                         <Image
-                            src={active.bannerImage || active.images.jpg.large_image_url}
+                            src={active.fanartUrl}
                             alt={active.title}
                             fill
                             className="object-cover object-top opacity-90 dark:opacity-80"
@@ -104,10 +179,10 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 transition={{ delay: 0.2 }}
                                 className="min-h-[80px] md:min-h-[140px] flex items-end"
                             >
-                                {currentLogoUrl ? (
+                                {active.logoUrl ? (
                                     <div className="relative h-[80px] sm:h-[120px] md:h-[150px] w-full max-w-[450px]">
                                         <Image
-                                            src={currentLogoUrl}
+                                            src={active.logoUrl}
                                             alt={active.title}
                                             fill
                                             className="object-contain object-left-bottom filter drop-shadow-[0_10px_15px_rgba(0,0,0,0.8)]"
@@ -194,7 +269,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 transition={{ delay: 0.7 }}
                                 className="flex items-center gap-2 pt-6"
                             >
-                                {anime.map((_, i) => (
+                                {validAnimeList.map((_, i) => (
                                     <button
                                         key={i}
                                         onClick={() => setCurrent(i)}
@@ -223,14 +298,14 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
 
             {/* Side Navigation Arrows (Far Edges) */}
             <button
-                onClick={() => setCurrent((prev) => (prev - 1 + anime.length) % anime.length)}
+                onClick={() => setCurrent((prev) => (prev - 1 + validAnimeList.length) % validAnimeList.length)}
                 className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-2 text-white/50 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
                 aria-label="Previous Slide"
             >
                 <ChevronLeft size={32} strokeWidth={2.5} />
             </button>
             <button
-                onClick={() => setCurrent((prev) => (prev + 1) % anime.length)}
+                onClick={() => setCurrent((prev) => (prev + 1) % validAnimeList.length)}
                 className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-2 text-white/50 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
                 aria-label="Next Slide"
             >
