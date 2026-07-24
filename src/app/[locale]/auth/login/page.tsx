@@ -12,6 +12,7 @@ import * as z from 'zod'
 import api from '@/lib/api'
 import { authService } from '@/lib/auth'
 import { useAuth } from '@/context/AuthContext'
+import { Turnstile } from '@marsidev/react-turnstile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,6 +32,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string>('')
 
   const {
     register,
@@ -45,11 +47,16 @@ export default function LoginPage() {
   const [emailForVerification, setEmailForVerification] = useState('')
 
   const onSubmit = async (data: LoginForm) => {
+    if (!turnstileToken) {
+      setError('Please complete the security check.')
+      return
+    }
     try {
       setIsLoading(true)
       setError(null)
       // Don't reset verification state here immediately to avoid flickering if it fails again
-      const response = await authService.login(data)
+      const payload = { ...data, 'cf-turnstile-response': turnstileToken }
+      const response = await authService.login(payload)
       login(response.access_token, response.user)
 
       // If no interests selected, first time login -> Discovery
@@ -224,6 +231,15 @@ export default function LoginPage() {
                     {error}
                   </motion.div>
                 )}
+
+                <div className="cf-turnstile flex justify-center" data-action="turnstile-spin-v2">
+                  <Turnstile
+                    siteKey="0x4AAAAAAD8ZNK3FygnkC7vj"
+                    options={{ action: "turnstile-spin-v2" }}
+                    onSuccess={(token) => setTurnstileToken(token)}
+                    onError={() => setError('Security check failed. Please try again.')}
+                  />
+                </div>
 
                 <Button
                   type="submit"

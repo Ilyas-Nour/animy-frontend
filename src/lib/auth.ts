@@ -7,11 +7,13 @@ export interface RegisterData {
   username?: string
   firstName?: string
   lastName?: string
+  'cf-turnstile-response'?: string
 }
 
 export interface LoginData {
   email: string
   password: string
+  'cf-turnstile-response'?: string
 }
 
 export interface AuthResponse {

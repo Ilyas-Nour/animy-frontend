@@ -67,9 +67,32 @@ async function handleRequest(request: NextRequest) {
 
     // Forward body for non-GET/HEAD requests
     if (request.method !== 'GET' && request.method !== 'HEAD') {
-      const body = await request.arrayBuffer();
-      if (body.byteLength > 0) {
-        fetchOptions.body = body;
+      if ((targetPath === '/auth/login' || targetPath === '/auth/register') && request.headers.get('content-type')?.includes('application/json')) {
+        const jsonBody = await request.json();
+        const token = jsonBody['cf-turnstile-response'];
+        
+        const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            secret: process.env.TURNSTILE_SECRET || '',
+            response: token || '',
+            remoteip: request.headers.get('x-forwarded-for') || '',
+          }),
+        });
+        const result = await r.json();
+        if (!result.success) {
+          return NextResponse.json({ success: false, message: 'Turnstile verification failed. Please complete the CAPTCHA.' }, { status: 403 });
+        }
+        
+        delete jsonBody['cf-turnstile-response'];
+        fetchOptions.body = JSON.stringify(jsonBody);
+        headers.delete('content-length');
+      } else {
+        const bodyBuffer = await request.arrayBuffer();
+        if (bodyBuffer.byteLength > 0) {
+          fetchOptions.body = bodyBuffer;
+        }
       }
     }
 
