@@ -101,7 +101,23 @@ export default function HomePage() {
             .then(r => r.json())
             .then(topData => {
               if (topData?.data && isMounted) {
-                setHeroAnime(topData.data);
+                // Deduplicate franchises (e.g. Attack on Titan Season 1, 2, 3)
+                const uniqueAnime: Anime[] = [];
+                for (const anime of topData.data) {
+                  const title = (anime.title_english || anime.title || '').toLowerCase();
+                  // Check if this title is a sequel or part of an already added franchise
+                  const isDuplicate = uniqueAnime.some(existing => {
+                    const existingTitle = (existing.title_english || existing.title || '').toLowerCase();
+                    // If one title is a prefix of another (up to a colon or " Season"), consider it the same franchise
+                    const baseExisting = existingTitle.split(/[:\s-]*season|[:\s-]*part|:/i)[0].trim();
+                    const baseCurrent = title.split(/[:\s-]*season|[:\s-]*part|:/i)[0].trim();
+                    return baseExisting === baseCurrent || title.startsWith(existingTitle) || existingTitle.startsWith(title);
+                  });
+                  if (!isDuplicate) {
+                    uniqueAnime.push(anime);
+                  }
+                }
+                setHeroAnime(uniqueAnime);
               }
             })
             .catch(() => {
