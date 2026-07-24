@@ -43,24 +43,20 @@ interface Mirror {
 
 const MIRRORS: Mirror[] = [
     {
-        name: 'VidSrc',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.me/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&ep=${ctx.tmdbEp}` : null
+        name: 'AniStream',
+        buildUrl: (ctx) => ctx.malId ? `https://vidlink.pro/anime/${ctx.malId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true` : null
     },
     {
-        name: 'VidSrc.to',
+        name: 'VidMaster',
         buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.to/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}` : null
     },
     {
-        name: '2Embed',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://www.2embed.skin/embedtv/${ctx.tmdbId}&s=${ctx.season}&e=${ctx.tmdbEp}` : null
+        name: 'AniPlay',
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://autoembed.co/tv/tmdb/${ctx.tmdbId}-${ctx.season}-${ctx.tmdbEp}` : null
     },
     {
-        name: 'VidLink',
-        buildUrl: (ctx) => `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`
-    },
-    {
-        name: 'VidLink (MAL)',
-        buildUrl: (ctx) => ctx.malId ? `https://vidlink.pro/anime/${ctx.malId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true` : null
+        name: 'Multi',
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.pm/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&ep=${ctx.tmdbEp}` : null
     }
 ]
 
