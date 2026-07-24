@@ -44,7 +44,9 @@ interface Mirror {
 const MIRRORS: Mirror[] = [
     {
         name: 'AniStream',
-        buildUrl: (ctx) => ctx.malId ? `https://vidlink.pro/anime/${ctx.malId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true` : null
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp 
+            ? `https://vidlink.pro/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true` 
+            : `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`
     },
     {
         name: 'VidMaster',
