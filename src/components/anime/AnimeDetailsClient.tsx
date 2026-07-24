@@ -214,8 +214,33 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
 
     const bgImage = fanartUrl || (anime.trailer as any)?.images?.maximum_image_url || anime.images?.jpg?.large_image_url;
 
+    // Helper to convert hex to HSL for Tailwind
+    const hexToHsl = (hex: string) => {
+        hex = hex.replace(/^#/, '');
+        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        const r = parseInt(hex.substring(0, 2), 16) / 255;
+        const g = parseInt(hex.substring(2, 4), 16) / 255;
+        const b = parseInt(hex.substring(4, 6), 16) / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h = 0, s = 0, l = (max + min) / 2;
+        if (max !== min) {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        return `${(h * 360).toFixed(1)} ${(s * 100).toFixed(1)}% ${(l * 100).toFixed(1)}%`;
+    };
+
     return (
-        <div className="relative min-h-screen bg-background text-foreground selection:bg-primary/30 pb-20">
+        <div 
+            className="relative min-h-screen bg-background text-foreground selection:bg-primary/30 pb-20"
+            style={{ '--primary': hexToHsl(primaryColor) } as React.CSSProperties}
+        >
             {/* Global Parallax Background */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                 {bgImage && (
@@ -276,7 +301,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                 className="flex flex-col gap-4"
                             >
                                 <div>
-                                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white drop-shadow-2xl mb-2 leading-tight">
+                                    <h1 className="font-outfit text-4xl md:text-5xl lg:text-7xl font-black text-white drop-shadow-2xl mb-2 leading-tight">
                                         {anime.title}
                                     </h1>
                                     {anime.title_english && anime.title_english !== anime.title && (

@@ -1,12 +1,12 @@
 export const runtime = 'edge';
 import type { Metadata } from 'next'
-// import { Inter } from 'next/font/google'
+import { Inter, Outfit } from 'next/font/google'
 import './globals.css'
 import ClientLayoutWrapper from './ClientLayoutWrapper'
 import { AdController } from '@/components/ads/AdController'
 
-
-// const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
 
 export const metadata: Metadata = {
   title: {
@@ -174,7 +174,7 @@ export default async function RootLayout({ children, params }: { children: React
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="antialiased">
+      <body className={`${inter.variable} ${outfit.variable} font-sans antialiased`}>
         <NextIntlClientProvider messages={messages}>
           <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
         </NextIntlClientProvider>

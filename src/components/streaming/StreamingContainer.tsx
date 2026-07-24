@@ -179,6 +179,7 @@ export function StreamingContainer({
     }
 
     const reloadPlayer = () => setIframeKey(k => k + 1)
+    const [isLightsOut, setIsLightsOut] = useState(false)
 
     if (!mounted) return null
 
@@ -224,8 +225,16 @@ export function StreamingContainer({
                 />
             )}
 
+            {/* Lights Out Overlay */}
+            {isLightsOut && (
+                <div 
+                    className="fixed inset-0 bg-black/95 z-40 cursor-pointer transition-opacity duration-500" 
+                    onClick={() => setIsLightsOut(false)}
+                />
+            )}
+
             {/* ── Server Selector ── */}
-            <div className="flex flex-wrap gap-2 items-center">
+            <div className={`flex flex-wrap gap-2 items-center relative ${isLightsOut ? 'z-50' : 'z-10'}`}>
                 <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white/30 mr-1">
                     <Server className="w-3 h-3" /> Servers
                 </span>
@@ -244,8 +253,19 @@ export function StreamingContainer({
                     </button>
                 ))}
                 <button
+                    onClick={() => setIsLightsOut(!isLightsOut)}
+                    className={cn(
+                        "ml-auto px-3 py-1 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5",
+                        isLightsOut ? "bg-yellow-500/20 border-yellow-500/40 text-yellow-500" : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"
+                    )}
+                    title="Toggle Lights Out"
+                >
+                    <span className="w-2.5 h-2.5 rounded-full bg-current shadow-[0_0_8px_currentColor]" />
+                    Lights
+                </button>
+                <button
                     onClick={reloadPlayer}
-                    className="ml-auto px-2 py-1 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1"
+                    className="px-2 py-1 rounded-lg text-xs font-bold border border-white/10 bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1"
                     title="Reload player"
                 >
                     <RefreshCw className="w-3 h-3" />
@@ -253,29 +273,34 @@ export function StreamingContainer({
             </div>
 
             {/* ── Video Player ── */}
-            <div
-                className="relative bg-black rounded-xl md:rounded-3xl overflow-hidden border border-white/8 shadow-2xl shadow-black/60"
-                style={{ aspectRatio: '16/9' }}
-            >
-                <iframe
-                    key={`${iframeKey}-${currentEpNumber}-${mirrorIndex}`}
-                    src={embedUrl}
-                    className="w-full h-full border-0 bg-black"
-                    allowFullScreen={true}
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
-                    referrerPolicy="origin"
-                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
-                    {...({ webkitallowfullscreen: "true", mozallowfullscreen: "true", playsInline: true } as any)}
-                />
+            <div className={`relative ${isLightsOut ? 'z-50' : 'z-10'}`}>
+                {/* Ambient Lighting Glow */}
+                <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-[100px] pointer-events-none scale-90 mix-blend-screen transform-gpu" />
+                
+                <div
+                    className="relative bg-black rounded-xl md:rounded-3xl overflow-hidden border border-white/8 shadow-2xl shadow-black/60"
+                    style={{ aspectRatio: '16/9' }}
+                >
+                    <iframe
+                        key={`${iframeKey}-${currentEpNumber}-${mirrorIndex}`}
+                        src={embedUrl}
+                        className="w-full h-full border-0 bg-black"
+                        allowFullScreen={true}
+                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
+                        referrerPolicy="origin"
+                        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
+                        {...({ webkitallowfullscreen: "true", mozallowfullscreen: "true", playsInline: true } as any)}
+                    />
+                </div>
             </div>
 
             {/* ── Controls bar ── */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-1">
+            <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-1 relative ${isLightsOut ? 'z-50' : 'z-10'}`}>
                 <div className="flex flex-col gap-0.5 min-w-0">
-                    <h2 className="text-sm font-bold text-white flex items-center gap-2 truncate">
+                    <h2 className="font-outfit text-sm md:text-base font-bold text-white flex items-center gap-2 truncate">
                         Episode {currentEpNumber}
                     </h2>
-                    <p className="text-[10px] text-white/30 font-medium truncate max-w-[280px]">
+                    <p className="text-[10px] md:text-xs text-white/40 font-medium truncate max-w-[280px] md:max-w-[400px]">
                         {selectedEp?.title || animeTitle} · {activeMirror.name}
                     </p>
                 </div>

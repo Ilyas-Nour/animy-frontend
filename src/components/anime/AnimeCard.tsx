@@ -62,7 +62,7 @@ function AnimeCardComponent({ anime, index = 0 }: AnimeCardProps) {
           <div className="absolute bottom-0 left-0 right-0 p-3 z-20 flex flex-col gap-2">
             {/* Title & Score */}
             <div className="flex items-start justify-between gap-2">
-              <h3 className="text-sm font-bold text-white line-clamp-2 leading-snug drop-shadow-md">
+              <h3 className="font-outfit text-sm md:text-base font-bold text-white line-clamp-2 leading-snug drop-shadow-md">
                 {truncateText(anime.title, 45)}
               </h3>
               {anime.score && (
