@@ -276,15 +276,15 @@ export function StreamingContainer({
                 <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-[100px] pointer-events-none scale-90 mix-blend-screen transform-gpu" />
                 
                 <div
-                    className="relative bg-black rounded-xl md:rounded-3xl overflow-hidden border border-white/8 shadow-2xl shadow-black/60"
-                    style={{ aspectRatio: '16/9' }}
+                    className="relative bg-black rounded-xl md:rounded-3xl overflow-hidden border border-white/8 shadow-2xl shadow-black/60 w-full pb-[56.25%]"
                 >
                     <iframe
                         key={`${iframeKey}-${currentEpNumber}-${mirrorIndex}`}
                         src={embedUrl}
-                        className="w-full h-full border-0 bg-black"
+                        className="absolute top-0 left-0 w-full h-full border-0 bg-black"
                         allowFullScreen={true}
                         allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                         {...({ webkitallowfullscreen: "true", mozallowfullscreen: "true", playsInline: true } as any)}
                     />
                 </div>

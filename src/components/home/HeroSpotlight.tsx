@@ -200,7 +200,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                         />
                                     </div>
                                 ) : (
-                                    <h1 className="font-outfit font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
+                                    <h1 className="font-outfit font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-4xl sm:text-6xl md:text-7xl lg:text-8xl">
                                         {active.title}
                                     </h1>
                                 )}

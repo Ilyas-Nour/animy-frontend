@@ -301,7 +301,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                 className="flex flex-col gap-4"
                             >
                                 <div>
-                                    <h1 className="font-outfit text-4xl md:text-5xl lg:text-7xl font-black text-white drop-shadow-2xl mb-2 leading-tight">
+                                    <h1 className="font-outfit text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-white drop-shadow-2xl mb-2 leading-tight">
                                         {anime.title}
                                     </h1>
                                     {anime.title_english && anime.title_english !== anime.title && (
