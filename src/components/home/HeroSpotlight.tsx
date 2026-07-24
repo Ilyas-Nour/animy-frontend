@@ -170,17 +170,6 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     <div className="container relative h-full z-20 flex flex-col justify-end pb-20 sm:pb-28">
                         <div className="max-w-2xl space-y-4">
                             
-                            {/* Spotlight Number */}
-                            <motion.div
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.1 }}
-                            >
-                                <span className="text-primary font-bold text-xs md:text-sm tracking-widest uppercase">
-                                    #{current + 1} Spotlight
-                                </span>
-                            </motion.div>
-
                             {/* Title/Logo */}
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
