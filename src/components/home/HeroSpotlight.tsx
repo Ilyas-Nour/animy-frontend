@@ -140,9 +140,9 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
 
     return (
         <section className="relative h-[80vh] min-h-[600px] w-full overflow-hidden bg-background group">
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
                 <motion.div
-                    key={current}
+                    key={active.mal_id || active.id || current}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
