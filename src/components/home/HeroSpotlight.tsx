@@ -167,18 +167,18 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     </div>
 
                     {/* CONTENT ALIGNED TO BOTTOM LEFT */}
-                    <div className="container relative h-full z-20 flex flex-col justify-end pb-16 sm:pb-20 lg:pb-24">
-                        <div className="max-w-2xl space-y-3 lg:space-y-4">
+                    <div className="container relative h-full z-20 flex flex-col justify-end pb-12 sm:pb-16 lg:pb-20">
+                        <div className="max-w-xl xl:max-w-2xl space-y-3 lg:space-y-4">
                             
                             {/* Title/Logo */}
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.2 }}
-                                className="min-h-[60px] md:min-h-[100px] lg:min-h-[130px] flex items-end"
+                                className="min-h-[60px] md:min-h-[90px] lg:min-h-[100px] xl:min-h-[130px] flex items-end"
                             >
                                 {active.logoUrl ? (
-                                    <div className="relative h-[80px] sm:h-[110px] md:h-[130px] lg:h-[160px] w-full max-w-[350px] sm:max-w-[450px] lg:max-w-[500px]">
+                                    <div className="relative h-[80px] sm:h-[100px] md:h-[110px] lg:h-[120px] xl:h-[160px] w-full max-w-[300px] sm:max-w-[400px] md:max-w-[420px] lg:max-w-[450px] xl:max-w-[500px]">
                                         <Image
                                             src={active.logoUrl}
                                             alt={active.title}
@@ -189,7 +189,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                         />
                                     </div>
                                 ) : (
-                                    <h1 className="font-outfit font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
+                                    <h1 className="font-outfit font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-7xl">
                                         {active.title}
                                     </h1>
                                 )}
@@ -245,50 +245,21 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.6 }}
-                                className="flex flex-wrap items-center gap-4 pt-4"
+                                className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2 lg:pt-4"
                             >
                                 <Link href={`/anime/${active.mal_id}`}>
-                                    <Button className="h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full gap-2 transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(var(--primary),0.3)]">
-                                        <Play className="w-5 h-5 fill-current" /> Watch Now
+                                    <Button className="h-10 sm:h-12 xl:h-14 px-6 sm:px-8 xl:px-10 text-sm sm:text-base xl:text-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full gap-2 transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(var(--primary),0.3)]">
+                                        <Play className="w-4 h-4 xl:w-5 xl:h-5 fill-current" /> Watch Now
                                     </Button>
                                 </Link>
 
                                 <Link href={`/anime/${active.mal_id}`}>
-                                    <Button variant="secondary" className="h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg bg-white hover:bg-white/90 text-black font-bold rounded-full gap-2 transition-transform hover:scale-105 active:scale-95">
-                                        Details <ChevronRight className="w-5 h-5 text-black/70" />
+                                    <Button variant="secondary" className="h-10 sm:h-12 xl:h-14 px-6 sm:px-8 xl:px-10 text-sm sm:text-base xl:text-lg bg-white hover:bg-white/90 text-black font-bold rounded-full gap-2 transition-transform hover:scale-105 active:scale-95">
+                                        Details <ChevronRight className="w-4 h-4 xl:w-5 xl:h-5 text-black/70" />
                                     </Button>
                                 </Link>
                             </motion.div>
 
-                            {/* Left-Aligned Dash Indicators */}
-                            <motion.div
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.7 }}
-                                className="flex items-center gap-2 pt-6"
-                            >
-                                {validAnimeList.map((_, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => setCurrent(i)}
-                                        aria-label={`Go to slide ${i + 1}`}
-                                        className={cn(
-                                            "h-1.5 rounded-full transition-all duration-500 overflow-hidden relative",
-                                            current === i ? "w-8 bg-primary/30" : "w-4 bg-white/30 hover:bg-white/50"
-                                        )}
-                                    >
-                                        {current === i && (
-                                            <motion.div
-                                                layoutId="heroIndicator"
-                                                className="absolute inset-0 bg-primary"
-                                                initial={{ x: '-100%' }}
-                                                animate={{ x: '0%' }}
-                                                transition={{ duration: 8, ease: "linear" }}
-                                            />
-                                        )}
-                                    </button>
-                                ))}
-                            </motion.div>
                         </div>
                     </div>
                 </motion.div>
