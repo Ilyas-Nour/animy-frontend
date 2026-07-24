@@ -287,8 +287,6 @@ export function StreamingContainer({
                         className="w-full h-full border-0 bg-black"
                         allowFullScreen={true}
                         allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
-                        referrerPolicy="origin"
-                        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
                         {...({ webkitallowfullscreen: "true", mozallowfullscreen: "true", playsInline: true } as any)}
                     />
                 </div>
