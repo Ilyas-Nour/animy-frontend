@@ -254,16 +254,18 @@ export function StreamingContainer({
 
             {/* ── Video Player ── */}
             <div
-                className="relative bg-black rounded-3xl overflow-hidden border border-white/8 shadow-2xl shadow-black/60"
+                className="relative bg-black rounded-xl md:rounded-3xl overflow-hidden border border-white/8 shadow-2xl shadow-black/60"
                 style={{ aspectRatio: '16/9' }}
             >
                 <iframe
                     key={`${iframeKey}-${currentEpNumber}-${mirrorIndex}`}
                     src={embedUrl}
                     className="w-full h-full border-0 bg-black"
-                    allowFullScreen
+                    allowFullScreen={true}
                     allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
-                    referrerPolicy="no-referrer-when-downgrade"
+                    referrerPolicy="origin"
+                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
+                    {...({ webkitallowfullscreen: "true", mozallowfullscreen: "true", playsInline: true } as any)}
                 />
             </div>
 

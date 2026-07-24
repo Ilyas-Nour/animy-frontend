@@ -58,9 +58,16 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
 
     // Fetch high-quality fanart for background
     useEffect(() => {
-        const id = anime.mal_id || anime.anilistId || anime.id
-        if (!id) return;
-        fetch(`https://api.ani.zip/mappings?mal_id=${id}`)
+        let query = '';
+        if (anime.mal_id) {
+            query = `mal_id=${anime.mal_id}`;
+        } else if (anime.anilistId || anime.id) {
+            query = `anilist_id=${anime.anilistId || anime.id}`;
+        }
+        
+        if (!query) return;
+        
+        fetch(`https://api.ani.zip/mappings?${query}`)
             .then(res => res.json())
             .then(data => {
                 const fanart = data.images?.find((img: any) => img.coverType === 'Fanart') || data.images?.find((img: any) => img.coverType === 'Banner')
@@ -211,26 +218,26 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
         <div className="relative min-h-screen bg-background text-foreground selection:bg-primary/30 pb-20">
             {/* Global Parallax Background */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                <div className="fixed inset-0 bg-background/80 dark:bg-background/90 z-10" />
-                <div className="fixed inset-0 bg-gradient-to-b from-transparent via-background/60 to-background z-10" />
-                <div className="fixed inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10 opacity-80" />
                 {bgImage && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 1 }}
-                        className="fixed inset-0 w-full h-[100vh]"
+                        className="fixed inset-0 w-full h-[100vh] z-0"
                     >
                         <Image
                             src={bgImage}
                             alt={anime.title}
                             fill
-                            className="object-cover object-top opacity-30 dark:opacity-[0.15] mix-blend-luminosity"
+                            className="object-cover object-top opacity-50 dark:opacity-30 mix-blend-luminosity"
                             priority
                             quality={100}
                         />
                     </motion.div>
                 )}
+                <div className="fixed inset-0 bg-background/80 dark:bg-background/80 z-10" />
+                <div className="fixed inset-0 bg-gradient-to-b from-transparent via-background/60 to-background z-10" />
+                <div className="fixed inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10 opacity-80" />
             </div>
 
             {/* Main Content */}

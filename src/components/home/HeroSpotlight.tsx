@@ -39,14 +39,20 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
             let processedCount = 0;
 
             pool.forEach(async (item) => {
-                const id = item.mal_id || item.anilistId || item.id
-                if (!id) {
+                let query = '';
+                if (item.mal_id) {
+                    query = `mal_id=${item.mal_id}`;
+                } else if (item.anilistId || item.id) {
+                    query = `anilist_id=${item.anilistId || item.id}`;
+                }
+                
+                if (!query) {
                     processedCount++;
                     return;
                 }
                 
                 try {
-                    const res = await fetch(`https://api.ani.zip/mappings?mal_id=${id}`)
+                    const res = await fetch(`https://api.ani.zip/mappings?${query}`)
                     if (res.ok) {
                         const data = await res.json()
                         const clearlogo = data.images?.find((img: any) => img.coverType === 'Clearlogo' || img.coverType === 'Clearart')
