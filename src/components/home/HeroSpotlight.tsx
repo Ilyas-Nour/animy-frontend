@@ -167,18 +167,18 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     </div>
 
                     {/* CONTENT ALIGNED TO BOTTOM LEFT */}
-                    <div className="container relative h-full z-20 flex flex-col justify-end pb-20 sm:pb-28">
-                        <div className="max-w-2xl space-y-4">
+                    <div className="container relative h-full z-20 flex flex-col justify-end pb-16 sm:pb-20 lg:pb-24">
+                        <div className="max-w-2xl space-y-3 lg:space-y-4">
                             
                             {/* Title/Logo */}
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.2 }}
-                                className="min-h-[80px] md:min-h-[140px] flex items-end"
+                                className="min-h-[60px] md:min-h-[100px] lg:min-h-[130px] flex items-end"
                             >
                                 {active.logoUrl ? (
-                                    <div className="relative h-[100px] sm:h-[140px] md:h-[180px] w-full max-w-[550px]">
+                                    <div className="relative h-[80px] sm:h-[110px] md:h-[130px] lg:h-[160px] w-full max-w-[350px] sm:max-w-[450px] lg:max-w-[500px]">
                                         <Image
                                             src={active.logoUrl}
                                             alt={active.title}
@@ -189,7 +189,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                         />
                                     </div>
                                 ) : (
-                                    <h1 className="font-outfit font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-4xl sm:text-6xl md:text-7xl lg:text-8xl">
+                                    <h1 className="font-outfit font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
                                         {active.title}
                                     </h1>
                                 )}
@@ -236,7 +236,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.5 }}
-                                className="text-sm sm:text-base text-white/70 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-2xl"
+                                className="text-xs sm:text-sm lg:text-base text-white/70 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-2xl"
                                 dangerouslySetInnerHTML={{ __html: active.synopsis || '' }}
                             />
 
