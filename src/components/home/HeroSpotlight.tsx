@@ -28,7 +28,10 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
         if (!anime.length) return
         
         let mounted = true
-        setIsFetching(true)
+        // Only show skeleton if we have NO items currently
+        if (validAnimeList.length === 0) {
+            setIsFetching(true)
+        }
 
         const loadHeroAnime = () => {
             // Check top 25 items concurrently
@@ -55,8 +58,10 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                         if (fanartUrl) {
                             if (mounted) {
                                 setValidAnimeList(prev => {
-                                    if (prev.length >= 10) return prev;
-                                    if (prev.some(p => p.mal_id === item.mal_id)) return prev;
+                                    if (prev.length >= 15) return prev;
+                                    
+                                    // Robust duplicate check
+                                    if (prev.some(p => (p.mal_id && p.mal_id === item.mal_id) || (p.anilistId && p.anilistId === item.anilistId) || (p.id && p.id === item.id))) return prev;
                                     
                                     const newItem = {
                                         ...item,

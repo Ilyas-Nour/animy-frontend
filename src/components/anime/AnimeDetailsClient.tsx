@@ -45,6 +45,7 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
     const [favoriteCharacters, setFavoriteCharacters] = useState<number[]>([])
     const [scrolled, setScrolled] = useState(false)
     const [isSynopsisExpanded, setIsSynopsisExpanded] = useState(false)
+    const [fanartUrl, setFanartUrl] = useState<string | null>(null)
     const primaryColor = anime.color || '#8b5cf6'
 
     useEffect(() => {
@@ -54,6 +55,21 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
+
+    // Fetch high-quality fanart for background
+    useEffect(() => {
+        const id = anime.mal_id || anime.anilistId || anime.id
+        if (!id) return;
+        fetch(`https://api.ani.zip/mappings?mal_id=${id}`)
+            .then(res => res.json())
+            .then(data => {
+                const fanart = data.images?.find((img: any) => img.coverType === 'Fanart') || data.images?.find((img: any) => img.coverType === 'Banner')
+                if (fanart?.url) {
+                    setFanartUrl(fanart.url)
+                }
+            })
+            .catch(() => {})
+    }, [anime])
 
     // Check status on mount if authenticated
     useEffect(() => {
@@ -189,36 +205,38 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
         { value: 'PLAN_TO_WATCH', label: 'Plan to Watch' },
     ]
 
-    return (
-        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 pb-20">
-            {/* Unified Hero Section */}
-            <div className="relative w-full min-h-[400px] md:min-h-[600px] pb-6 md:pb-12 mb-6 md:mb-12">
-                {/* Background Banner */}
-                <div className="absolute inset-0 z-0 overflow-hidden">
-                    {/* Sophisticated Gradients for blending */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent z-10" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent z-10" />
-                    <div className="absolute inset-0 bg-black/40 z-[5]" />
-                    {anime.images?.jpg?.large_image_url && (
-                        <motion.div
-                            initial={{ scale: 1.05, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.8 }}
-                            className="w-full h-full"
-                        >
-                            <Image
-                                src={anime.images.jpg.large_image_url}
-                                alt={anime.title}
-                                fill
-                                className="object-cover object-top blur-[40px] opacity-50 scale-110"
-                                priority
-                            />
-                        </motion.div>
-                    )}
-                </div>
+    const bgImage = fanartUrl || (anime.trailer as any)?.images?.maximum_image_url || anime.images?.jpg?.large_image_url;
 
-                {/* Hero Content */}
-                <div className="container relative z-20 pt-16 md:pt-32 px-4 md:px-8">
+    return (
+        <div className="relative min-h-screen bg-background text-foreground selection:bg-primary/30 pb-20">
+            {/* Global Parallax Background */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                <div className="fixed inset-0 bg-background/80 dark:bg-background/90 z-10" />
+                <div className="fixed inset-0 bg-gradient-to-b from-transparent via-background/60 to-background z-10" />
+                <div className="fixed inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10 opacity-80" />
+                {bgImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1 }}
+                        className="fixed inset-0 w-full h-[100vh]"
+                    >
+                        <Image
+                            src={bgImage}
+                            alt={anime.title}
+                            fill
+                            className="object-cover object-top opacity-30 dark:opacity-[0.15] mix-blend-luminosity"
+                            priority
+                            quality={100}
+                        />
+                    </motion.div>
+                )}
+            </div>
+
+            {/* Main Content */}
+            <div className="relative z-20">
+                {/* Unified Hero Section */}
+                <div className="container px-4 md:px-8 w-full pb-6 md:pb-12 mb-6 md:mb-12 pt-16 md:pt-32">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
                         {/* Left: Poster */}
                         <div className="lg:col-span-3 lg:col-start-1 flex flex-col gap-6 items-center lg:items-start shrink-0">
@@ -630,7 +648,6 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                     </div>
                 </div>
             </div>
-
             
         </div>
     )
