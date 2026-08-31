@@ -124,7 +124,7 @@ export default function ConversationSidebar({
             socket.off('message:new', handleNewMessage)
             socket.off('message:read')
         }
-    }, [socket, selectedFriendId])
+    }, [socket, selectedFriendId, user?.id])
 
     const [debugInfo, setDebugInfo] = useState<string>('')
 

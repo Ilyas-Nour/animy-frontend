@@ -154,7 +154,7 @@ export default function HomePage() {
 
     loadAllData()
     return () => { isMounted = false }
-  }, [])
+  }, [login, router])
 
 
   if (error) return <ErrorMessage message={error} />

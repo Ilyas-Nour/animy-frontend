@@ -6,6 +6,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import { cn } from '@/lib/utils'
 import EmojiPicker, { Theme } from 'emoji-picker-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 
 interface MessageInputProps {
     onSendMessage: (content: string, messageType?: 'TEXT' | 'STICKER' | 'ANIME_CARD', animeId?: number, parentId?: string) => void
@@ -178,10 +179,13 @@ export default function MessageInput({ onSendMessage, onTyping, replyingTo, onCa
                                     title={sticker.name}
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <img
+                                    <Image
                                         src={sticker.url}
                                         alt={sticker.name}
-                                        className="w-full h-full object-contain drop-shadow-xl z-10"
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 33vw"
+                                        className="object-contain drop-shadow-xl z-10"
+                                        unoptimized
                                     />
                                 </motion.button>
                             ))}

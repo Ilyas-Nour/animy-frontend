@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ChevronRight, Flame, Clock, ArrowUpRight, FileText, Loader2, Link2, Share2, Users } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -190,10 +191,13 @@ export function DashboardNews() {
                     >
                         {featured.image ? (
                             <div className="absolute inset-0">
-                                <img
+                                <Image
                                     src={featured.image}
                                     alt={featured.title}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                    unoptimized
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
                             </div>
@@ -234,10 +238,13 @@ export function DashboardNews() {
                         >
                             {article.image && (
                                 <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 relative bg-secondary/30 border border-white/5 hidden sm:block">
-                                    <img
+                                    <Image
                                         src={article.image}
                                         alt={article.title}
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                        fill
+                                        sizes="96px"
+                                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                        unoptimized
                                     />
                                     <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
                                 </div>

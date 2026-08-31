@@ -149,6 +149,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         return () => {
             newSocket.disconnect()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token, user, playNotif, refreshUnreadCount]) // Removed activeFriendId dependency to prevent socket reconnections, added refreshUnreadCount
 
     // Polling fallback

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { X, ExternalLink, Clock, Heart, MessageCircle, Share2, Users, Link2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import Image from 'next/image'
 import { AniNewsItem } from './NewsFeed'
 import { cn } from '@/lib/utils'
 import { CommentSection } from './CommentSection'
@@ -116,11 +117,14 @@ export function NewsArticleModal({ article, onClose }: Props) {
                 <div className="overflow-y-auto flex-1">
                     {/* Hero Image */}
                     {article.image && !imgError && (
-                        <div className="w-full aspect-[16/9] overflow-hidden bg-secondary/30">
-                            <img
+                        <div className="w-full aspect-[16/9] overflow-hidden bg-secondary/30 relative">
+                            <Image
                                 src={article.image}
                                 alt={article.title}
-                                className="w-full h-full object-cover"
+                                fill
+                                sizes="(max-width: 768px) 100vw, 800px"
+                                className="object-cover"
+                                unoptimized
                                 onError={() => setImgError(true)}
                             />
                         </div>

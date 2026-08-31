@@ -112,6 +112,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
         loadHeroAnime()
 
         return () => { mounted = false }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [anime])
 
     // Auto-advance carousel

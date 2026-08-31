@@ -3,6 +3,7 @@
 import { useRef, ChangeEvent } from 'react'
 import { Camera } from 'lucide-react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { getAvatarUrl } from '@/lib/utils'
 
 interface ImageUploadProps {
@@ -80,10 +81,13 @@ export function ImageUpload({
                     style={{ background: getDefaultImage() }}
                 />
             ) : (
-                <img
+                <Image
                     src={getAvatarUrl(currentImage) || getDefaultImage()}
                     alt={label}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
                     className={imageClasses}
+                    unoptimized
                 />
             )}
 

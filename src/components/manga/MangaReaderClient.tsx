@@ -5,6 +5,8 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Loader2, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api'
+import Link from 'next/link'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -54,9 +56,12 @@ const MangaPage = ({
         >
             {(inView || isCurrentPage) && (
                 <>
-                    <img
+                    <Image
                         src={page.img || page.url || page}
                         alt={`Page ${page.page || index + 1}`}
+                        width={0}
+                        height={0}
+                        sizes="100vw"
                         className={cn(
                             "w-full h-auto object-contain z-10 transition-all duration-700",
                             loaded ? "opacity-100 scale-100" : "opacity-0 scale-95",
@@ -64,6 +69,7 @@ const MangaPage = ({
                         )}
                         onLoad={() => setLoaded(true)}
                         referrerPolicy="no-referrer"
+                        unoptimized
                     />
                     {!loaded && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center -z-0 gap-3">
@@ -437,7 +443,7 @@ function MangaReaderContent() {
                                 return preloadIndices.map(i => {
                                     const page = pages[i];
                                     const src = page?.img || page?.url || page;
-                                    return src ? <img key={`preload-${i}`} src={src} alt="" referrerPolicy="no-referrer" /> : null;
+                                    return src ? <Image key={`preload-${i}`} src={src} alt="" width={0} height={0} sizes="10vw" unoptimized referrerPolicy="no-referrer" /> : null;
                                 });
                             })()}
                         </div>

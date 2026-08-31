@@ -57,6 +57,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
       >
         {/* Background Image with blur */}
         {imageUrl && (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={imageUrl}
             alt=""
