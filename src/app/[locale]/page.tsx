@@ -118,6 +118,8 @@ export default function HomePage() {
                   }
                 }
                 setHeroAnime(uniqueAnime);
+              } else {
+                throw new Error('Jikan API rate limit or empty data');
               }
             })
             .catch(() => {
