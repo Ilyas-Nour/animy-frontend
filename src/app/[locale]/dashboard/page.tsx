@@ -98,7 +98,7 @@ export default function DashboardPage() {
           {user?.bannerUrl ? (
             <div className="relative w-full h-full">
               <Image
-                src={getAvatarUrl(user.bannerUrl)}
+                src={getAvatarUrl(user.bannerUrl) as string}
                 alt="Profile Banner"
                 fill
                 sizes="100vw"
@@ -384,7 +384,7 @@ export default function DashboardPage() {
                 <Link key={friend.id} href={`/users/${friend.username}`} className="flex items-center gap-3 p-2 hover:bg-secondary/50 rounded-2xl transition-all group">
                   <div className="w-10 h-10 rounded-full border border-border overflow-hidden relative bg-muted flex items-center justify-center group-hover:border-indigo-500/50 transition-colors">
                     {friend.avatar ? (
-                      <Image src={getAvatarUrl(friend.avatar)} alt={friend.username} fill sizes="40px" className="object-cover" crossOrigin="anonymous" unoptimized />
+                      <Image src={getAvatarUrl(friend.avatar) as string} alt={friend.username} fill sizes="40px" className="object-cover" crossOrigin="anonymous" unoptimized />
                     ) : (
                       <span className="text-xs font-bold text-muted-foreground">{getInitials(friend.firstName || friend.username)}</span>
                     )}

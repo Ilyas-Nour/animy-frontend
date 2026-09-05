@@ -178,7 +178,7 @@ function TiltCard({
                         <div className="w-full h-full rounded-full bg-background overflow-hidden relative flex items-center justify-center">
                             {match.avatar ? (
                                 <Image
-                                    src={getAvatarUrl(match.avatar)}
+                                    src={getAvatarUrl(match.avatar) as string}
                                     alt={match.username}
                                     fill
                                     sizes="80px"

@@ -181,7 +181,7 @@ interface HeroSpotlightProps {
 }
 
 // Map static list into the shape the component renders
-type HeroEntry = typeof HERO_STATIC[number] & { genres: { name: string }[] }
+type HeroEntry = Omit<typeof HERO_STATIC[number], 'genres'> & { genres: { name: string }[] }
 
 export function HeroSpotlight({ anime }: HeroSpotlightProps) {
     // Step 1: build initial list from static curated data — renders INSTANTLY, no API wait
@@ -219,7 +219,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     score: item.score ?? 0,
                     status: item.status ?? 'Finished',
                     type: item.type ?? 'TV',
-                    year: item.year ?? item.aired?.prop?.from?.year ?? undefined,
+                    year: item.year ?? (item.aired as any)?.prop?.from?.year ?? undefined,
                 } as HeroEntry
             })
         ).then(results => {

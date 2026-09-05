@@ -195,7 +195,7 @@ export function ShareNewsModal({ open, onOpenChange, newsItem }: ShareNewsModalP
                                                 <div className="w-full h-full rounded-[11px] bg-[#050505] flex items-center justify-center overflow-hidden relative">
                                                     {friend.avatar ? (
                                                         <Image 
-                                                            src={getAvatarUrl(friend.avatar)} 
+                                                            src={getAvatarUrl(friend.avatar) as string} 
                                                             alt={friend.username} 
                                                             fill
                                                             sizes="48px"

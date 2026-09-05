@@ -304,7 +304,7 @@ function CommentItem({
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-600/20 overflow-hidden border border-border shadow-md transform group-hover/avatar:scale-105 transition-transform">
                         {comment.user.avatar ? (
                             <Image
-                                src={getAvatarUrl(comment.user.avatar)}
+                                src={getAvatarUrl(comment.user.avatar) as string}
                                 alt={comment.user.username}
                                 fill
                                 sizes="40px"

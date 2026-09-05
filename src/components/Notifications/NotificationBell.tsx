@@ -168,7 +168,7 @@ function NotificationItem({ notification, onRead, onClose }: { notification: Not
                 <div className="w-10 h-10 rounded-xl bg-accent overflow-hidden shrink-0 border border-border/50 shadow-sm">
                     {notification.sender?.avatar ? (
                         <Image
-                            src={getAvatarUrl(notification.sender.avatar)}
+                            src={getAvatarUrl(notification.sender.avatar) as string}
                             alt={notification.sender.username}
                             fill
                             sizes="40px"
