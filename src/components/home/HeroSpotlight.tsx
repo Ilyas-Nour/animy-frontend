@@ -9,14 +9,14 @@ import { Button } from '@/components/ui/button'
 import { Anime } from '@/types/anime'
 import { cn } from '@/lib/utils'
 
-// Curated hero entries with guaranteed high-quality 1920x1080+ TVDB fanart and clear logos.
-// These render INSTANTLY on load — no external API call needed.
+// Curated hero entries with reliable image sources.
+// fanartUrl: high-res banner/fanart from AniList CDN (always works, no hotlink block)
 const HERO_STATIC = [
     {
         mal_id: 5114,
         title: 'Fullmetal Alchemist: Brotherhood',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/75579/clearlogo/5ec2059bb7685.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/75579/backgrounds/5f41af8b59d5f.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/5114-LuHrFVoGbRs1.jpg',
         genres: ['Action', 'Adventure', 'Drama', 'Fantasy'],
         synopsis: 'Two brothers search for a Philosopher\'s Stone after an attempt to revive their deceased mother goes awry, leaving them in damaged physical forms.',
         score: 9.1, status: 'Finished', type: 'TV', year: 2009,
@@ -24,8 +24,8 @@ const HERO_STATIC = [
     {
         mal_id: 1535,
         title: 'Death Note',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/79481/clearlogo/5ec1f0ae5ddd1.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/79481/backgrounds/629e9dd5b2979.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/1535.jpg',
         genres: ['Mystery', 'Psychological', 'Supernatural', 'Thriller'],
         synopsis: 'A high school student discovers a supernatural notebook that allows him to kill anyone whose name he writes in it.',
         score: 8.6, status: 'Finished', type: 'TV', year: 2006,
@@ -33,8 +33,8 @@ const HERO_STATIC = [
     {
         mal_id: 16498,
         title: 'Attack on Titan',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/267440/clearlogo/6052f1e2aa5e6.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/267440/backgrounds/6051a5b1de2a7.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/16498-8jpFCOcDmneX.jpg',
         genres: ['Action', 'Drama', 'Fantasy', 'Mystery'],
         synopsis: 'Humanity lives within enormous walled cities to protect themselves from man-eating giants. A young boy vows revenge after his hometown is destroyed.',
         score: 9.0, status: 'Finished', type: 'TV', year: 2013,
@@ -42,26 +42,17 @@ const HERO_STATIC = [
     {
         mal_id: 21,
         title: 'One Piece',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/81797/clearlogo/612bc64ee5dbc.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/81797/backgrounds/628a4ef50b3f0.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/21-wf37VakJmZqs.jpg',
         genres: ['Action', 'Adventure', 'Comedy', 'Fantasy'],
         synopsis: 'Monkey D. Luffy sets off on an adventure to find the legendary One Piece and become King of the Pirates.',
         score: 8.7, status: 'Releasing', type: 'TV', year: 1999,
     },
     {
-        mal_id: 20,
-        title: 'Naruto',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/78857/clearlogo/5ec20cdf9bf29.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/78857/backgrounds/5f6b6aeed4acb.jpg',
-        genres: ['Action', 'Adventure', 'Fantasy', 'Martial Arts'],
-        synopsis: 'A young ninja with a powerful demon fox spirit sealed inside him seeks recognition and dreams of becoming the Hokage, leader of his village.',
-        score: 8.0, status: 'Finished', type: 'TV', year: 2002,
-    },
-    {
         mal_id: 11061,
-        title: 'Hunter x Hunter',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/251562/clearlogo/5ec1f1d0a8b05.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/251562/backgrounds/5f8f1c0b7e4e0.jpg',
+        title: 'Hunter x Hunter (2011)',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/11061-JeZRsfIPRyZb.jpg',
         genres: ['Action', 'Adventure', 'Fantasy', 'Shounen'],
         synopsis: 'Gon Freecss aspires to become a Hunter to find his missing father, an exceptionally rare individual who hunts incredible wonders of the world.',
         score: 9.0, status: 'Finished', type: 'TV', year: 2011,
@@ -69,8 +60,8 @@ const HERO_STATIC = [
     {
         mal_id: 44511,
         title: 'Demon Slayer',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/365189/clearlogo/609ce5c0dd2a7.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/365189/backgrounds/6182b96de1a3e.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/101922-YfZhKBUDDS6L.jpg',
         genres: ['Action', 'Fantasy', 'Historical', 'Supernatural'],
         synopsis: 'A young boy becomes a demon slayer to avenge his family and cure his sister after they are attacked by demons.',
         score: 8.7, status: 'Releasing', type: 'TV', year: 2019,
@@ -78,44 +69,26 @@ const HERO_STATIC = [
     {
         mal_id: 40748,
         title: 'Jujutsu Kaisen',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/376564/clearlogo/60dccdcd82e5d.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/376564/backgrounds/618e476b12d9c.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/113415-BBJRRZbGHBDF.jpg',
         genres: ['Action', 'Fantasy', 'Horror', 'Supernatural'],
         synopsis: 'A boy swallows a cursed talisman and becomes host to a powerful demon. He joins secret sorcerers to eliminate curses.',
         score: 8.6, status: 'Releasing', type: 'TV', year: 2020,
     },
     {
-        mal_id: 40748,
+        mal_id: 38000,
         title: 'Chainsaw Man',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/424736/clearlogo/634b1562e0929.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/424736/backgrounds/634b15abec37d.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/127230-YgWF8NICmfSY.jpg',
         genres: ['Action', 'Adventure', 'Supernatural'],
-        synopsis: 'Denji, a poor devil hunter, merges with his pet devil Pochita and becomes Chainsaw Man — a devil-human hybrid with chainsaws erupting from his body.',
+        synopsis: 'Denji merges with his pet devil Pochita and becomes Chainsaw Man — a devil-human hybrid with chainsaws erupting from his body.',
         score: 8.6, status: 'Releasing', type: 'TV', year: 2022,
-    },
-    {
-        mal_id: 33,
-        title: 'Dragon Ball Z',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/81472/clearlogo/5ec20cbf6e4b4.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/81472/backgrounds/5f6982f6cfcfc.jpg',
-        genres: ['Action', 'Adventure', 'Comedy', 'Fantasy'],
-        synopsis: 'Goku and his allies defend Earth against increasingly powerful villains including Saiyans, Frieza, Cell, and Majin Buu.',
-        score: 8.2, status: 'Finished', type: 'TV', year: 1989,
-    },
-    {
-        mal_id: 459,
-        title: 'Bleach',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/74796/clearlogo/5ec2013de9ef0.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/74796/backgrounds/62a73c62d4cf2.jpg',
-        genres: ['Action', 'Adventure', 'Comedy', 'Supernatural'],
-        synopsis: 'High school student Ichigo Kurosaki gains Soul Reaper powers and must defend the living world from evil spirits called Hollows.',
-        score: 7.9, status: 'Releasing', type: 'TV', year: 2004,
     },
     {
         mal_id: 9253,
         title: 'Steins;Gate',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/244961/clearlogo/5ec2035af0e11.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/244961/backgrounds/5f6e22d24e965.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/9253-UHWFnXaXbBBq.jpg',
         genres: ['Drama', 'Sci-Fi', 'Thriller'],
         synopsis: 'A group of friends accidentally discover time travel through text messages, leading to dire consequences threatening their very lives.',
         score: 9.1, status: 'Finished', type: 'TV', year: 2011,
@@ -123,8 +96,8 @@ const HERO_STATIC = [
     {
         mal_id: 30276,
         title: 'One Punch Man',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/295068/clearlogo/5ec20a2b68a14.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/295068/backgrounds/5f68d72f6e4f4.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/97940-3oFRBCOmRUwH.jpg',
         genres: ['Action', 'Comedy', 'Sci-Fi', 'Superhero'],
         synopsis: 'Saitama is a superhero who can defeat any enemy with a single punch. He seeks a worthy opponent while dealing with existential boredom.',
         score: 8.7, status: 'Finished', type: 'TV', year: 2015,
@@ -132,8 +105,8 @@ const HERO_STATIC = [
     {
         mal_id: 49387,
         title: 'Spy x Family',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/387148/clearlogo/626d51f2bc13c.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/387148/backgrounds/626d52d7e8617.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/140960-C7v5mXBCOPCF.jpg',
         genres: ['Action', 'Comedy', 'Slice of Life'],
         synopsis: 'A spy, an assassin, and a telepathic girl create a fake family for a mission, while hiding their true identities from each other.',
         score: 8.6, status: 'Finished', type: 'TV', year: 2022,
@@ -141,8 +114,8 @@ const HERO_STATIC = [
     {
         mal_id: 52991,
         title: "Frieren: Beyond Journey's End",
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/426762/clearlogo/651b4ee9a32ea.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/426762/backgrounds/651b4f08a3b3e.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-Wq4GRNMIdSUQ.jpg',
         genres: ['Adventure', 'Drama', 'Fantasy'],
         synopsis: 'An elven mage reflects on her quest with the hero\'s party after their passing, as she travels to understand the humans she never truly knew.',
         score: 9.1, status: 'Finished', type: 'TV', year: 2023,
@@ -150,8 +123,8 @@ const HERO_STATIC = [
     {
         mal_id: 31964,
         title: 'My Hero Academia',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/305074/clearlogo/5ec209fb0d4a6.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/305074/backgrounds/5f8e7a46a1c0d.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/100166-t2v1LG4FLFAJ.jpg',
         genres: ['Action', 'Comedy', 'School', 'Superhero'],
         synopsis: 'In a world where most have superpowers called "Quirks," a boy born without one inherits the greatest power and enrolls in superhero high school.',
         score: 7.8, status: 'Finished', type: 'TV', year: 2016,
@@ -159,17 +132,44 @@ const HERO_STATIC = [
     {
         mal_id: 1,
         title: 'Cowboy Bebop',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/76885/clearlogo/5ec2057e91e8a.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/76885/backgrounds/5f6d7427b7f17.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/1-T3PJUjFJyRSg.jpg',
         genres: ['Action', 'Adventure', 'Drama', 'Sci-Fi'],
         synopsis: 'A ragtag crew of bounty hunters chases criminals across the solar system while each dealing with their troubled pasts.',
         score: 8.8, status: 'Finished', type: 'TV', year: 1998,
     },
     {
+        mal_id: 20,
+        title: 'Naruto',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/20-WvJEhcv1KXzj.jpg',
+        genres: ['Action', 'Adventure', 'Fantasy', 'Martial Arts'],
+        synopsis: 'A young ninja with a powerful demon fox spirit seeks recognition and dreams of becoming the Hokage, leader of his village.',
+        score: 8.0, status: 'Finished', type: 'TV', year: 2002,
+    },
+    {
+        mal_id: 459,
+        title: 'Bleach',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/269-UAt7BNjGMFmQ.jpg',
+        genres: ['Action', 'Adventure', 'Comedy', 'Supernatural'],
+        synopsis: 'High school student Ichigo Kurosaki gains Soul Reaper powers and must defend the living world from evil spirits called Hollows.',
+        score: 7.9, status: 'Releasing', type: 'TV', year: 2004,
+    },
+    {
+        mal_id: 33,
+        title: 'Dragon Ball Z',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/139-4-KMT7rLFe.jpg',
+        genres: ['Action', 'Adventure', 'Comedy', 'Fantasy'],
+        synopsis: 'Goku and his allies defend Earth against increasingly powerful villains including Saiyans, Frieza, Cell, and Majin Buu.',
+        score: 8.2, status: 'Finished', type: 'TV', year: 1989,
+    },
+    {
         mal_id: 28977,
         title: 'Sword Art Online',
-        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/261645/clearlogo/5ec20b1a6b073.png',
-        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/261645/backgrounds/5f6b4de95d24b.jpg',
+        logoUrl: '',
+        fanartUrl: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/11757-9XfMGRYNvFaU.jpg',
         genres: ['Action', 'Adventure', 'Fantasy', 'Romance'],
         synopsis: 'In the near future, players are trapped inside a virtual reality MMORPG and must clear the game to escape, or face death.',
         score: 7.2, status: 'Finished', type: 'TV', year: 2012,
@@ -264,14 +264,14 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                 >
                     {/* FULL SCREEN BACKGROUND */}
                     <div className="absolute inset-0 z-0">
-                        <Image
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
                             src={active.fanartUrl}
                             alt={active.title}
-                            fill
-                            className="object-cover object-top opacity-90 dark:opacity-80"
-                            priority
-                            quality={100}
-                            unoptimized
+                            className="absolute inset-0 w-full h-full object-cover object-top opacity-90 dark:opacity-80"
+                            loading="eager"
+                            decoding="async"
+                            referrerPolicy="no-referrer"
                         />
 
                         {/* Gradients for text legibility */}

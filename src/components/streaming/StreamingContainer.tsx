@@ -50,15 +50,21 @@ const MIRRORS: Mirror[] = [
     },
     {
         name: 'VidMaster',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.to/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}` : null
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp
+            ? `https://vidsrc.to/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
+            : `https://vidsrc.to/embed/tv/${ctx.anilistId}/1/1`
     },
     {
         name: 'AniPlay',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://autoembed.co/tv/tmdb/${ctx.tmdbId}-${ctx.season}-${ctx.tmdbEp}` : null
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp
+            ? `https://autoembed.co/tv/tmdb/${ctx.tmdbId}-${ctx.season}-${ctx.tmdbEp}`
+            : `https://autoembed.co/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}`
     },
     {
         name: 'Multi',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp ? `https://vidsrc.pm/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&ep=${ctx.tmdbEp}` : null
+        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp
+            ? `https://vidsrc.pm/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&ep=${ctx.tmdbEp}`
+            : `https://vidsrc.pm/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
     }
 ]
 
@@ -159,8 +165,8 @@ export function StreamingContainer({
         tmdbEp: epMapping?.e
     }
 
-    // Filter working mirrors
-    const availableMirrors = MIRRORS.filter(m => m.buildUrl(currentContext) !== null)
+    // All mirrors now always build a URL — all 4 servers are always visible
+    const availableMirrors = MIRRORS
 
     const prevEp = () => {
         const prev = episodes.find(e => e.number === currentEpNumber - 1)
@@ -180,20 +186,6 @@ export function StreamingContainer({
     const [isLightsOut, setIsLightsOut] = useState(false)
 
     if (!mounted) return null
-
-    if (availableMirrors.length === 0) {
-        return (
-            <div className="w-full flex flex-col items-center justify-center gap-3 py-16 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
-                    <span className="text-2xl">⚠️</span>
-                </div>
-                <p className="text-white/60 font-semibold text-sm">No streaming ID available for this title.</p>
-                <p className="text-white/30 text-xs max-w-xs">
-                    This anime does not have a MyAnimeList ID linked yet. Try again later or search on GogoAnime.
-                </p>
-            </div>
-        )
-    }
 
     const activeMirror = availableMirrors[Math.min(mirrorIndex, availableMirrors.length - 1)]
     const embedUrl = activeMirror.buildUrl(currentContext) || ''
