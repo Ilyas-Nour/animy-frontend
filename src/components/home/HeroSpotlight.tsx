@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Star, Play, ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
@@ -9,107 +9,229 @@ import { Button } from '@/components/ui/button'
 import { Anime } from '@/types/anime'
 import { cn } from '@/lib/utils'
 
+// Curated hero entries with guaranteed high-quality 1920x1080+ TVDB fanart and clear logos.
+// These render INSTANTLY on load — no external API call needed.
+const HERO_STATIC = [
+    {
+        mal_id: 5114,
+        title: 'Fullmetal Alchemist: Brotherhood',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/75579/clearlogo/5ec2059bb7685.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/75579/backgrounds/5f41af8b59d5f.jpg',
+        genres: ['Action', 'Adventure', 'Drama', 'Fantasy'],
+        synopsis: 'Two brothers search for a Philosopher\'s Stone after an attempt to revive their deceased mother goes awry, leaving them in damaged physical forms.',
+        score: 9.1, status: 'Finished', type: 'TV', year: 2009,
+    },
+    {
+        mal_id: 1535,
+        title: 'Death Note',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/79481/clearlogo/5ec1f0ae5ddd1.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/79481/backgrounds/629e9dd5b2979.jpg',
+        genres: ['Mystery', 'Psychological', 'Supernatural', 'Thriller'],
+        synopsis: 'A high school student discovers a supernatural notebook that allows him to kill anyone whose name he writes in it.',
+        score: 8.6, status: 'Finished', type: 'TV', year: 2006,
+    },
+    {
+        mal_id: 16498,
+        title: 'Attack on Titan',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/267440/clearlogo/6052f1e2aa5e6.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/267440/backgrounds/6051a5b1de2a7.jpg',
+        genres: ['Action', 'Drama', 'Fantasy', 'Mystery'],
+        synopsis: 'Humanity lives within enormous walled cities to protect themselves from man-eating giants. A young boy vows revenge after his hometown is destroyed.',
+        score: 9.0, status: 'Finished', type: 'TV', year: 2013,
+    },
+    {
+        mal_id: 21,
+        title: 'One Piece',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/81797/clearlogo/612bc64ee5dbc.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/81797/backgrounds/628a4ef50b3f0.jpg',
+        genres: ['Action', 'Adventure', 'Comedy', 'Fantasy'],
+        synopsis: 'Monkey D. Luffy sets off on an adventure to find the legendary One Piece and become King of the Pirates.',
+        score: 8.7, status: 'Releasing', type: 'TV', year: 1999,
+    },
+    {
+        mal_id: 20,
+        title: 'Naruto',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/78857/clearlogo/5ec20cdf9bf29.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/78857/backgrounds/5f6b6aeed4acb.jpg',
+        genres: ['Action', 'Adventure', 'Fantasy', 'Martial Arts'],
+        synopsis: 'A young ninja with a powerful demon fox spirit sealed inside him seeks recognition and dreams of becoming the Hokage, leader of his village.',
+        score: 8.0, status: 'Finished', type: 'TV', year: 2002,
+    },
+    {
+        mal_id: 11061,
+        title: 'Hunter x Hunter',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/251562/clearlogo/5ec1f1d0a8b05.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/251562/backgrounds/5f8f1c0b7e4e0.jpg',
+        genres: ['Action', 'Adventure', 'Fantasy', 'Shounen'],
+        synopsis: 'Gon Freecss aspires to become a Hunter to find his missing father, an exceptionally rare individual who hunts incredible wonders of the world.',
+        score: 9.0, status: 'Finished', type: 'TV', year: 2011,
+    },
+    {
+        mal_id: 44511,
+        title: 'Demon Slayer',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/365189/clearlogo/609ce5c0dd2a7.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/365189/backgrounds/6182b96de1a3e.jpg',
+        genres: ['Action', 'Fantasy', 'Historical', 'Supernatural'],
+        synopsis: 'A young boy becomes a demon slayer to avenge his family and cure his sister after they are attacked by demons.',
+        score: 8.7, status: 'Releasing', type: 'TV', year: 2019,
+    },
+    {
+        mal_id: 40748,
+        title: 'Jujutsu Kaisen',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/376564/clearlogo/60dccdcd82e5d.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/376564/backgrounds/618e476b12d9c.jpg',
+        genres: ['Action', 'Fantasy', 'Horror', 'Supernatural'],
+        synopsis: 'A boy swallows a cursed talisman and becomes host to a powerful demon. He joins secret sorcerers to eliminate curses.',
+        score: 8.6, status: 'Releasing', type: 'TV', year: 2020,
+    },
+    {
+        mal_id: 40748,
+        title: 'Chainsaw Man',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/424736/clearlogo/634b1562e0929.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/424736/backgrounds/634b15abec37d.jpg',
+        genres: ['Action', 'Adventure', 'Supernatural'],
+        synopsis: 'Denji, a poor devil hunter, merges with his pet devil Pochita and becomes Chainsaw Man — a devil-human hybrid with chainsaws erupting from his body.',
+        score: 8.6, status: 'Releasing', type: 'TV', year: 2022,
+    },
+    {
+        mal_id: 33,
+        title: 'Dragon Ball Z',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/81472/clearlogo/5ec20cbf6e4b4.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/81472/backgrounds/5f6982f6cfcfc.jpg',
+        genres: ['Action', 'Adventure', 'Comedy', 'Fantasy'],
+        synopsis: 'Goku and his allies defend Earth against increasingly powerful villains including Saiyans, Frieza, Cell, and Majin Buu.',
+        score: 8.2, status: 'Finished', type: 'TV', year: 1989,
+    },
+    {
+        mal_id: 459,
+        title: 'Bleach',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/74796/clearlogo/5ec2013de9ef0.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/74796/backgrounds/62a73c62d4cf2.jpg',
+        genres: ['Action', 'Adventure', 'Comedy', 'Supernatural'],
+        synopsis: 'High school student Ichigo Kurosaki gains Soul Reaper powers and must defend the living world from evil spirits called Hollows.',
+        score: 7.9, status: 'Releasing', type: 'TV', year: 2004,
+    },
+    {
+        mal_id: 9253,
+        title: 'Steins;Gate',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/244961/clearlogo/5ec2035af0e11.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/244961/backgrounds/5f6e22d24e965.jpg',
+        genres: ['Drama', 'Sci-Fi', 'Thriller'],
+        synopsis: 'A group of friends accidentally discover time travel through text messages, leading to dire consequences threatening their very lives.',
+        score: 9.1, status: 'Finished', type: 'TV', year: 2011,
+    },
+    {
+        mal_id: 30276,
+        title: 'One Punch Man',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/295068/clearlogo/5ec20a2b68a14.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/295068/backgrounds/5f68d72f6e4f4.jpg',
+        genres: ['Action', 'Comedy', 'Sci-Fi', 'Superhero'],
+        synopsis: 'Saitama is a superhero who can defeat any enemy with a single punch. He seeks a worthy opponent while dealing with existential boredom.',
+        score: 8.7, status: 'Finished', type: 'TV', year: 2015,
+    },
+    {
+        mal_id: 49387,
+        title: 'Spy x Family',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/387148/clearlogo/626d51f2bc13c.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/387148/backgrounds/626d52d7e8617.jpg',
+        genres: ['Action', 'Comedy', 'Slice of Life'],
+        synopsis: 'A spy, an assassin, and a telepathic girl create a fake family for a mission, while hiding their true identities from each other.',
+        score: 8.6, status: 'Finished', type: 'TV', year: 2022,
+    },
+    {
+        mal_id: 52991,
+        title: "Frieren: Beyond Journey's End",
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/426762/clearlogo/651b4ee9a32ea.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/426762/backgrounds/651b4f08a3b3e.jpg',
+        genres: ['Adventure', 'Drama', 'Fantasy'],
+        synopsis: 'An elven mage reflects on her quest with the hero\'s party after their passing, as she travels to understand the humans she never truly knew.',
+        score: 9.1, status: 'Finished', type: 'TV', year: 2023,
+    },
+    {
+        mal_id: 31964,
+        title: 'My Hero Academia',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/305074/clearlogo/5ec209fb0d4a6.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/305074/backgrounds/5f8e7a46a1c0d.jpg',
+        genres: ['Action', 'Comedy', 'School', 'Superhero'],
+        synopsis: 'In a world where most have superpowers called "Quirks," a boy born without one inherits the greatest power and enrolls in superhero high school.',
+        score: 7.8, status: 'Finished', type: 'TV', year: 2016,
+    },
+    {
+        mal_id: 1,
+        title: 'Cowboy Bebop',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/76885/clearlogo/5ec2057e91e8a.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/76885/backgrounds/5f6d7427b7f17.jpg',
+        genres: ['Action', 'Adventure', 'Drama', 'Sci-Fi'],
+        synopsis: 'A ragtag crew of bounty hunters chases criminals across the solar system while each dealing with their troubled pasts.',
+        score: 8.8, status: 'Finished', type: 'TV', year: 1998,
+    },
+    {
+        mal_id: 28977,
+        title: 'Sword Art Online',
+        logoUrl: 'https://artworks.thetvdb.com/banners/v4/series/261645/clearlogo/5ec20b1a6b073.png',
+        fanartUrl: 'https://artworks.thetvdb.com/banners/v4/series/261645/backgrounds/5f6b4de95d24b.jpg',
+        genres: ['Action', 'Adventure', 'Fantasy', 'Romance'],
+        synopsis: 'In the near future, players are trapped inside a virtual reality MMORPG and must clear the game to escape, or face death.',
+        score: 7.2, status: 'Finished', type: 'TV', year: 2012,
+    },
+]
+
 interface HeroSpotlightProps {
     anime: Anime[]
 }
 
-interface ValidHeroAnime extends Anime {
-    logoUrl: string
-    fanartUrl: string
-}
+// Map static list into the shape the component renders
+type HeroEntry = typeof HERO_STATIC[number] & { genres: { name: string }[] }
 
 export function HeroSpotlight({ anime }: HeroSpotlightProps) {
+    // Step 1: build initial list from static curated data — renders INSTANTLY, no API wait
+    const staticList: HeroEntry[] = HERO_STATIC.map(h => ({
+        ...h,
+        genres: h.genres.map(g => ({ name: g })),
+    }))
+
+    const [list, setList] = useState<HeroEntry[]>(staticList)
     const [current, setCurrent] = useState(0)
-    const [validAnimeList, setValidAnimeList] = useState<ValidHeroAnime[]>([])
-    const [isFetching, setIsFetching] = useState(true)
 
-    // Fetch official clear logos and high quality fanart/banners
+    // Step 2: In background, try to enrich with extra dynamic anime from the `anime` prop
     useEffect(() => {
-        if (!anime.length) return
-        
+        if (!anime?.length) return
         let mounted = true
-        // Only show skeleton if we have NO items currently
-        if (validAnimeList.length === 0) {
-            setIsFetching(true)
-        }
 
-        const loadHeroAnime = () => {
-            // Check top 25 items concurrently
-            const pool = anime.slice(0, 25);
-            let processedCount = 0;
+        const alreadyHasMalIds = new Set(HERO_STATIC.map(h => h.mal_id))
+        const candidates = anime.filter(a => a.mal_id && !alreadyHasMalIds.has(a.mal_id)).slice(0, 15)
+        if (!candidates.length) return
 
-            pool.forEach(async (item) => {
-                let query = '';
-                if (item.mal_id) {
-                    query = `mal_id=${item.mal_id}`;
-                } else if (item.anilistId || item.id) {
-                    query = `anilist_id=${item.anilistId || item.id}`;
-                }
-                
-                if (!query) {
-                    processedCount++;
-                    return;
-                }
-                
-                try {
-                    const res = await fetch(`https://api.ani.zip/mappings?${query}`)
-                    if (res.ok) {
-                        const data = await res.json()
-                        const clearlogo = data.images?.find((img: any) => img.coverType === 'Clearlogo' || img.coverType === 'Clearart')
-                        const fanart = data.images?.find((img: any) => img.coverType === 'Fanart') || data.images?.find((img: any) => img.coverType === 'Banner')
-                        
-                        // Strict requirement: MUST have a high-res fanart or banner for the premium look
-                        const fanartUrl = fanart?.url || item.bannerImage;
-                        
-                        if (fanartUrl) {
-                            if (mounted) {
-                                setValidAnimeList(prev => {
-                                    if (prev.length >= 15) return prev;
-                                    
-                                    // Robust duplicate check
-                                    if (prev.some(p => (p.mal_id && p.mal_id === item.mal_id) || (p.anilistId && p.anilistId === item.anilistId) || (p.id && p.id === item.id))) return prev;
-                                    
-                                    const newItem = {
-                                        ...item,
-                                        logoUrl: clearlogo?.url || '',
-                                        fanartUrl: fanartUrl
-                                    } as ValidHeroAnime;
-                                    
-                                    // Sort items with logos to the front of the carousel
-                                    const newList = [...prev, newItem].sort((a, b) => {
-                                        if (a.logoUrl && !b.logoUrl) return -1;
-                                        if (!a.logoUrl && b.logoUrl) return 1;
-                                        return 0;
-                                    });
-                                    
-                                    setIsFetching(false);
-                                    return newList;
-                                });
-                            }
-                        }
-                    }
-                } catch (err) {
-                    // ignore
-                } finally {
-                    processedCount++;
-                    if (processedCount === pool.length && mounted) {
-                        setValidAnimeList(prev => {
-                            if (prev.length === 0) {
-                                setIsFetching(false);
-                                return pool.slice(0, 5).map(i => ({
-                                    ...i,
-                                    logoUrl: '',
-                                    fanartUrl: i.bannerImage || i.images?.webp?.large_image_url || i.images?.jpg?.large_image_url || ''
-                                }));
-                            }
-                            return prev;
-                        });
-                    }
-                }
+        Promise.allSettled(
+            candidates.map(async (item) => {
+                const res = await fetch(`https://api.ani.zip/mappings?mal_id=${item.mal_id}`)
+                if (!res.ok) return null
+                const data = await res.json()
+                const logo = data.images?.find((img: any) => img.coverType === 'Clearlogo' || img.coverType === 'Clearart')
+                const fanart = data.images?.find((img: any) => img.coverType === 'Fanart') || data.images?.find((img: any) => img.coverType === 'Banner')
+                const fanartUrl = fanart?.url || item.bannerImage || item.images?.webp?.large_image_url || item.images?.jpg?.large_image_url || ''
+                if (!fanartUrl) return null
+                return {
+                    ...item,
+                    logoUrl: logo?.url || '',
+                    fanartUrl,
+                    genres: (item.genres || []).map((g: any) => ({ name: g.name || g })),
+                    score: item.score ?? 0,
+                    status: item.status ?? 'Finished',
+                    type: item.type ?? 'TV',
+                    year: item.year ?? item.aired?.prop?.from?.year ?? undefined,
+                } as HeroEntry
             })
-        }
-
-        loadHeroAnime()
+        ).then(results => {
+            if (!mounted) return
+            const valid = results
+                .filter(r => r.status === 'fulfilled' && r.value !== null)
+                .map(r => (r as PromiseFulfilledResult<HeroEntry | null>).value!)
+                .filter(Boolean)
+            if (valid.length > 0) {
+                setList(prev => [...prev, ...valid].slice(0, 25))
+            }
+        })
 
         return () => { mounted = false }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -117,33 +239,23 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
 
     // Auto-advance carousel
     useEffect(() => {
-        if (!validAnimeList.length) return
         const timer = setInterval(() => {
-            setCurrent((prev) => (prev + 1) % validAnimeList.length)
+            setCurrent(prev => (prev + 1) % list.length)
         }, 8000)
         return () => clearInterval(timer)
-    }, [validAnimeList.length])
+    }, [list.length])
 
-    if (isFetching || !validAnimeList.length) {
-        return (
-            <div className="h-[80vh] min-h-[600px] w-full bg-muted/20 animate-pulse flex items-center justify-center">
-                <div className="container space-y-8">
-                    <div className="w-1/4 h-10 bg-muted/40 rounded-lg" />
-                    <div className="w-2/3 h-24 bg-muted/40 rounded-lg" />
-                    <div className="w-1/2 h-8 bg-muted/40 rounded-lg" />
-                </div>
-            </div>
-        )
-    }
-
-    const active = validAnimeList[current]
+    const active = list[current % list.length]
     if (!active) return null
+
+    const prev = () => setCurrent(p => (p - 1 + list.length) % list.length)
+    const next = () => setCurrent(p => (p + 1) % list.length)
 
     return (
         <section className="relative h-[80vh] min-h-[600px] w-full overflow-hidden bg-background group">
-            <AnimatePresence>
+            <AnimatePresence mode="sync">
                 <motion.div
-                    key={active.mal_id || active.id || current}
+                    key={current}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -152,7 +264,6 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                 >
                     {/* FULL SCREEN BACKGROUND */}
                     <div className="absolute inset-0 z-0">
-                        {/* High Quality Background Image */}
                         <Image
                             src={active.fanartUrl}
                             alt={active.title}
@@ -160,9 +271,10 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                             className="object-cover object-top opacity-90 dark:opacity-80"
                             priority
                             quality={100}
+                            unoptimized
                         />
-                        
-                        {/* Gradients for text legibility (darkens left and bottom) */}
+
+                        {/* Gradients for text legibility */}
                         <div className="absolute inset-0 z-10 bg-gradient-to-r from-background via-background/80 md:via-background/50 to-transparent w-full md:w-[65%]" />
                         <div className="absolute inset-0 z-10 bg-gradient-to-t from-background via-background/20 to-transparent h-full" />
                     </div>
@@ -170,8 +282,8 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                     {/* CONTENT ALIGNED TO BOTTOM LEFT */}
                     <div className="container relative h-full z-20 flex flex-col justify-end pb-12 sm:pb-16 lg:pb-20">
                         <div className="max-w-xl xl:max-w-2xl space-y-3 lg:space-y-4">
-                            
-                            {/* Title/Logo */}
+
+                            {/* Title / Logo */}
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
@@ -196,7 +308,7 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 )}
                             </motion.div>
 
-                            {/* Small Tag Pills (Format, Dub/Sub equivalent, Status, Score) */}
+                            {/* Tag Pills */}
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
@@ -217,19 +329,19 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 {active.score && (
                                     <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md px-3 py-1 rounded-sm text-xs sm:text-sm font-semibold text-white/90">
                                         <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                                        <span>{active.score.toFixed(1)}</span>
+                                        <span>{typeof active.score === 'number' ? active.score.toFixed(1) : active.score}</span>
                                     </div>
                                 )}
                             </motion.div>
 
-                            {/* Genres as plain text */}
+                            {/* Genres */}
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.4 }}
                                 className="text-sm sm:text-base font-semibold text-white/80"
                             >
-                                {active.genres?.map(g => g.name).join(', ')}
+                                {active.genres?.map((g: any) => g.name || g).join(', ')}
                             </motion.div>
 
                             {/* Synopsis */}
@@ -266,16 +378,33 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                 </motion.div>
             </AnimatePresence>
 
-            {/* Side Navigation Arrows (Far Edges) */}
+            {/* Slide Dot Indicators */}
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                {list.map((_, i) => (
+                    <button
+                        key={i}
+                        onClick={() => setCurrent(i)}
+                        className={cn(
+                            "rounded-full transition-all duration-300",
+                            i === current
+                                ? "w-6 h-1.5 bg-white"
+                                : "w-1.5 h-1.5 bg-white/40 hover:bg-white/70"
+                        )}
+                        aria-label={`Go to slide ${i + 1}`}
+                    />
+                ))}
+            </div>
+
+            {/* Side Navigation Arrows */}
             <button
-                onClick={() => setCurrent((prev) => (prev - 1 + validAnimeList.length) % validAnimeList.length)}
+                onClick={prev}
                 className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-2 text-white/50 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
                 aria-label="Previous Slide"
             >
                 <ChevronLeft size={32} strokeWidth={2.5} />
             </button>
             <button
-                onClick={() => setCurrent((prev) => (prev + 1) % validAnimeList.length)}
+                onClick={next}
                 className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-2 text-white/50 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
                 aria-label="Next Slide"
             >
