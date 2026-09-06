@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
                 headers: { 'Accept': 'application/json' },
                 next: { revalidate: 0 }
             }),
-            fetch(`${BACKEND_API}/manga?q=${encodeURIComponent(q)}&limit=${limit}&page=1&order_by=popularity&sort=desc`, {
+            fetch(`${BACKEND_API}/manga?q=${encodeURIComponent(q)}&limit=${limit}&page=1&order_by=popularity&sort=asc`, {
                 headers: { 'Accept': 'application/json' },
                 next: { revalidate: 0 }
             })

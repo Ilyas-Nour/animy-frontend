@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     try {
         // Series are anime with type=tv
-        const url = `${BACKEND_API}/anime?type=tv&page=${page}&limit=${limit}&order_by=popularity&sort=desc`
+        const url = `${BACKEND_API}/anime?type=tv&page=${page}&limit=${limit}&order_by=popularity&sort=asc`
 
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },

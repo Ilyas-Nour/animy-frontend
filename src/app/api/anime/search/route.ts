@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const q = searchParams.get('q') || searchParams.get('query') || ''
     const order_by = searchParams.get('order_by') || 'popularity'
-    const sort = searchParams.get('sort') || 'desc'
+    const sort = searchParams.get('sort') || (order_by === 'popularity' ? 'asc' : 'desc')
     const limit = searchParams.get('limit') || '24'
     const status = searchParams.get('status') || ''
     const type = searchParams.get('type') || ''
