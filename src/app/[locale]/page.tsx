@@ -20,7 +20,6 @@ import { HeroSpotlight } from '@/components/home/HeroSpotlight'
 import { CategorySwiper } from '@/components/home/CategorySwiper'
 import { AnimeHomeSection } from '@/components/home/AnimeHomeSection'
 import { MangaHomeSection } from '@/components/home/MangaHomeSection'
-import { GuestHomeSection } from '@/components/home/GuestHomeSection'
 import { UserHomeSection } from '@/components/home/UserHomeSection'
 
 // Global cache to persist home data across client-side navigations
@@ -95,39 +94,27 @@ export default function HomePage() {
           // Update local state
           setTopAnime(data.popularAnime || [])
           
-          // Fetch "All Time Popular" for the hero section because they are guaranteed to have 
-          // gorgeous high-res fanart and clearlogos in the TVDB/TMDB databases.
-          fetch('https://api.jikan.moe/v4/top/anime?filter=bypopularity&limit=25')
-            .then(r => r.json())
-            .then(topData => {
-              if (topData?.data && isMounted) {
-                // Deduplicate franchises (e.g. Attack on Titan Season 1, 2, 3)
-                const uniqueAnime: Anime[] = [];
-                for (const anime of topData.data) {
-                  const title = (anime.title_english || anime.title || '').toLowerCase();
-                  // Check if this title is a sequel or part of an already added franchise
-                  const isDuplicate = uniqueAnime.some(existing => {
-                    const existingTitle = (existing.title_english || existing.title || '').toLowerCase();
-                    // If one title is a prefix of another (up to a colon or " Season"), consider it the same franchise
-                    const baseExisting = existingTitle.split(/[:\s-]*season|[:\s-]*part|:/i)[0].trim();
-                    const baseCurrent = title.split(/[:\s-]*season|[:\s-]*part|:/i)[0].trim();
-                    return baseExisting === baseCurrent || title.startsWith(existingTitle) || existingTitle.startsWith(title);
-                  });
-                  if (!isDuplicate) {
-                    uniqueAnime.push(anime);
-                  }
-                }
-                setHeroAnime(uniqueAnime);
-              } else {
-                throw new Error('Jikan API rate limit or empty data');
-              }
-            })
-            .catch(() => {
-              // Fallback to our backend pool if Jikan fails
-              const heroPool = [...(data.trendingAnime || []), ...(data.popularAnime || [])]
-              const uniquePool = Array.from(new Map(heroPool.map(item => [item.mal_id || item.id, item])).values())
-              if (isMounted) setHeroAnime(uniquePool.slice(0, 40))
+          // Use our backend pool for hero section so it loads instantly with the rest of the page.
+          const heroPool = [...(data.trendingAnime || []), ...(data.popularAnime || [])]
+          const uniquePool = Array.from(new Map(heroPool.map(item => [item.mal_id || item.id, item])).values())
+          
+          // Deduplicate franchises (e.g. Attack on Titan Season 1, 2, 3)
+          const uniqueAnime: Anime[] = [];
+          for (const anime of uniquePool) {
+            const title = (anime.title_english || anime.title || '').toLowerCase();
+            // Check if this title is a sequel or part of an already added franchise
+            const isDuplicate = uniqueAnime.some(existing => {
+              const existingTitle = (existing.title_english || existing.title || '').toLowerCase();
+              // If one title is a prefix of another (up to a colon or " Season"), consider it the same franchise
+              const baseExisting = existingTitle.split(/[:\s-]*season|[:\s-]*part|:/i)[0].trim();
+              const baseCurrent = title.split(/[:\s-]*season|[:\s-]*part|:/i)[0].trim();
+              return baseExisting === baseCurrent || title.startsWith(existingTitle) || existingTitle.startsWith(title);
             });
+            if (!isDuplicate) {
+              uniqueAnime.push(anime as Anime);
+            }
+          }
+          if (isMounted) setHeroAnime(uniqueAnime.slice(0, 15))
 
           setTrendingHighlight(data.trendingAnime || [])
           setUpcomingAnime(data.upcomingAnime || [])
@@ -189,13 +176,9 @@ export default function HomePage() {
         <AdBanner className="mb-12" />
       </div>
 
-      {/* 3. High-Impact Interaction Area (Guest vs User) */}
-      {!hasMounted ? (
-        <div className="container py-12 md:py-24 h-[400px] animate-pulse bg-muted/10 rounded-[3rem] mx-auto opacity-20" />
-      ) : isAuthenticated ? (
+      {/* 3. High-Impact Interaction Area (User Only) */}
+      {hasMounted && isAuthenticated && (
         <UserHomeSection trending={trendingHighlight} />
-      ) : (
-        <GuestHomeSection />
       )}
 
       <div className="container py-12 space-y-24">
