@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Star, Play, ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
@@ -8,119 +8,17 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Anime } from '@/types/anime'
 import { cn } from '@/lib/utils'
+import { HERO_SPOTLIGHT_ANIME } from '@/lib/static-anime-data'
 
 interface HeroSpotlightProps {
-    anime: Anime[]
-}
-
-type HeroEntry = {
-    mal_id: number;
-    title: string;
-    logoUrl: string;
-    fanartUrl: string;
-    genres: { name: string }[];
-    synopsis: string;
-    score: number;
-    status: string;
-    type: string;
-    year?: number;
-}
-
-function buildInitialList(animeList: Anime[]): HeroEntry[] {
-    if (!animeList) return [];
-    return animeList.map(item => {
-        let fanartUrl = '';
-        if (item.trailer?.images?.maximum_image_url) {
-            fanartUrl = item.trailer.images.maximum_image_url;
-        } else if (item.bannerImage) {
-            fanartUrl = item.bannerImage;
-        } else if (item.images?.webp?.large_image_url) {
-            fanartUrl = item.images.webp.large_image_url;
-        }
-
-        return {
-            mal_id: item.mal_id,
-            title: item.title_english || item.title || '',
-            logoUrl: '',
-            fanartUrl,
-            genres: (item.genres || []).map((g: any) => ({ name: g.name || g })),
-            synopsis: item.synopsis || '',
-            score: item.score ?? 0,
-            status: item.status ?? 'Finished',
-            type: item.type ?? 'TV',
-            year: item.year ?? (item.aired as any)?.prop?.from?.year ?? undefined,
-        }
-    }).filter(item => item.fanartUrl);
+    anime?: Anime[] // Kept for backwards compatibility but not used
 }
 
 export function HeroSpotlight({ anime }: HeroSpotlightProps) {
-    const [list, setList] = useState<HeroEntry[]>([])
     const [current, setCurrent] = useState(0)
     
-    // Track if we have initialized to avoid flicker if anime prop stays same
-    const initializedRef = useRef(false);
-
-    useEffect(() => {
-        if (!anime?.length) return;
-        
-        const initial = buildInitialList(anime).slice(0, 15);
-        if (initial.length === 0) return;
-        
-        setList(initial);
-        initializedRef.current = true;
-        setCurrent(0);
-
-        let mounted = true;
-
-        Promise.allSettled(
-            initial.map(async (item) => {
-                try {
-                    const res = await fetch(`https://api.ani.zip/mappings?mal_id=${item.mal_id}`)
-                    if (!res.ok) return null
-                    const data = await res.json()
-                    const logo = data.images?.find((img: any) => img.coverType === 'Clearlogo' || img.coverType === 'Clearart')
-                    const fanart = data.images?.find((img: any) => img.coverType === 'Fanart') || data.images?.find((img: any) => img.coverType === 'Banner')
-                    
-                    if (logo || fanart) {
-                        return {
-                            mal_id: item.mal_id,
-                            logoUrl: logo?.url || '',
-                            fanartUrl: fanart?.url || '' 
-                        }
-                    }
-                    return null;
-                } catch {
-                    return null;
-                }
-            })
-        ).then(results => {
-            if (!mounted) return;
-            const updates = results
-                .filter(r => r.status === 'fulfilled' && r.value !== null)
-                .map(r => (r as PromiseFulfilledResult<any>).value!);
-            
-            if (updates.length > 0) {
-                setList(prevList => {
-                    const newList = [...prevList];
-                    let changed = false;
-                    updates.forEach(update => {
-                        const idx = newList.findIndex(x => x.mal_id === update.mal_id);
-                        if (idx !== -1) {
-                            newList[idx] = {
-                                ...newList[idx],
-                                logoUrl: update.logoUrl || newList[idx].logoUrl,
-                                fanartUrl: update.fanartUrl || newList[idx].fanartUrl,
-                            };
-                            changed = true;
-                        }
-                    });
-                    return changed ? newList : prevList;
-                });
-            }
-        });
-
-        return () => { mounted = false; }
-    }, [anime]);
+    // We use our curated list of 7 high quality animes
+    const list = HERO_SPOTLIGHT_ANIME;
 
     useEffect(() => {
         if (list.length <= 1) return;

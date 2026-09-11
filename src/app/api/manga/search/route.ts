@@ -1,54 +1,84 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
+import { TOP_MANGA_STATIC } from '@/lib/static-anime-data'
 
-const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
+const JIKAN_API = 'https://api.jikan.moe/v4'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const q = searchParams.get('q') || searchParams.get('query') || ''
-    const order_by = searchParams.get('order_by') || 'popularity'
-    const sort = searchParams.get('sort') || 'desc'
-    const limit = searchParams.get('limit') || '25'
+    const limit = searchParams.get('limit') || '24'
     const status = searchParams.get('status') || ''
     const type = searchParams.get('type') || ''
     const page = searchParams.get('page') || '1'
 
     try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 55000)
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-        const queryParams = new URLSearchParams()
-        if (q) queryParams.set('q', q)
-        if (type) queryParams.set('type', type)
-        if (status) queryParams.set('status', status)
-        if (order_by) queryParams.set('order_by', order_by)
-        if (sort) queryParams.set('sort', sort)
-        if (limit) queryParams.set('limit', limit)
-        if (page) queryParams.set('page', page)
+        let url: string
+        if (q) {
+            // Search endpoint
+            const queryParams = new URLSearchParams()
+            queryParams.set('q', q)
+            queryParams.set('page', page)
+            queryParams.set('limit', limit)
+            if (type) queryParams.set('type', type.toLowerCase())
+            if (status) queryParams.set('status', status.toLowerCase())
+            queryParams.set('sfw', 'true')
+            url = `${JIKAN_API}/manga?${queryParams.toString()}`
+        } else {
+            // Top manga endpoint
+            const queryParams = new URLSearchParams()
+            queryParams.set('page', page)
+            queryParams.set('limit', limit)
+            if (type) queryParams.set('type', type.toLowerCase())
+            if (status) queryParams.set('filter', status.toLowerCase())
+            url = `${JIKAN_API}/top/manga?${queryParams.toString()}`
+        }
 
-        const url = `${BACKEND_API}/manga?${queryParams.toString()}`
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 0 },
-            signal: controller.signal
+            signal: controller.signal,
         })
-
         clearTimeout(timeoutId)
 
         if (!response.ok) {
             console.error(`[PROXY ERROR] Manga search backend status: ${response.status}`)
-            return NextResponse.json({ error: 'Backend failed' }, { status: response.status })
+            throw new Error(`Jikan API error: ${response.status}`)
         }
 
         const data = await response.json()
-        return NextResponse.json(data)
+        return NextResponse.json({
+            data: data.data || [],
+            pagination: data.pagination || null,
+        })
     } catch (error: any) {
-        if (error.name === 'AbortError') {
-            console.warn('[PROXY TIMEOUT] Manga search timed out after 55s')
-            return NextResponse.json({ error: 'Backend request timed out' }, { status: 504 })
-        } else {
-            console.error('[PROXY CRASH] Manga search proxy error:', error)
-            return NextResponse.json({ error: 'Proxy failed to connect to backend' }, { status: 502 })
+        console.warn('Manga search API unavailable, using static fallback:', error.message)
+
+        // Filter static data based on query and type
+        let filtered = TOP_MANGA_STATIC as any[]
+        if (q) {
+            const lq = q.toLowerCase()
+            filtered = filtered.filter(m =>
+                m.title.toLowerCase().includes(lq) ||
+                m.title_english.toLowerCase().includes(lq)
+            )
         }
+        if (type) {
+            filtered = filtered.filter(m => m.type?.toLowerCase() === type.toLowerCase())
+        }
+
+        return NextResponse.json({
+            data: filtered,
+            pagination: {
+                last_visible_page: 1,
+                has_next_page: false,
+                current_page: 1,
+                items: { count: filtered.length, total: filtered.length, per_page: filtered.length },
+            },
+            _fallback: true,
+        })
     }
 }
+
