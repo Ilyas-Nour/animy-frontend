@@ -55,12 +55,6 @@ const MIRRORS: Mirror[] = [
             : `https://vidsrc.to/embed/tv/${ctx.anilistId}/1/1`
     },
     {
-        name: 'AniPlay',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp
-            ? `https://autoembed.co/tv/tmdb/${ctx.tmdbId}-${ctx.season}-${ctx.tmdbEp}`
-            : `https://autoembed.co/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}`
-    },
-    {
         name: 'Multi',
         buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp
             ? `https://vidsrc.pm/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&ep=${ctx.tmdbEp}`

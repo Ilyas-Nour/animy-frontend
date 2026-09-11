@@ -10,39 +10,50 @@ import { constructMetadata } from '@/lib/seo-utils'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
+import { TOP_ANIME_STATIC, TOP_MOVIES_STATIC, HERO_SPOTLIGHT_ANIME } from '@/lib/static-anime-data'
+
 async function getAnimeFull(id: string) {
-  const maxRetries = 3
+  const maxRetries = 2
   let lastError: Error | null = null
 
+  // 1. Try Jikan API directly
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 20000) // 20s per attempt
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-      const res = await fetch(`${API_URL}/anime/${id}/full`, {
+      const res = await fetch(`https://api.jikan.moe/v4/anime/${id}/full`, {
         signal: controller.signal,
         cache: 'no-store',
       })
       clearTimeout(timeoutId)
 
-      if (!res.ok) {
-        if (res.status === 404) return null
-        throw new Error(`Backend error: ${res.status}`)
+      if (res.ok) {
+        const json = await res.json()
+        return json.data
       }
-      const json = await res.json()
-      return json.data
+      
+      if (res.status === 404) return null
+      throw new Error(`Jikan error: ${res.status}`)
     } catch (error: any) {
       lastError = error
       if (error?.message?.includes('404')) return null
       if (attempt < maxRetries) {
-        // Wait 1s, then 2s before next retry
-        await new Promise(r => setTimeout(r, attempt * 1000))
+        await new Promise(r => setTimeout(r, 1000))
       }
     }
   }
 
-  console.error('getAnimeFull failed after retries:', lastError?.message)
-  throw lastError
+  console.warn('Jikan failed, falling back to static data for ID:', id)
+
+  // 2. Fallback to static data
+  const numericId = parseInt(id, 10)
+  const staticAnime = [...TOP_ANIME_STATIC, ...TOP_MOVIES_STATIC, ...HERO_SPOTLIGHT_ANIME]
+    .find(a => a.mal_id === numericId)
+
+  if (staticAnime) return staticAnime
+  
+  return null
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string, id: string }> }): Promise<Metadata> {
