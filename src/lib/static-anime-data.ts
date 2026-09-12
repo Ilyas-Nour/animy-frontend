@@ -472,12 +472,11 @@ export const TOP_MANGA_STATIC = [
   },
 ];
 
-// Hero spotlight — 7 premium anime with high-quality banner images (AniList CDN)
+// Hero spotlight — 7 premium anime with high-quality banner images (Kitsu CDN)
 export const HERO_SPOTLIGHT_ANIME = [
   {
     mal_id: 5114,
     title: 'Fullmetal Alchemist: Brotherhood',
-    logoUrl: 'https://media.kitsu.app/anime/poster_images/3936/large.jpg',
     fanartUrl: 'https://media.kitsu.app/anime/cover_images/3936/original.jpg',
     coverUrl: 'https://cdn.myanimelist.net/images/anime/1223/96541l.jpg',
     genres: [{ name: 'Action' }, { name: 'Adventure' }, { name: 'Drama' }, { name: 'Fantasy' }],
@@ -487,7 +486,6 @@ export const HERO_SPOTLIGHT_ANIME = [
   {
     mal_id: 1535,
     title: 'Death Note',
-    logoUrl: 'https://media.kitsu.app/anime/poster_images/1376/large.jpg',
     fanartUrl: 'https://media.kitsu.app/anime/cover_images/1376/original.jpg',
     coverUrl: 'https://cdn.myanimelist.net/images/anime/9/9453l.jpg',
     genres: [{ name: 'Psychological' }, { name: 'Mystery' }, { name: 'Supernatural' }],
@@ -497,7 +495,6 @@ export const HERO_SPOTLIGHT_ANIME = [
   {
     mal_id: 16498,
     title: 'Attack on Titan',
-    logoUrl: 'https://media.kitsu.app/anime/poster_images/7442/large.jpg',
     fanartUrl: 'https://media.kitsu.app/anime/cover_images/7442/original.png',
     coverUrl: 'https://cdn.myanimelist.net/images/anime/10/47347l.jpg',
     genres: [{ name: 'Action' }, { name: 'Drama' }, { name: 'Fantasy' }],
@@ -507,7 +504,6 @@ export const HERO_SPOTLIGHT_ANIME = [
   {
     mal_id: 11061,
     title: 'Hunter x Hunter (2011)',
-    logoUrl: 'https://media.kitsu.app/anime/poster_images/6448/large.jpg',
     fanartUrl: 'https://media.kitsu.app/anime/cover_images/6448/original.jpg',
     coverUrl: 'https://cdn.myanimelist.net/images/anime/1337/99013l.jpg',
     genres: [{ name: 'Action' }, { name: 'Adventure' }, { name: 'Fantasy' }],
@@ -517,7 +513,6 @@ export const HERO_SPOTLIGHT_ANIME = [
   {
     mal_id: 9253,
     title: 'Steins;Gate',
-    logoUrl: 'https://media.kitsu.app/anime/poster_images/5646/large.jpg',
     fanartUrl: 'https://media.kitsu.app/anime/cover_images/5646/original.jpg',
     coverUrl: 'https://cdn.myanimelist.net/images/anime/5/73199l.jpg',
     genres: [{ name: 'Sci-Fi' }, { name: 'Psychological' }, { name: 'Thriller' }],
@@ -527,7 +522,6 @@ export const HERO_SPOTLIGHT_ANIME = [
   {
     mal_id: 40748,
     title: 'Jujutsu Kaisen',
-    logoUrl: 'https://media.kitsu.app/anime/poster_images/42765/large.jpg',
     fanartUrl: 'https://media.kitsu.app/anime/cover_images/42765/original.jpeg',
     coverUrl: 'https://cdn.myanimelist.net/images/anime/1171/109222l.jpg',
     genres: [{ name: 'Action' }, { name: 'Fantasy' }, { name: 'Shounen' }],
@@ -537,7 +531,6 @@ export const HERO_SPOTLIGHT_ANIME = [
   {
     mal_id: 38000,
     title: 'Demon Slayer: Kimetsu no Yaiba',
-    logoUrl: 'https://media.kitsu.app/anime/41370/poster_image/large.jpg',
     fanartUrl: 'https://media.kitsu.app/anime/41370/cover_image/7958f9c01b57c980636386d124553791.jpg',
     coverUrl: 'https://cdn.myanimelist.net/images/anime/1286/99889l.jpg',
     genres: [{ name: 'Action' }, { name: 'Fantasy' }, { name: 'Shounen' }],

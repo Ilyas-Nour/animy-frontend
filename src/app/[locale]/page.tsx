@@ -79,9 +79,8 @@ export default function HomePage() {
     
     const loadAllData = async () => {
       try {
-        // Use the new unified home endpoint for instant, single-request loading
-        // Added v=2 to bypass old Cloudflare Edge cache
-        const res = await fetch('/api/proxy?url=/home&v=2')
+        // Use our Kitsu-backed home endpoint (bypasses broken backend)
+        const res = await fetch('/api/home')
         if (!res.ok) throw new Error('Failed to fetch home data')
         
         const json = await res.json()

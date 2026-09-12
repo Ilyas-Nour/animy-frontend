@@ -1,28 +1,30 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
+import { mapKitsuToAnime } from '@/lib/kitsu-mapper'
 
-const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
+const KITSU_API = 'https://kitsu.io/api/edge'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const q = searchParams.get('q') || ''
     const limit = searchParams.get('limit') || '5'
+    const limitNum = Math.min(parseInt(limit, 10), 10)
 
     if (!q.trim()) {
         return NextResponse.json({ anime: [], manga: [] })
     }
 
     try {
-        // Search anime and manga in parallel
+        // Search anime and manga in parallel via Kitsu
         const [animeRes, mangaRes] = await Promise.allSettled([
-            fetch(`${BACKEND_API}/anime?q=${encodeURIComponent(q)}&limit=${limit}&page=1`, {
-                headers: { 'Accept': 'application/json' },
-                next: { revalidate: 0 }
+            fetch(`${KITSU_API}/anime?filter[text]=${encodeURIComponent(q)}&page[limit]=${limitNum}&include=mappings`, {
+                headers: { 'Accept': 'application/vnd.api+json' },
+                signal: AbortSignal.timeout(8000),
             }),
-            fetch(`${BACKEND_API}/manga?q=${encodeURIComponent(q)}&limit=${limit}&page=1&order_by=popularity&sort=asc`, {
-                headers: { 'Accept': 'application/json' },
-                next: { revalidate: 0 }
-            })
+            fetch(`${KITSU_API}/manga?filter[text]=${encodeURIComponent(q)}&page[limit]=${limitNum}&include=mappings`, {
+                headers: { 'Accept': 'application/vnd.api+json' },
+                signal: AbortSignal.timeout(8000),
+            }),
         ])
 
         let animeData: any[] = []
@@ -30,17 +32,17 @@ export async function GET(request: NextRequest) {
 
         if (animeRes.status === 'fulfilled' && animeRes.value.ok) {
             const json = await animeRes.value.json()
-            animeData = json?.data || []
+            animeData = mapKitsuToAnime(json.data, json.included)
         }
 
         if (mangaRes.status === 'fulfilled' && mangaRes.value.ok) {
             const json = await mangaRes.value.json()
-            mangaData = json?.data || []
+            mangaData = mapKitsuToAnime(json.data, json.included)
         }
 
         return NextResponse.json({ anime: animeData, manga: mangaData })
     } catch (error: any) {
-        console.error('Unified search error:', error)
+        console.error('[Global Search] Kitsu search error:', error.message)
         return NextResponse.json({ anime: [], manga: [] }, { status: 500 })
     }
 }

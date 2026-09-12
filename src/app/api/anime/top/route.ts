@@ -1,38 +1,52 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
+import { mapKitsuToAnime } from '@/lib/kitsu-mapper'
+import { TOP_ANIME_STATIC } from '@/lib/static-anime-data'
 
-const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
+const KITSU_API = 'https://kitsu.io/api/edge'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const filter = searchParams.get('filter') || 'airing'
     const limit = searchParams.get('limit') || '20'
+    const limitNum = parseInt(limit, 10)
+
+    // Map filter to Kitsu sort / status
+    let kitsuSort = '-averageRating'
+    let kitsuStatusFilter = ''
+
+    if (filter === 'airing') {
+        kitsuStatusFilter = '&filter[status]=current'
+    } else if (filter === 'upcoming') {
+        kitsuStatusFilter = '&filter[status]=upcoming'
+    } else if (filter === 'bypopularity') {
+        kitsuSort = '-userCount'
+    }
 
     try {
+        const url = `${KITSU_API}/anime?sort=${kitsuSort}${kitsuStatusFilter}&page[limit]=${limitNum}&page[offset]=0&include=mappings`
+
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 15000)
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-        const response = await fetch(`${BACKEND_API}/anime/top?filter=${filter}&limit=${limit}`, {
-            headers: { 'Accept': 'application/json' },
-            next: { revalidate: 3600 },
-            signal: controller.signal
+        const response = await fetch(url, {
+            headers: { 'Accept': 'application/vnd.api+json' },
+            signal: controller.signal,
         })
-
         clearTimeout(timeoutId)
 
         if (!response.ok) {
-            console.error(`[PROXY ERROR] Top anime backend status: ${response.status}`)
-            return NextResponse.json({ data: [] }, { status: 200 })
+            throw new Error(`Kitsu API error: ${response.status}`)
         }
 
-        const data = await response.json()
-        return NextResponse.json(data)
+        const json = await response.json()
+        const mapped = mapKitsuToAnime(json.data, json.included)
+
+        return NextResponse.json({ data: mapped })
     } catch (error: any) {
-        if (error.name === 'AbortError') {
-            console.warn('[PROXY TIMEOUT] Top anime fetch timed out after 15s')
-        } else {
-            console.error('[PROXY CRASH] Top anime proxy fetch failed:', error)
-        }
-        return NextResponse.json({ data: [] }, { status: 200 })
+        console.warn('[Top Anime] Kitsu failed, using static fallback:', error.message)
+        // Return static data in the same shape as Kitsu
+        const staticData = TOP_ANIME_STATIC.slice(0, limitNum)
+        return NextResponse.json({ data: staticData, _fallback: true })
     }
 }
