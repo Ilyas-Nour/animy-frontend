@@ -1,72 +1,74 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
+import { mapKitsuToAnime } from '@/lib/kitsu-mapper'
 import { TOP_MANGA_STATIC } from '@/lib/static-anime-data'
 
-const JIKAN_API = 'https://api.jikan.moe/v4'
+const KITSU_API = 'https://kitsu.io/api/edge'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const q = searchParams.get('q') || searchParams.get('query') || ''
-    const limit = searchParams.get('limit') || '24'
-    const status = searchParams.get('status') || ''
-    const type = searchParams.get('type') || ''
     const page = searchParams.get('page') || '1'
+    const limit = searchParams.get('limit') || '24'
+    const type = searchParams.get('type') || ''
+
+    const pageNum = parseInt(page, 10)
+    const limitNum = parseInt(limit, 10)
+    const offset = (pageNum - 1) * limitNum
 
     try {
+        let url = `${KITSU_API}/manga?page[limit]=${limitNum}&page[offset]=${offset}&include=mappings`
+        
+        if (q) {
+            url += `&filter[text]=${encodeURIComponent(q)}`
+        } else {
+            url += `&sort=-userCount`
+        }
+        
+        if (type) {
+            url += `&filter[subtype]=${type}`
+        }
+
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-        let url: string
-        if (q) {
-            // Search endpoint
-            const queryParams = new URLSearchParams()
-            queryParams.set('q', q)
-            queryParams.set('page', page)
-            queryParams.set('limit', limit)
-            if (type) queryParams.set('type', type.toLowerCase())
-            if (status) queryParams.set('status', status.toLowerCase())
-            queryParams.set('sfw', 'true')
-            url = `${JIKAN_API}/manga?${queryParams.toString()}`
-        } else {
-            // Top manga endpoint
-            const queryParams = new URLSearchParams()
-            queryParams.set('page', page)
-            queryParams.set('limit', limit)
-            if (type) queryParams.set('type', type.toLowerCase())
-            if (status) queryParams.set('filter', status.toLowerCase())
-            url = `${JIKAN_API}/top/manga?${queryParams.toString()}`
-        }
-
         const response = await fetch(url, {
-            headers: { 'Accept': 'application/json' },
+            headers: { 'Accept': 'application/vnd.api+json' },
             signal: controller.signal,
         })
         clearTimeout(timeoutId)
 
         if (!response.ok) {
-            console.error(`[PROXY ERROR] Manga search backend status: ${response.status}`)
-            throw new Error(`Jikan API error: ${response.status}`)
+            throw new Error(`Kitsu API error: ${response.status}`)
         }
 
         const data = await response.json()
+        const mappedData = mapKitsuToAnime(data.data, data.included)
+        
+        const totalCount = data.meta?.count || 1000
+        const hasNextPage = offset + limitNum < totalCount
+
         return NextResponse.json({
-            data: data.data || [],
-            pagination: data.pagination || null,
+            data: mappedData,
+            pagination: {
+                last_visible_page: Math.ceil(totalCount / limitNum),
+                has_next_page: hasNextPage,
+                current_page: pageNum,
+                items: { count: mappedData.length, total: totalCount, per_page: limitNum },
+            },
         })
     } catch (error: any) {
-        console.warn('Manga search API unavailable, using static fallback:', error.message)
-
-        // Filter static data based on query and type
+        console.warn('Manga search API unavailable:', error.message)
         let filtered = TOP_MANGA_STATIC as any[]
         if (q) {
             const lq = q.toLowerCase()
             filtered = filtered.filter(m =>
                 m.title.toLowerCase().includes(lq) ||
-                m.title_english.toLowerCase().includes(lq)
+                (m.title_english && m.title_english.toLowerCase().includes(lq))
             )
         }
         if (type) {
-            filtered = filtered.filter(m => m.type?.toLowerCase() === type.toLowerCase())
+            filtered = filtered.filter(m => m.type && m.type.toLowerCase() === type.toLowerCase())
         }
 
         return NextResponse.json({
@@ -81,4 +83,3 @@ export async function GET(request: NextRequest) {
         })
     }
 }
-
