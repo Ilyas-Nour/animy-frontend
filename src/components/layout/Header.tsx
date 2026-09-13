@@ -1,8 +1,7 @@
 'use client'
 
-import Link from 'next/link'
+import { Link, usePathname } from '@/i18n/routing'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, LogOut, User as UserIcon, Users, MessageCircle, Home, Tv, BookOpen, Film, Layers, Calendar, Mail, Sun, Moon, ShieldCheck, Flame, ChevronDown } from 'lucide-react'
 import { useState, useEffect } from 'react'
