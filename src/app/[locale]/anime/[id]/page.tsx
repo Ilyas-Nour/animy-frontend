@@ -82,7 +82,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     `${anime.title} english dub`,
     `${anime.title} hd`,
     ...(anime.genres?.map((g: any) => g.name) || []),
-    ...(anime.studios?.map((s: any) => s.name) || []),
+    ...((anime as any).studios?.map((s: any) => s.name) || []),
     'anime streaming',
     'free anime'
   ]
