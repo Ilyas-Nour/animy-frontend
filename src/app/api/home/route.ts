@@ -1,48 +1,47 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
-import { TOP_ANIME_STATIC, HERO_SPOTLIGHT_ANIME } from '@/lib/static-anime-data'
-
-const JIKAN_API = 'https://api.jikan.moe/v4'
-
-async function jikanFetch(path: string, timeout = 8000): Promise<any | null> {
-  try {
-    const res = await fetch(`${JIKAN_API}${path}`, {
-      signal: AbortSignal.timeout(timeout),
-      next: { revalidate: 3600 }
-    })
-    if (!res.ok) return null
-    const json = await res.json()
-    return { data: (json.data || []).map((a: any) => ({ ...a, id: a.mal_id })) }
-  } catch {
-    return null
-  }
-}
+import { TOP_ANIME_STATIC, HERO_SPOTLIGHT_ANIME, TOP_MANGA_STATIC } from '@/lib/static-anime-data'
+import { anilistFetch, mapAniListToAnime, mapAniListToManga } from '@/lib/anilist-client'
 
 export async function GET(_req: NextRequest) {
   try {
-    // Run all fetches in parallel
-    const [
-      popularJson,
-      trendingJson,
-      upcomingJson,
-      airingJson,
-      topMangaJson,
-      publishingMangaJson,
-    ] = await Promise.all([
-      jikanFetch('/top/anime?filter=bypopularity&limit=20'),
-      jikanFetch('/top/anime?filter=airing&limit=10'),
-      jikanFetch('/seasons/upcoming?limit=20'),
-      jikanFetch('/seasons/now?limit=20'),
-      jikanFetch('/top/manga?filter=bypopularity&limit=20'),
-      jikanFetch('/top/manga?filter=publishing&limit=20'),
-    ])
+    const query = `
+      query {
+        popularAnime: Page(page: 1, perPage: 20) {
+          media(type: ANIME, sort: POPULARITY_DESC) { ...mediaFields }
+        }
+        trendingAnime: Page(page: 1, perPage: 10) {
+          media(type: ANIME, sort: TRENDING_DESC) { ...mediaFields }
+        }
+        upcomingAnime: Page(page: 1, perPage: 20) {
+          media(type: ANIME, status: NOT_YET_RELEASED, sort: POPULARITY_DESC) { ...mediaFields }
+        }
+        airingAnime: Page(page: 1, perPage: 20) {
+          media(type: ANIME, status: RELEASING, sort: POPULARITY_DESC) { ...mediaFields }
+        }
+        topManga: Page(page: 1, perPage: 20) {
+          media(type: MANGA, sort: POPULARITY_DESC) { ...mediaFields }
+        }
+        publishingManga: Page(page: 1, perPage: 20) {
+          media(type: MANGA, status: RELEASING, sort: POPULARITY_DESC) { ...mediaFields }
+        }
+      }
+      fragment mediaFields on Media {
+        id idMal title { english romaji native } coverImage { extraLarge large medium color }
+        bannerImage format source episodes duration status meanScore popularity description
+        seasonYear season genres trailer { id site }
+        studios(isMain: true) { nodes { id name } }
+        chapters volumes startDate { year month day } endDate { year month day }
+      }
+    `
+    const data = await anilistFetch(query)
 
-    const popularAnime = popularJson ? popularJson.data : TOP_ANIME_STATIC.slice(0, 20)
-    const trendingAnime = trendingJson ? trendingJson.data : TOP_ANIME_STATIC.slice(0, 10)
-    const upcomingAnime = upcomingJson ? upcomingJson.data : []
-    const recentEpisodes = airingJson ? airingJson.data : TOP_ANIME_STATIC.slice(0, 20)
-    const topManga = topMangaJson ? topMangaJson.data : []
-    const publishingManga = publishingMangaJson ? publishingMangaJson.data : []
+    const popularAnime = data.popularAnime?.media?.map(mapAniListToAnime) || TOP_ANIME_STATIC.slice(0, 20)
+    const trendingAnime = data.trendingAnime?.media?.map(mapAniListToAnime) || TOP_ANIME_STATIC.slice(0, 10)
+    const upcomingAnime = data.upcomingAnime?.media?.map(mapAniListToAnime) || []
+    const recentEpisodes = data.airingAnime?.media?.map(mapAniListToAnime) || TOP_ANIME_STATIC.slice(0, 20)
+    const topManga = data.topManga?.media?.map(mapAniListToManga) || TOP_MANGA_STATIC.slice(0, 20)
+    const publishingManga = data.publishingManga?.media?.map(mapAniListToManga) || TOP_MANGA_STATIC.slice(0, 20)
 
     return NextResponse.json(
       {
@@ -55,7 +54,7 @@ export async function GET(_req: NextRequest) {
           topManga,
           publishingManga,
         },
-        _source: 'jikan',
+        _source: 'anilist',
       },
       {
         headers: {
@@ -73,8 +72,8 @@ export async function GET(_req: NextRequest) {
           trendingAnime: TOP_ANIME_STATIC.slice(0, 10),
           upcomingAnime: [],
           recentEpisodes: TOP_ANIME_STATIC.slice(0, 20),
-          topManga: [],
-          publishingManga: [],
+          topManga: TOP_MANGA_STATIC.slice(0, 20),
+          publishingManga: TOP_MANGA_STATIC.slice(0, 20),
         },
         _source: 'static_fallback',
       }

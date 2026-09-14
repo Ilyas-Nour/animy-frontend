@@ -1,43 +1,55 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { TOP_ANIME_STATIC } from '@/lib/static-anime-data'
-
-const JIKAN_API = 'https://api.jikan.moe/v4'
+import { anilistFetch, mapAniListToAnime } from '@/lib/anilist-client'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
-    const filter = searchParams.get('filter') || 'airing'
-    const limit = searchParams.get('limit') || '20'
+    const page = searchParams.get('page') || '1'
+    const limit = searchParams.get('limit') || '24'
+    const pageNum = parseInt(page, 10)
     const limitNum = parseInt(limit, 10)
 
-    let jikanFilter = ''
-    if (filter === 'airing') {
-        jikanFilter = '?filter=airing'
-    } else if (filter === 'upcoming') {
-        jikanFilter = '?filter=upcoming'
-    } else if (filter === 'bypopularity') {
-        jikanFilter = '?filter=bypopularity'
-    }
-
     try {
-        const url = `${JIKAN_API}/top/anime${jikanFilter}${jikanFilter ? '&' : '?'}limit=${limitNum}`
+        const query = `
+            query($page: Int, $perPage: Int) {
+                Page(page: $page, perPage: $perPage) {
+                    pageInfo { total perPage currentPage lastPage hasNextPage }
+                    media(type: ANIME, sort: SCORE_DESC) {
+                        id idMal title { english romaji native } coverImage { extraLarge large medium color }
+                        format source episodes duration status meanScore popularity description
+                        seasonYear season genres trailer { id site }
+                        studios(isMain: true) { nodes { id name } }
+                    }
+                }
+            }
+        `
+        const data = await anilistFetch(query, { page: pageNum, perPage: limitNum })
+        const mappedData = data.Page?.media?.map(mapAniListToAnime) || []
+        const pageInfo = data.Page?.pageInfo || {}
 
-        const response = await fetch(url, {
-            signal: AbortSignal.timeout(10000),
-            next: { revalidate: 3600 }
+        return NextResponse.json({
+            data: mappedData,
+            pagination: {
+                last_visible_page: pageInfo.lastPage || 1,
+                has_next_page: pageInfo.hasNextPage || false,
+                current_page: pageInfo.currentPage || pageNum,
+                items: { count: mappedData.length, total: pageInfo.total || mappedData.length, per_page: limitNum },
+            },
         })
-
-        if (!response.ok) {
-            throw new Error(`Jikan API error: ${response.status}`)
-        }
-
-        const json = await response.json()
-        const mapped = (json.data || []).map((a: any) => ({ ...a, id: a.mal_id }))
-
-        return NextResponse.json({ data: mapped })
     } catch (error: any) {
-        console.warn('[Top Anime] Jikan failed, using static fallback:', error.message)
-        const staticData = TOP_ANIME_STATIC.slice(0, limitNum)
-        return NextResponse.json({ data: staticData, _fallback: true })
+        console.warn('AniList top API unavailable:', error.message)
+        const start = (pageNum - 1) * limitNum
+        const paginated = TOP_ANIME_STATIC.slice(start, start + limitNum)
+        return NextResponse.json({
+            data: paginated,
+            pagination: {
+                last_visible_page: Math.ceil(TOP_ANIME_STATIC.length / limitNum),
+                has_next_page: start + limitNum < TOP_ANIME_STATIC.length,
+                current_page: pageNum,
+                items: { count: paginated.length, total: TOP_ANIME_STATIC.length, per_page: limitNum },
+            },
+            _fallback: true,
+        })
     }
 }

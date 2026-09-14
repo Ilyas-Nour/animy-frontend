@@ -1,8 +1,7 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { TOP_MANGA_STATIC } from '@/lib/static-anime-data'
-
-const JIKAN_API = 'https://api.jikan.moe/v4'
+import { anilistFetch, mapAniListToManga } from '@/lib/anilist-client'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
@@ -14,37 +13,36 @@ export async function GET(request: NextRequest) {
     const limitNum = parseInt(limit, 10)
 
     try {
-        let url = `${JIKAN_API}/manga?page=${pageNum}&limit=${limitNum}`
+        const query = `
+            query($search: String, $page: Int, $perPage: Int) {
+                Page(page: $page, perPage: $perPage) {
+                    pageInfo { total perPage currentPage lastPage hasNextPage }
+                    media(type: MANGA, search: $search, sort: POPULARITY_DESC) {
+                        id idMal title { english romaji native } coverImage { extraLarge large medium color }
+                        format chapters volumes status meanScore popularity description
+                        startDate { year month day } endDate { year month day } genres
+                    }
+                }
+            }
+        `
+        const variables: any = { page: pageNum, perPage: limitNum }
+        if (q) variables.search = q
         
-        if (q) {
-            url += `&q=${encodeURIComponent(q)}`
-        }
-        
-        const response = await fetch(url, {
-            signal: AbortSignal.timeout(10000),
-            next: { revalidate: 3600 }
-        })
-
-        if (!response.ok) {
-            throw new Error(`Jikan API error: ${response.status}`)
-        }
-
-        const data = await response.json()
-        const mappedData = (data.data || []).map((m: any) => ({ ...m, id: m.mal_id }))
-        
-        const pagination = data.pagination || {}
+        const data = await anilistFetch(query, variables)
+        const mappedData = data.Page?.media?.map(mapAniListToManga) || []
+        const pageInfo = data.Page?.pageInfo || {}
         
         return NextResponse.json({
             data: mappedData,
             pagination: {
-                last_visible_page: pagination.last_visible_page || 1,
-                has_next_page: pagination.has_next_page || false,
-                current_page: pagination.current_page || pageNum,
-                items: pagination.items || { count: mappedData.length, total: mappedData.length, per_page: limitNum },
+                last_visible_page: pageInfo.lastPage || 1,
+                has_next_page: pageInfo.hasNextPage || false,
+                current_page: pageInfo.currentPage || pageNum,
+                items: { count: mappedData.length, total: pageInfo.total || mappedData.length, per_page: limitNum },
             },
         })
     } catch (error: any) {
-        console.warn('Jikan manga search API unavailable:', error.message)
+        console.warn('AniList manga search API unavailable:', error.message)
         let filtered = TOP_MANGA_STATIC as any[]
         if (q) {
             const lq = q.toLowerCase()

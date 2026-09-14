@@ -10,115 +10,58 @@ import { AdBanner } from '@/components/ads/AdBanner'
 import { constructMetadata } from '@/lib/seo-utils'
 import { TOP_MANGA_STATIC } from '@/lib/static-anime-data'
 
-const KITSU_API = 'https://kitsu.io/api/edge'
-
-/** Try Jikan (MAL) for manga data */
-async function tryJikanManga(id: string) {
-  try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 8000)
-    const res = await fetch(`https://api.jikan.moe/v4/manga/${id}/full`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeoutId)
-    if (res.status === 404) return null
-    if (res.ok) {
-      const json = await res.json()
-      return json.data || null
-    }
-  } catch { /* fall through */ }
-  return null
-}
-
-/** Map Kitsu manga item to Jikan-compatible shape */
-function kitsuMangaToData(item: any, included: any[] = []) {
-  const attrs = item.attributes
-
-  let malId = parseInt(item.id, 10)
-  if (included && item.relationships?.mappings?.data) {
-    const mappingIds = item.relationships.mappings.data.map((m: any) => m.id)
-    const mMapping = included.find(
-      (i: any) => i.type === 'mappings' && mappingIds.includes(i.id) &&
-        i.attributes?.externalSite === 'myanimelist/manga'
-    )
-    if (mMapping?.attributes?.externalId) {
-      malId = parseInt(mMapping.attributes.externalId, 10)
-    }
-  }
-
-  return {
-    mal_id: malId,
-    kitsu_id: parseInt(item.id, 10),
-    title: attrs.canonicalTitle || attrs.titles?.en || attrs.titles?.en_jp || 'Unknown',
-    title_english: attrs.titles?.en,
-    images: {
-      jpg: {
-        image_url: attrs.posterImage?.small || '',
-        large_image_url: attrs.posterImage?.large || attrs.posterImage?.original || '',
-      },
-    },
-    score: attrs.averageRating ? parseFloat(attrs.averageRating) / 10 : undefined,
-    scored_by: attrs.userCount,
-    chapters: attrs.chapterCount,
-    volumes: attrs.volumeCount,
-    status: attrs.status === 'current' ? 'Publishing' : attrs.status === 'finished' ? 'Finished' : 'Unknown',
-    type: attrs.subtype || 'Manga',
-    year: attrs.startDate ? new Date(attrs.startDate).getFullYear() : undefined,
-    synopsis: attrs.synopsis || '',
-    genres: [],
-    authors: [],
-    published: {
-      from: attrs.startDate,
-      to: attrs.endDate,
-      string: attrs.startDate ? `${attrs.startDate}${attrs.endDate ? ` to ${attrs.endDate}` : ''}` : 'Unknown',
-    },
-  }
-}
-
-/** Try Kitsu by Kitsu manga ID */
-async function tryKitsuMangaById(id: string) {
-  try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 8000)
-    const res = await fetch(`${KITSU_API}/manga/${id}?include=mappings`, {
-      headers: { 'Accept': 'application/vnd.api+json' },
-      signal: controller.signal,
-    })
-    clearTimeout(timeoutId)
-    if (!res.ok) return null
-    const json = await res.json()
-    if (!json.data) return null
-    return kitsuMangaToData(json.data, json.included || [])
-  } catch { /* fall through */ }
-  return null
-}
+import { anilistFetch, mapAniListToManga } from '@/lib/anilist-client'
 
 async function getMangaFull(id: string) {
   const numericId = parseInt(id, 10)
 
-  // 1. Try Jikan with given ID (works for valid MAL manga IDs)
-  const jikanData = await tryJikanManga(id)
-  if (jikanData) return jikanData
-
-  // 2. If Jikan failed, the ID might be a Kitsu ID — try Kitsu directly
-  const kitsuData = await tryKitsuMangaById(id)
-  if (kitsuData) {
-    // If we got a different MAL ID from Kitsu, try Jikan again with that
-    if (kitsuData.mal_id && kitsuData.mal_id !== numericId) {
-      const jikanFromMal = await tryJikanManga(kitsuData.mal_id.toString())
-      if (jikanFromMal) return jikanFromMal
-    }
-    return kitsuData
-  }
-
-  // 3. Static fallback
+  // 1. Static fallback
   if (typeof TOP_MANGA_STATIC !== 'undefined') {
-    const staticHit = (TOP_MANGA_STATIC as any[]).find((m: any) => m.mal_id === numericId)
+    const staticHit = (TOP_MANGA_STATIC as any[]).find((m: any) => m.mal_id === numericId || m.id === numericId)
     if (staticHit) return staticHit
   }
 
-  return null
+  try {
+      const query = `
+          query($id: Int) {
+              Media(id: $id, type: MANGA) {
+                  id idMal title { english romaji native } coverImage { extraLarge large medium color }
+                  format chapters volumes status meanScore popularity description
+                  startDate { year month day } endDate { year month day } genres
+                  staff(sort: RELEVANCE) { nodes { id name { full } } }
+                  characters(sort: ROLE, perPage: 10) {
+                      edges {
+                          role
+                          node { id name { full } image { large } }
+                      }
+                  }
+                  relations {
+                      edges {
+                          relationType(version: 2)
+                          node { id idMal type status format title { romaji english } coverImage { large } }
+                      }
+                  }
+                  recommendations(perPage: 10, sort: RATING_DESC) {
+                      nodes {
+                          mediaRecommendation { id title { romaji english } coverImage { large } }
+                      }
+                  }
+              }
+          }
+      `
+      const data = await anilistFetch(query, { id: numericId })
+      if (!data.Media) return null
+      
+      const mappedData: any = mapAniListToManga(data.Media)
+      mappedData.characters = data.Media.characters?.edges || []
+      mappedData.relations = data.Media.relations?.edges || []
+      mappedData.recommendations = data.Media.recommendations?.nodes || []
+      
+      return mappedData
+  } catch (error) {
+      console.error('Manga detail AniList fetch failed:', error)
+      return null
+  }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string, id: string }> }): Promise<Metadata> {

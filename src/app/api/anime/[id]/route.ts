@@ -1,8 +1,6 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
-
-// Proxy to Backend API
-const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
+import { anilistFetch, mapAniListToAnime } from '@/lib/anilist-client'
 
 export async function GET(
     request: NextRequest,
@@ -11,22 +9,46 @@ export async function GET(
     const { id } = await params
 
     try {
-        const response = await fetch(`${BACKEND_API}/anime/${id}`, {
-            headers: { 'Accept': 'application/json' },
-            next: { revalidate: 0 } // Always fresh for details
-        })
-
-        if (!response.ok) {
-            if (response.status === 404) {
-                return NextResponse.json({ error: 'Anime not found' }, { status: 404 })
+        const query = `
+            query($id: Int) {
+                Media(id: $id, type: ANIME) {
+                    id idMal title { english romaji native } coverImage { extraLarge large medium color }
+                    bannerImage format source episodes duration status meanScore popularity description
+                    seasonYear season genres trailer { id site }
+                    studios(isMain: true) { nodes { id name } }
+                    stats { scoreDistribution { score amount } }
+                    characters(sort: ROLE, perPage: 10) {
+                        edges {
+                            role
+                            node { id name { full } image { large } }
+                            voiceActors(language: JAPANESE) { id name { full } image { large } }
+                        }
+                    }
+                    relations {
+                        edges {
+                            relationType(version: 2)
+                            node { id idMal type status format title { romaji english } coverImage { large } }
+                        }
+                    }
+                    recommendations(perPage: 10, sort: RATING_DESC) {
+                        nodes {
+                            mediaRecommendation { id title { romaji english } coverImage { large } }
+                        }
+                    }
+                }
             }
-            throw new Error(`Backend API error: ${response.status}`)
-        }
+        `
+        const data = await anilistFetch(query, { id: parseInt(id, 10) })
+        const mappedData = mapAniListToAnime(data.Media)
+        
+        // Populate additional arrays
+        mappedData.characters = data.Media?.characters?.edges || []
+        mappedData.relations = data.Media?.relations?.edges || []
+        mappedData.recommendations = data.Media?.recommendations?.nodes || []
 
-        const data = await response.json()
-        return NextResponse.json({ data: data.data })
+        return NextResponse.json({ success: true, data: { data: mappedData } })
     } catch (error: any) {
-        console.error('Anime detail error:', error)
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        console.error('AniList detail error:', error.message)
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 }

@@ -1,8 +1,7 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { TOP_ANIME_STATIC } from '@/lib/static-anime-data'
-
-const JIKAN_API = 'https://api.jikan.moe/v4'
+import { anilistFetch, mapAniListToAnime } from '@/lib/anilist-client'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
@@ -13,43 +12,44 @@ export async function GET(request: NextRequest) {
     const limitNum = parseInt(limit, 10)
 
     try {
-        const url = `${JIKAN_API}/anime?type=tv&order_by=members&sort=desc&limit=${limitNum}&page=${pageNum}`
-
-        const response = await fetch(url, {
-            signal: AbortSignal.timeout(10000),
-            next: { revalidate: 3600 }
-        })
-
-        if (!response.ok) {
-            throw new Error(`Jikan API error: ${response.status}`)
-        }
-
-        const data = await response.json()
-        const mappedData = (data.data || []).map((a: any) => ({ ...a, id: a.mal_id }))
-        
-        const pagination = data.pagination || {}
-        const totalCount = pagination.items?.total || 1000
-        const hasNextPage = pagination.has_next_page || false
+        const query = `
+            query($page: Int, $perPage: Int) {
+                Page(page: $page, perPage: $perPage) {
+                    pageInfo { total perPage currentPage lastPage hasNextPage }
+                    media(type: ANIME, format: TV, sort: POPULARITY_DESC) {
+                        id idMal title { english romaji native } coverImage { extraLarge large medium color }
+                        format source episodes duration status meanScore popularity description
+                        seasonYear season genres trailer { id site }
+                        studios(isMain: true) { nodes { id name } }
+                    }
+                }
+            }
+        `
+        const data = await anilistFetch(query, { page: pageNum, perPage: limitNum })
+        const mappedData = data.Page?.media?.map(mapAniListToAnime) || []
+        const pageInfo = data.Page?.pageInfo || {}
 
         return NextResponse.json({
             data: mappedData,
             pagination: {
-                last_visible_page: pagination.last_visible_page || Math.ceil(totalCount / limitNum),
-                has_next_page: hasNextPage,
-                current_page: pageNum,
-                items: { count: mappedData.length, total: totalCount, per_page: limitNum },
+                last_visible_page: pageInfo.lastPage || 1,
+                has_next_page: pageInfo.hasNextPage || false,
+                current_page: pageInfo.currentPage || pageNum,
+                items: { count: mappedData.length, total: pageInfo.total || mappedData.length, per_page: limitNum },
             },
         })
     } catch (error: any) {
-        console.warn('Jikan series API unavailable, using static fallback:', error.message)
+        console.warn('AniList series API unavailable:', error.message)
         const tvSeries = TOP_ANIME_STATIC.filter(a => a.type === 'TV')
+        const start = (pageNum - 1) * limitNum
+        const paginated = tvSeries.slice(start, start + limitNum)
         return NextResponse.json({
-            data: tvSeries,
+            data: paginated,
             pagination: {
-                last_visible_page: 1,
-                has_next_page: false,
-                current_page: 1,
-                items: { count: tvSeries.length, total: tvSeries.length, per_page: tvSeries.length },
+                last_visible_page: Math.ceil(tvSeries.length / limitNum),
+                has_next_page: start + limitNum < tvSeries.length,
+                current_page: pageNum,
+                items: { count: paginated.length, total: tvSeries.length, per_page: limitNum },
             },
             _fallback: true,
         })
