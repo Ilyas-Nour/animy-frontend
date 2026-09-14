@@ -16,13 +16,13 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // Search anime and manga in parallel via Jikan and MangaDex
+        // Search anime and manga in parallel via Jikan
         const [animeRes, mangaRes] = await Promise.allSettled([
             fetch(`${JIKAN_API}/anime?q=${encodeURIComponent(q)}&limit=${limitNum}&sfw=true`, {
                 signal: AbortSignal.timeout(8000),
                 next: { revalidate: 3600 }
             }),
-            fetch(`${MANGADEX_API}/manga?title=${encodeURIComponent(q)}&limit=${limitNum}&includes[]=cover_art`, {
+            fetch(`${JIKAN_API}/manga?q=${encodeURIComponent(q)}&limit=${limitNum}&sfw=true`, {
                 signal: AbortSignal.timeout(8000),
                 next: { revalidate: 3600 }
             }),
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
         if (mangaRes.status === 'fulfilled' && mangaRes.value.ok) {
             const json = await mangaRes.value.json()
-            mangaData = mapMangaDexToManga(json.data)
+            mangaData = (json.data || []).map((m: any) => ({ ...m, id: m.mal_id }))
         }
 
         return NextResponse.json({ anime: animeData, manga: mangaData })

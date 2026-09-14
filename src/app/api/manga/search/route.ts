@@ -1,9 +1,8 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
-import { mapMangaDexToManga } from '@/lib/mangadex-mapper'
 import { TOP_MANGA_STATIC } from '@/lib/static-anime-data'
 
-const MANGADEX_API = 'https://api.mangadex.org'
+const JIKAN_API = 'https://api.jikan.moe/v4'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
@@ -13,13 +12,12 @@ export async function GET(request: NextRequest) {
 
     const pageNum = parseInt(page, 10)
     const limitNum = parseInt(limit, 10)
-    const offset = (pageNum - 1) * limitNum
 
     try {
-        let url = `${MANGADEX_API}/manga?limit=${limitNum}&offset=${offset}&includes[]=cover_art`
+        let url = `${JIKAN_API}/manga?page=${pageNum}&limit=${limitNum}`
         
         if (q) {
-            url += `&title=${encodeURIComponent(q)}`
+            url += `&q=${encodeURIComponent(q)}`
         }
         
         const response = await fetch(url, {
@@ -28,26 +26,25 @@ export async function GET(request: NextRequest) {
         })
 
         if (!response.ok) {
-            throw new Error(`MangaDex API error: ${response.status}`)
+            throw new Error(`Jikan API error: ${response.status}`)
         }
 
         const data = await response.json()
-        const mappedData = mapMangaDexToManga(data.data)
+        const mappedData = (data.data || []).map((m: any) => ({ ...m, id: m.mal_id }))
         
-        const totalCount = data.total || 1000
-        const hasNextPage = offset + limitNum < totalCount
-
+        const pagination = data.pagination || {}
+        
         return NextResponse.json({
             data: mappedData,
             pagination: {
-                last_visible_page: Math.ceil(totalCount / limitNum),
-                has_next_page: hasNextPage,
-                current_page: pageNum,
-                items: { count: mappedData.length, total: totalCount, per_page: limitNum },
+                last_visible_page: pagination.last_visible_page || 1,
+                has_next_page: pagination.has_next_page || false,
+                current_page: pagination.current_page || pageNum,
+                items: pagination.items || { count: mappedData.length, total: mappedData.length, per_page: limitNum },
             },
         })
     } catch (error: any) {
-        console.warn('MangaDex search API unavailable:', error.message)
+        console.warn('Jikan manga search API unavailable:', error.message)
         let filtered = TOP_MANGA_STATIC as any[]
         if (q) {
             const lq = q.toLowerCase()
@@ -57,13 +54,18 @@ export async function GET(request: NextRequest) {
             )
         }
 
+        // Apply pagination to static data
+        const start = (pageNum - 1) * limitNum
+        const paginatedFiltered = filtered.slice(start, start + limitNum)
+        const hasNextPage = start + limitNum < filtered.length
+
         return NextResponse.json({
-            data: filtered,
+            data: paginatedFiltered,
             pagination: {
-                last_visible_page: 1,
-                has_next_page: false,
-                current_page: 1,
-                items: { count: filtered.length, total: filtered.length, per_page: filtered.length },
+                last_visible_page: Math.ceil(filtered.length / limitNum),
+                has_next_page: hasNextPage,
+                current_page: pageNum,
+                items: { count: paginatedFiltered.length, total: filtered.length, per_page: limitNum },
             },
             _fallback: true,
         })

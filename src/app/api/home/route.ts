@@ -26,17 +26,23 @@ export async function GET(_req: NextRequest) {
       trendingJson,
       upcomingJson,
       airingJson,
+      topMangaJson,
+      publishingMangaJson,
     ] = await Promise.all([
       jikanFetch('/top/anime?filter=bypopularity&limit=20'),
       jikanFetch('/top/anime?filter=airing&limit=10'),
       jikanFetch('/seasons/upcoming?limit=20'),
       jikanFetch('/seasons/now?limit=20'),
+      jikanFetch('/top/manga?filter=bypopularity&limit=20'),
+      jikanFetch('/top/manga?filter=publishing&limit=20'),
     ])
 
     const popularAnime = popularJson ? popularJson.data : TOP_ANIME_STATIC.slice(0, 20)
     const trendingAnime = trendingJson ? trendingJson.data : TOP_ANIME_STATIC.slice(0, 10)
     const upcomingAnime = upcomingJson ? upcomingJson.data : []
     const recentEpisodes = airingJson ? airingJson.data : TOP_ANIME_STATIC.slice(0, 20)
+    const topManga = topMangaJson ? topMangaJson.data : []
+    const publishingManga = publishingMangaJson ? publishingMangaJson.data : []
 
     return NextResponse.json(
       {
@@ -46,8 +52,8 @@ export async function GET(_req: NextRequest) {
           trendingAnime,
           upcomingAnime,
           recentEpisodes,
-          topManga: [],
-          publishingManga: [],
+          topManga,
+          publishingManga,
         },
         _source: 'jikan',
       },
