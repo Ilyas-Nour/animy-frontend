@@ -12,7 +12,7 @@ import { TOP_ANIME_STATIC, TOP_MOVIES_STATIC, HERO_SPOTLIGHT_ANIME } from '@/lib
 
 import { anilistFetch, mapAniListToAnime } from '@/lib/anilist-client'
 
-async function getAnimeFull(id: string) {
+async function getAnimeFull(id: string): Promise<any> {
   const numericId = parseInt(id, 10)
 
   // 1. First: check static cache (instant, no API needed)

@@ -12,7 +12,7 @@ import { TOP_MANGA_STATIC } from '@/lib/static-anime-data'
 
 import { anilistFetch, mapAniListToManga } from '@/lib/anilist-client'
 
-async function getMangaFull(id: string) {
+async function getMangaFull(id: string): Promise<any> {
   const numericId = parseInt(id, 10)
 
   // 1. Static fallback
