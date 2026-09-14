@@ -1,7 +1,7 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 
-const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
+const MANGADEX_API = 'https://api.mangadex.org'
 
 export async function GET(
     request: NextRequest,
@@ -11,9 +11,10 @@ export async function GET(
 
     try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 25000)
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-        const response = await fetch(`${BACKEND_API}/manga/${id}/read-chapters`, {
+        // Fetch English chapters, ordered by chapter number descending
+        const response = await fetch(`${MANGADEX_API}/manga/${id}/feed?translatedLanguage[]=en&order[chapter]=desc&limit=500`, {
             headers: { 'Accept': 'application/json' },
             cache: 'no-store',
             signal: controller.signal
@@ -22,15 +23,23 @@ export async function GET(
         clearTimeout(timeoutId)
 
         if (!response.ok) {
-            console.error(`[PROXY ERROR] Manga chapters backend status: ${response.status}`)
+            console.error(`MangaDex chapters status: ${response.status}`)
             return NextResponse.json({ data: { chapters: [] } }, { status: 200 })
         }
 
-        const data = await response.json()
-        return NextResponse.json(data)
+        const json = await response.json()
+        
+        // Map to expected format
+        const chapters = (json.data || []).map((c: any) => ({
+            id: c.id,
+            title: c.attributes?.title,
+            chapterNumber: c.attributes?.chapter,
+        }))
+
+        return NextResponse.json({ data: { chapters } })
     } catch (error: any) {
         if (error.name === 'AbortError') {
-            console.warn('[PROXY TIMEOUT] Manga chapters fetch timed out after 25s')
+            console.warn('Manga chapters fetch timed out')
         } else {
             console.error('Manga chapters error:', error)
         }

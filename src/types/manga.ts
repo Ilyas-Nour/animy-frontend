@@ -1,5 +1,6 @@
 export interface Manga {
-    mal_id: number;
+    id: string | number;
+    mal_id?: number;
     url: string;
     images: {
         jpg: {

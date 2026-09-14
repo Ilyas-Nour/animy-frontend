@@ -1,7 +1,8 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
+import { mapMangaDexToManga } from '@/lib/mangadex-mapper'
 
-const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
+const MANGADEX_API = 'https://api.mangadex.org'
 
 export async function GET(
     request: NextRequest,
@@ -10,7 +11,7 @@ export async function GET(
     const { id } = await params
 
     try {
-        const response = await fetch(`${BACKEND_API}/manga/${id}/full`, {
+        const response = await fetch(`${MANGADEX_API}/manga/${id}?includes[]=cover_art&includes[]=author&includes[]=artist`, {
             headers: { 'Accept': 'application/json' },
             next: { revalidate: 3600 }
         })
@@ -19,11 +20,13 @@ export async function GET(
             if (response.status === 404) {
                 return NextResponse.json({ error: 'Manga not found' }, { status: 404 })
             }
-            throw new Error(`Jikan API error: ${response.status}`)
+            throw new Error(`MangaDex API error: ${response.status}`)
         }
 
         const data = await response.json()
-        return NextResponse.json(data)
+        const mappedData = mapMangaDexToManga([data.data])
+        
+        return NextResponse.json({ data: mappedData[0] })
     } catch (error: any) {
         console.error('Manga detail error:', error)
         return NextResponse.json({ error: error.message }, { status: 500 })

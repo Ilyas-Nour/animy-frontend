@@ -158,9 +158,7 @@ function MangaReaderContent() {
             try {
                 setLoading(true)
                 const timestamp = new Date().getTime()
-                // Use our internal proxy to bypass CORS and improve reliability
-                const encodedPath = encodeURIComponent(`/manga/read/${chapterId}`)
-                const res = await fetch(`/api/proxy?url=${encodedPath}&t=${timestamp}`)
+                const res = await fetch(`/api/manga/read/${chapterId}?t=${timestamp}`)
                 
                 if (!res.ok) {
                     throw new Error(`Server returned ${res.status}`)
@@ -190,7 +188,7 @@ function MangaReaderContent() {
             try {
                 setFetchingChapters(true)
                 const timestamp = new Date().getTime()
-                const res = await fetch(`/api/proxy?url=/manga/${mangaId}/read-chapters&t=${timestamp}`)
+                const res = await fetch(`/api/manga/${mangaId}/chapters?t=${timestamp}`)
                 
                 if (!res.ok) return
 

@@ -65,7 +65,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => controller.abort(), 25000)
 
-                const res = await fetch(`/api/manga/${manga.mal_id}/chapters`, {
+                const res = await fetch(`/api/manga/${manga.id}/chapters`, {
                     signal: controller.signal
                 })
                 clearTimeout(timeoutId)
@@ -87,7 +87,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         }
 
         fetchChapters()
-    }, [manga.mal_id, initialChapters])
+    }, [manga.id, initialChapters])
 
     const checkStatus = useCallback(async () => {
         try {
@@ -100,7 +100,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
             const favData = favRes.data?.data
 
             if (Array.isArray(listData)) {
-                const listEntry = listData.find((item: any) => item.mangaId === manga.mal_id)
+                const listEntry = listData.find((item: any) => item.mangaId === manga.id)
                 if (listEntry) {
                     setIsInMangaList(true)
                     setMangaListStatus(listEntry.status)
@@ -108,13 +108,13 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
             }
 
             if (Array.isArray(favData)) {
-                const isFav = favData.some((item: any) => item.mangaId === manga.mal_id)
+                const isFav = favData.some((item: any) => item.mangaId === manga.id)
                 setIsFavorited(isFav)
             }
         } catch (error) {
             console.error('Failed to check manga status:', error)
         }
-    }, [manga.mal_id])
+    }, [manga.id])
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -134,9 +134,9 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         try {
             setActionLoading(true)
             if (isFavorited) {
-                await api.delete(`/users/favorites/manga/${manga.mal_id}`)
+                await api.delete(`/users/favorites/manga/${manga.id}`)
             } else {
-                const response = await api.post(`/users/favorites/manga/${manga.mal_id}`, {
+                const response = await api.post(`/users/favorites/manga/${manga.id}`, {
                     title: manga.title,
                     image: manga.images?.webp?.large_image_url || manga.images?.jpg?.large_image_url
                 })
@@ -161,7 +161,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
             setActionLoading(true)
             if (!isInMangaList) {
                 const response = await api.post('/users/mangalist', {
-                    mangaId: manga.mal_id,
+                    mangaId: manga.id,
                     title: manga.title,
                     image: manga.images?.webp?.large_image_url || manga.images?.jpg?.large_image_url,
                     status
@@ -171,7 +171,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 }
                 setIsInMangaList(true)
             } else {
-                await api.patch(`/users/mangalist/${manga.mal_id}`, { status })
+                await api.patch(`/users/mangalist/${manga.id}`, { status })
             }
             setMangaListStatus(status)
         } catch (error) {
@@ -184,7 +184,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
     const handleRemoveFromList = async () => {
         try {
             setActionLoading(true)
-            await api.delete(`/users/mangalist/${manga.mal_id}`)
+            await api.delete(`/users/mangalist/${manga.id}`)
             setIsInMangaList(false)
             setMangaListStatus('PLAN_TO_READ')
         } catch (error) {
@@ -306,7 +306,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                 className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mt-2"
                             >
                                 {chapters.length > 0 ? (
-                                    <Link href={`/manga/read/${encodeURIComponent(chapters[chapters.length - 1].id)}?mangaId=${manga.mal_id}&type=${manga.type}`} className="block">
+                                    <Link href={`/manga/read/${encodeURIComponent(chapters[chapters.length - 1].id)}?mangaId=${manga.id}&type=${manga.type}`} className="block">
                                         <Button 
                                             size="lg"
                                             style={{ backgroundColor: primaryColor, boxShadow: `0 0 30px -5px ${primaryColor}80` }}
@@ -394,8 +394,8 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                     description={manga.synopsis}
                                     image={manga.images?.webp?.large_image_url}
                                     type="MANGA"
-                                    id={manga.mal_id}
-                                    path={`/manga/${manga.mal_id}`}
+                                    id={manga.id}
+                                    path={`/manga/${manga.id}`}
                                     trigger={
                                         <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl bg-white/5 hover:bg-white/20 text-white border-white/10 backdrop-blur-md transition-all">
                                             <Share2 className="h-5 w-5" />
@@ -578,7 +578,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                         {sortedChapters.map((chapter) => (
                                             <Link 
                                                 key={chapter.id} 
-                                                href={`/manga/read/${encodeURIComponent(chapter.id)}?mangaId=${manga.mal_id}&type=${manga.type}`}
+                                                href={`/manga/read/${encodeURIComponent(chapter.id)}?mangaId=${manga.id}&type=${manga.type}`}
                                                 className="flex flex-col p-4 bg-card rounded-2xl border border-white/5 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 group relative overflow-hidden"
                                             >
                                                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

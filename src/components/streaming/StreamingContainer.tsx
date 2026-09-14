@@ -78,12 +78,10 @@ export function StreamingContainer({
     const [mirrorIndex, setMirrorIndex] = useState(0)
     const [iframeKey, setIframeKey] = useState(0) // Force iframe refresh
 
+    const [resolvedAnilistId, setResolvedAnilistId] = useState<number | undefined>(anilistId)
     // AniZip mappings: Maps absolute episode number -> { season, tmdbEp, tmdbId }
     const [aniZipMap, setAniZipMap] = useState<Record<number, { s: number, e: number, tId: string }>>({})
 
-    const realAnilistId = anilistId || malId
-    // Some endpoints pass anilistId as malId when MAL ID is unknown.
-    // If malId is 0 or equal to anilistId (and we know it's not a valid MAL match for some reason), it's safe to just use malId.
     const realMalId = malId
 
     const sortedEpisodes = sortOrder === 'asc'
@@ -94,20 +92,24 @@ export function StreamingContainer({
         setMounted(true)
         const count = totalEpisodes && totalEpisodes > 0 ? totalEpisodes : 12
         const virtualEpisodes: Episode[] = Array.from({ length: count }, (_, i) => ({
-            id: String(realAnilistId),
+            id: String(resolvedAnilistId || realMalId),
             number: i + 1,
             title: `Episode ${i + 1}`,
         }))
         setEpisodes(virtualEpisodes)
         setSelectedEp(virtualEpisodes[0])
-    }, [totalEpisodes, realAnilistId])
+    }, [totalEpisodes, resolvedAnilistId, realMalId])
 
     // Fetch AniZip mapping dynamically
     useEffect(() => {
-        if (!realAnilistId) return
-        fetch(`https://api.ani.zip/mappings?anilist_id=${realAnilistId}`)
+        if (!anilistId && !realMalId) return
+        const query = anilistId ? `anilist_id=${anilistId}` : `mal_id=${realMalId}`
+        fetch(`https://api.ani.zip/mappings?${query}`)
             .then(res => res.json())
             .then(data => {
+                if (data?.mappings?.anilist_id && !anilistId) {
+                    setResolvedAnilistId(data.mappings.anilist_id)
+                }
                 if (data?.episodes) {
                     const newMap: Record<number, { s: number, e: number, tId: string }> = {}
                     const baseTmdbId = data.mappings?.themoviedb_id || initialTmdbId
@@ -143,7 +145,8 @@ export function StreamingContainer({
                 }
             })
             .catch(err => console.error("AniZip fetch failed:", err))
-    }, [realAnilistId, initialTmdbId])
+            .catch(err => console.error("AniZip fetch failed:", err))
+    }, [anilistId, realMalId, initialTmdbId])
 
     const currentEpNumber = selectedEp?.number ?? 1
     
@@ -151,7 +154,7 @@ export function StreamingContainer({
     const epMapping = aniZipMap[currentEpNumber]
     const currentContext: EmbedContext = {
         malId: realMalId,
-        anilistId: realAnilistId,
+        anilistId: resolvedAnilistId || realMalId,
         ep: currentEpNumber,
         subDub,
         tmdbId: epMapping?.tId || (initialTmdbId ? String(initialTmdbId) : undefined),

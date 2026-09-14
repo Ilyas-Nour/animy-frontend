@@ -1,51 +1,40 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
-import { mapKitsuToAnime } from '@/lib/kitsu-mapper'
+import { mapMangaDexToManga } from '@/lib/mangadex-mapper'
 import { TOP_MANGA_STATIC } from '@/lib/static-anime-data'
 
-const KITSU_API = 'https://kitsu.io/api/edge'
+const MANGADEX_API = 'https://api.mangadex.org'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const q = searchParams.get('q') || searchParams.get('query') || ''
     const page = searchParams.get('page') || '1'
     const limit = searchParams.get('limit') || '24'
-    const type = searchParams.get('type') || ''
 
     const pageNum = parseInt(page, 10)
     const limitNum = parseInt(limit, 10)
     const offset = (pageNum - 1) * limitNum
 
     try {
-        let url = `${KITSU_API}/manga?page[limit]=${limitNum}&page[offset]=${offset}&include=mappings`
+        let url = `${MANGADEX_API}/manga?limit=${limitNum}&offset=${offset}&includes[]=cover_art`
         
         if (q) {
-            url += `&filter[text]=${encodeURIComponent(q)}`
-        } else {
-            url += `&sort=-userCount`
+            url += `&title=${encodeURIComponent(q)}`
         }
         
-        if (type) {
-            url += `&filter[subtype]=${type}`
-        }
-
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 10000)
-
         const response = await fetch(url, {
-            headers: { 'Accept': 'application/vnd.api+json' },
-            signal: controller.signal,
+            signal: AbortSignal.timeout(10000),
+            next: { revalidate: 3600 }
         })
-        clearTimeout(timeoutId)
 
         if (!response.ok) {
-            throw new Error(`Kitsu API error: ${response.status}`)
+            throw new Error(`MangaDex API error: ${response.status}`)
         }
 
         const data = await response.json()
-        const mappedData = mapKitsuToAnime(data.data, data.included)
+        const mappedData = mapMangaDexToManga(data.data)
         
-        const totalCount = data.meta?.count || 1000
+        const totalCount = data.total || 1000
         const hasNextPage = offset + limitNum < totalCount
 
         return NextResponse.json({
@@ -58,7 +47,7 @@ export async function GET(request: NextRequest) {
             },
         })
     } catch (error: any) {
-        console.warn('Manga search API unavailable:', error.message)
+        console.warn('MangaDex search API unavailable:', error.message)
         let filtered = TOP_MANGA_STATIC as any[]
         if (q) {
             const lq = q.toLowerCase()
@@ -66,9 +55,6 @@ export async function GET(request: NextRequest) {
                 m.title.toLowerCase().includes(lq) ||
                 (m.title_english && m.title_english.toLowerCase().includes(lq))
             )
-        }
-        if (type) {
-            filtered = filtered.filter(m => m.type && m.type.toLowerCase() === type.toLowerCase())
         }
 
         return NextResponse.json({

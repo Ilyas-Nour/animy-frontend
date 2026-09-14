@@ -8,7 +8,8 @@ import { truncateText, stripHtml, cn } from '@/lib/utils'
 
 interface MediaCardProps {
     item: {
-        mal_id: number;
+        id?: string | number;
+        mal_id?: number;
         title: string;
         images?: {
             jpg?: { large_image_url?: string; image_url?: string; };
@@ -36,7 +37,7 @@ export function MediaCard({ item, type, index = 0 }: MediaCardProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: Math.min(index * 0.05, 0.5), duration: 0.4 }}
         >
-            <Link href={`/${type}/${item.mal_id}`} className="group block relative rounded-2xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Link href={`/${type}/${item.id || item.mal_id}`} className="group block relative rounded-2xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div className="relative aspect-[2/3] w-full overflow-hidden bg-secondary">
                     {/* Status Badge */}
                     {isAiringOrPublishing && (
