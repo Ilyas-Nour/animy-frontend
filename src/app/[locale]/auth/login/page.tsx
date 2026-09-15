@@ -1,8 +1,7 @@
 'use client'
 export const runtime = 'edge';
 import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { Link, useRouter } from '@/i18n/routing'
 import { motion } from 'framer-motion'
 import { Mail, Lock, ArrowRight, Sparkles, Eye, EyeOff, Rocket } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
