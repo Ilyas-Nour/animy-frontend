@@ -156,17 +156,7 @@ export default function HomePage() {
         ]} 
       />
       {/* 1. Cinematic Hero Section */}
-      {heroLoading ? (
-        <div className="h-[600px] md:h-[85vh] w-full bg-muted/20 animate-pulse flex items-center justify-center">
-          <div className="container space-y-8">
-            <div className="w-1/4 h-10 bg-muted/40 rounded-lg" />
-            <div className="w-2/3 h-24 bg-muted/40 rounded-lg" />
-            <div className="w-1/2 h-8 bg-muted/40 rounded-lg" />
-          </div>
-        </div>
-      ) : heroAnime.length > 0 ? (
-        <HeroSpotlight anime={heroAnime} />
-      ) : null}
+      <HeroSpotlight anime={heroAnime} />
 
       {/* 2. Mobile Category Swiper - Sticky */}
       <CategorySwiper onCategoryChange={setActiveCategory} />
