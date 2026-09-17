@@ -304,8 +304,8 @@ export function Header() {
 
         {/* Mobile Menu Toggle */}
         <div className="lg:hidden flex items-center gap-2">
-          {/* Mobile Global Search (assuming GlobalSearch component handles mobile view well, otherwise we'd add an icon) */}
-          <div className="w-8">
+          {/* Mobile Global Search - let it render at natural size */}
+          <div className="shrink-0">
              <GlobalSearch />
           </div>
 

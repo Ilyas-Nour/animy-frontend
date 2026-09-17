@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, X, Loader2, Star, Tv, BookOpen } from 'lucide-react'
 import Image from 'next/image'
@@ -22,9 +22,19 @@ interface SearchResult {
   }
 }
 
+/** Strip HTML tags and dangerous chars from user input */
+function sanitizeQuery(input: string): string {
+  return input
+    .replace(/<[^>]*>?/gm, '') // strip HTML tags
+    .replace(/[^\w\s\-.,!?'":()[\]]/g, '') // keep safe printable chars
+    .slice(0, 100) // max 100 chars
+    .trim()
+}
+
 export function GlobalSearch() {
   const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const [query, setQuery] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
@@ -34,6 +44,13 @@ export function GlobalSearch() {
   const [showDropdown, setShowDropdown] = useState(false)
 
   const debouncedQuery = useDebounce(query, 350)
+
+  // Auto-focus input when expanded on mobile
+  useEffect(() => {
+    if (isExpanded && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 50)
+    }
+  }, [isExpanded])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -46,7 +63,19 @@ export function GlobalSearch() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Search both anime and manga in parallel using proven existing endpoints
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsExpanded(false)
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // Search both anime and manga in parallel
   useEffect(() => {
     if (!debouncedQuery.trim() || !showDropdown) {
       setAnimeResults([])
@@ -60,7 +89,7 @@ export function GlobalSearch() {
     const fetchResults = async () => {
       setIsLoading(true)
       try {
-        const q = encodeURIComponent(debouncedQuery.trim())
+        const q = encodeURIComponent(sanitizeQuery(debouncedQuery))
 
         const [animeRes, mangaRes] = await Promise.allSettled([
           fetch(`/api/anime/search?q=${q}&limit=4`, { signal: controller.signal }),
@@ -69,7 +98,6 @@ export function GlobalSearch() {
 
         if (animeRes.status === 'fulfilled' && animeRes.value.ok) {
           const json = await animeRes.value.json()
-          // Backend returns { success: true, data: { pagination: {...}, data: [...] } }
           const items = json?.data?.data || json?.data || []
           setAnimeResults(Array.isArray(items) ? items.slice(0, 4) : [])
         } else {
@@ -98,18 +126,34 @@ export function GlobalSearch() {
     return () => controller.abort()
   }, [debouncedQuery, showDropdown])
 
-  const handleSuggestionClick = (item: SearchResult, mediaType: 'anime' | 'manga') => {
-    router.push(`/${mediaType}/${item.mal_id}`)
+  const handleSuggestionClick = useCallback((item: SearchResult, mediaType: 'anime' | 'manga') => {
+    // Validate ID is a safe number before navigating
+    const safeId = Number(item.mal_id)
+    if (!Number.isFinite(safeId) || safeId <= 0) return
+    router.push(`/${mediaType}/${safeId}`)
     setIsExpanded(false)
     setShowDropdown(false)
     setQuery('')
-  }
+  }, [router])
 
-  const handleViewAll = (type: 'anime' | 'manga') => {
-    router.push(`/${type}?q=${encodeURIComponent(query.trim())}`)
+  const handleViewAll = useCallback((type: 'anime' | 'manga') => {
+    const safeQuery = sanitizeQuery(query.trim())
+    if (safeQuery) {
+      router.push(`/${type}?q=${encodeURIComponent(safeQuery)}`)
+    } else {
+      router.push(`/${type}`)
+    }
     setIsExpanded(false)
     setShowDropdown(false)
-  }
+  }, [query, router])
+
+  const handleClose = useCallback(() => {
+    setIsExpanded(false)
+    setShowDropdown(false)
+    setQuery('')
+    setAnimeResults([])
+    setMangaResults([])
+  }, [])
 
   const hasResults = animeResults.length > 0 || mangaResults.length > 0
   const showResults = showDropdown && query.trim().length > 0
@@ -128,72 +172,86 @@ export function GlobalSearch() {
 
   return (
     <>
-      {/* Mobile icon */}
+      {/* Mobile icon — shown on small screens only */}
       <div className="flex md:hidden items-center justify-center">
         <button
           onClick={() => setIsExpanded(true)}
-          className="p-2.5 rounded-full hover:bg-accent/50 transition-colors"
+          className="p-2 rounded-full hover:bg-accent/50 transition-colors"
           aria-label="Open search"
         >
           <Search className="w-5 h-5 text-muted-foreground" />
         </button>
       </div>
 
-      {/* Search overlay (mobile) / bar (desktop) */}
+      {/* Mobile overlay backdrop */}
+      {isExpanded && (
+        <div
+          className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm md:hidden"
+          onClick={handleClose}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Search container — full overlay on mobile, inline on desktop */}
       <div className={cn(
-        "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm md:static md:bg-transparent md:backdrop-blur-none transition-all duration-300 flex items-start justify-center pt-24 md:pt-0 md:block md:flex-1 md:max-w-xl mx-auto xl:ml-8",
+        "fixed inset-x-0 top-0 z-50 flex justify-center pt-16 px-4 md:static md:pt-0 md:px-0 md:flex-1 md:max-w-xl md:z-auto md:block transition-all duration-200",
         isExpanded ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto"
       )}>
+        {/* Close button for mobile overlay */}
         {isExpanded && (
           <button
-            className="absolute top-6 right-6 md:hidden p-3 rounded-full hover:bg-accent/50 bg-background border"
-            onClick={() => { setIsExpanded(false); setShowDropdown(false) }}
+            className="absolute top-4 right-4 md:hidden p-2 rounded-full hover:bg-accent/50 bg-background/80 border border-border/40 backdrop-blur-sm"
+            onClick={handleClose}
+            aria-label="Close search"
           >
-            <X className="w-6 h-6 text-foreground" />
+            <X className="w-5 h-5 text-foreground" />
           </button>
         )}
 
         <form
           ref={formRef}
           onSubmit={(e) => e.preventDefault()}
-          className={cn(
-            "relative flex flex-col w-11/12 md:w-full transition-all duration-300",
-            isExpanded ? "scale-100" : "scale-95 md:scale-100"
-          )}
+          className="relative flex flex-col w-full md:w-full transition-all duration-300"
         >
           {/* Input */}
-          <div className="relative flex items-center w-full bg-secondary/60 hover:bg-secondary focus-within:bg-secondary border border-transparent focus-within:border-primary/30 rounded-full transition-all duration-300 z-10">
-            <Search className="absolute left-4 w-5 h-5 text-muted-foreground stroke-[2.5]" />
+          <div className="relative flex items-center w-full bg-secondary/60 hover:bg-secondary focus-within:bg-secondary border border-transparent focus-within:border-primary/30 rounded-full transition-all duration-300 z-10 shadow-lg md:shadow-none">
+            <Search className="absolute left-4 w-4 h-4 text-muted-foreground stroke-[2.5] shrink-0" />
             <input
+              ref={inputRef}
               type="text"
               placeholder="Search anime or manga..."
               value={query}
               onChange={(e) => { setQuery(e.target.value); setShowDropdown(true) }}
               onFocus={() => setShowDropdown(true)}
-              className="w-full bg-transparent border-none outline-none py-2.5 pl-12 pr-10 text-sm font-medium placeholder:text-muted-foreground/60 text-foreground"
-              autoFocus={isExpanded}
+              className="w-full bg-transparent border-none outline-none py-2.5 pl-11 pr-10 text-sm font-medium placeholder:text-muted-foreground/60 text-foreground"
+              autoComplete="off"
+              spellCheck={false}
             />
-            {query && (
+            {isLoading && (
+              <Loader2 className="absolute right-4 w-4 h-4 text-muted-foreground animate-spin" />
+            )}
+            {query && !isLoading && (
               <button
                 type="button"
                 onClick={() => { setQuery(''); setAnimeResults([]); setMangaResults([]) }}
-                className="absolute right-4 p-1 rounded-full hover:bg-accent transition-colors"
+                className="absolute right-3 p-1 rounded-full hover:bg-accent transition-colors"
+                aria-label="Clear search"
               >
                 <X className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
             )}
           </div>
 
-          {/* Dropdown */}
+          {/* Dropdown — viewport-safe width */}
           {showResults && (
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-full md:w-[500px] lg:w-[600px] mt-2 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden z-50">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden z-50 w-full sm:w-[500px] max-w-[calc(100vw-2rem)] md:max-w-[600px]">
               {isLoading ? (
                 <div className="flex items-center justify-center p-6 gap-3">
                   <Loader2 className="w-5 h-5 text-primary animate-spin" />
                   <span className="text-sm text-muted-foreground">Searching...</span>
                 </div>
               ) : hasResults ? (
-                <div className="flex flex-col max-h-[70vh] overflow-y-auto">
+                <div className="flex flex-col max-h-[60vh] sm:max-h-[70vh] overflow-y-auto overscroll-contain">
                   {/* Anime results */}
                   {animeResults.length > 0 && (
                     <div>
@@ -258,12 +316,12 @@ export function GlobalSearch() {
                   <div className="border-t border-border/30 p-2 flex gap-2">
                     <button type="button" onClick={() => handleViewAll('anime')}
                       className="flex-1 py-2 text-xs font-bold uppercase tracking-wider text-primary hover:bg-primary/10 rounded-xl transition-colors">
-                      All Anime Results
+                      All Anime
                     </button>
                     <div className="w-px bg-border/30" />
                     <button type="button" onClick={() => handleViewAll('manga')}
                       className="flex-1 py-2 text-xs font-bold uppercase tracking-wider text-purple-500 hover:bg-purple-500/10 rounded-xl transition-colors">
-                      All Manga Results
+                      All Manga
                     </button>
                   </div>
                 </div>
@@ -298,39 +356,39 @@ function ResultItem({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-4 p-3 w-full text-left rounded-xl hover:bg-accent/80 transition-colors group",
+        "flex items-center gap-3 p-2.5 w-full text-left rounded-xl hover:bg-accent/80 transition-colors group",
       )}
     >
-      <div className="relative w-14 h-20 rounded-lg overflow-hidden shrink-0 bg-secondary border border-border/50">
+      <div className="relative w-10 h-14 rounded-lg overflow-hidden shrink-0 bg-secondary border border-border/50">
         {imgUrl ? (
-          <Image src={imgUrl} alt={item.title} fill className="object-cover" sizes="56px" />
+          <Image src={imgUrl} alt={item.title} fill className="object-cover" sizes="40px" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             {mediaType === 'anime'
-              ? <Tv className="w-5 h-5 text-muted-foreground/40" />
-              : <BookOpen className="w-5 h-5 text-muted-foreground/40" />}
+              ? <Tv className="w-4 h-4 text-muted-foreground/40" />
+              : <BookOpen className="w-4 h-4 text-muted-foreground/40" />}
           </div>
         )}
       </div>
       <div className="flex flex-col flex-1 min-w-0">
         <span className={cn(
-          "text-base font-bold truncate transition-colors",
+          "text-sm font-bold truncate transition-colors",
           mediaType === 'anime' ? "group-hover:text-primary" : "group-hover:text-purple-500"
         )}>
           {item.title}
         </span>
         {item.title_english && item.title_english !== item.title && (
-          <span className="text-sm text-muted-foreground truncate">{item.title_english}</span>
+          <span className="text-xs text-muted-foreground truncate">{item.title_english}</span>
         )}
-        <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
           {item.score ? (
             <div className="flex items-center gap-1 text-yellow-500 font-bold">
-              <Star className="w-3.5 h-3.5 fill-yellow-500" />
+              <Star className="w-3 h-3 fill-yellow-500" />
               {item.score}
             </div>
           ) : null}
           {item.type && (
-            <span className="uppercase text-[10px] font-black tracking-wider bg-secondary px-2 py-0.5 rounded">
+            <span className="uppercase text-[10px] font-black tracking-wider bg-secondary px-1.5 py-0.5 rounded">
               {item.type}
             </span>
           )}

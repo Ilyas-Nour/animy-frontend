@@ -73,10 +73,18 @@ export function HeroSpotlight({ anime }: HeroSpotlightProps) {
                                 transition={{ delay: 0.2 }}
                                 className="min-h-[60px] md:min-h-[90px] lg:min-h-[100px] xl:min-h-[130px] flex items-end"
                             >
-                                {/* Title — stylized text logo */}
-                                <h1 className="font-outfit font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-7xl">
-                                    {active.title}
-                                </h1>
+                                {active.logoUrl ? (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img
+                                        src={active.logoUrl}
+                                        alt={active.title}
+                                        className="h-16 sm:h-20 md:h-28 lg:h-32 xl:h-40 w-auto object-contain object-left-bottom drop-shadow-[0_4px_15px_rgba(0,0,0,0.8)]"
+                                    />
+                                ) : (
+                                    <h1 className="font-outfit font-black leading-none tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-7xl">
+                                        {active.title}
+                                    </h1>
+                                )}
                             </motion.div>
 
                             {/* Tag Pills */}
