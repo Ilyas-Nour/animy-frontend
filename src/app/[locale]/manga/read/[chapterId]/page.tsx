@@ -2,13 +2,14 @@ export const runtime = 'edge';
 export const revalidate = 3600;
 
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import MangaReaderClient from '@/components/manga/MangaReaderClient';
+import { Loader2 } from 'lucide-react';
 
 export async function generateMetadata({ params }: { params: Promise<{ chapterId: string }> }): Promise<Metadata> {
     const { chapterId } = await params;
     
     // Attempt to extract a clean chapter number from the ID if possible
-    // e.g. "one-piece-chapter-1000" -> "one piece chapter 1000"
     const cleanChapterId = chapterId.replace(/-/g, ' ');
     
     // Capitalize words for the title
@@ -43,6 +44,19 @@ export async function generateMetadata({ params }: { params: Promise<{ chapterId
     }
 }
 
+function MangaReaderFallback() {
+    return (
+        <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-white fixed inset-0 z-[100]">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <p className="font-medium animate-pulse text-muted-foreground tracking-widest uppercase text-xs">Loading Scrolls...</p>
+        </div>
+    )
+}
+
 export default function MangaReaderPage() {
-    return <MangaReaderClient />
+    return (
+        <Suspense fallback={<MangaReaderFallback />}>
+            <MangaReaderClient />
+        </Suspense>
+    )
 }

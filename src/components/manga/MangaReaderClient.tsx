@@ -153,42 +153,41 @@ function MangaReaderContent() {
         return () => window.removeEventListener('scroll', handleScroll)
     }, [readingMode])
 
-    useEffect(() => {
-        const fetchPages = async () => {
-            try {
-                setLoading(true)
-                const timestamp = new Date().getTime()
-                const res = await fetch(`/api/manga/read/${chapterId}?t=${timestamp}`)
-                
-                if (!res.ok) {
-                    throw new Error(`Server returned ${res.status}`)
-                }
-                
-                const json = await res.json()
-                const pagesData = json.data?.pages || json.pages
-                const rawData = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : [])
-                
-                if (pagesData && pagesData.length > 0) {
-                    setPages(pagesData)
-                } else if (rawData.length > 0) {
-                    setPages(rawData) 
-                } else {
-                    setError('No pages found for this chapter.')
-                }
-            } catch (err) {
-                console.error(err)
-                setError('Failed to load chapter pages. The provider might be unavailable or the backend is crashing.')
-            } finally {
-                setLoading(false)
+    const fetchPages = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const res = await fetch(`/api/manga/read/${encodeURIComponent(chapterId)}`)
+            
+            if (!res.ok) {
+                throw new Error(`Server returned ${res.status}`)
             }
+            
+            const json = await res.json()
+            const pagesData = json.data?.pages || json.pages
+            const rawData = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : [])
+            
+            if (pagesData && pagesData.length > 0) {
+                setPages(pagesData)
+            } else if (rawData.length > 0) {
+                setPages(rawData) 
+            } else {
+                setError('No pages found for this chapter. The chapter may not be available from this provider.')
+            }
+        } catch (err) {
+            console.error(err)
+            setError('Failed to load chapter pages. Please try again or go back to select another chapter.')
+        } finally {
+            setLoading(false)
         }
+    }, [chapterId])
 
+    useEffect(() => {
         const fetchChapters = async () => {
             if (!mangaId) return
             try {
                 setFetchingChapters(true)
-                const timestamp = new Date().getTime()
-                const res = await fetch(`/api/manga/${mangaId}/chapters?t=${timestamp}`)
+                const res = await fetch(`/api/manga/${mangaId}/chapters`)
                 
                 if (!res.ok) return
 
@@ -208,12 +207,16 @@ function MangaReaderContent() {
             if (chapterId) fetchPages()
             if (mangaId && chapters.length === 0) fetchChapters()
         }
-    }, [chapterId, mangaId, chapters.length, isMounted])
+    }, [chapterId, mangaId, chapters.length, isMounted, fetchPages])
 
+    // Chapters are sorted descending (latest first)
+    // index 0 = newest chapter, index N-1 = oldest chapter
+    // "Next Chapter" = higher chapter number = lower index (closer to 0)
+    // "Prev Chapter" = lower chapter number = higher index (closer to N-1)
     const nextChapter = useCallback(() => {
         const currentIndex = chapters.findIndex(c => c.id === chapterId)
         if (currentIndex > 0) {
-                    const nextId = chapters[currentIndex - 1].id
+            const nextId = chapters[currentIndex - 1].id
             router.push(`/manga/read/${encodeURIComponent(nextId)}?mangaId=${mangaId}`)
         }
     }, [chapters, chapterId, mangaId, router])
@@ -221,7 +224,7 @@ function MangaReaderContent() {
     const prevChapter = useCallback(() => {
         const currentIndex = chapters.findIndex(c => c.id === chapterId)
         if (currentIndex !== -1 && currentIndex < chapters.length - 1) {
-                    const prevId = chapters[currentIndex + 1].id
+            const prevId = chapters[currentIndex + 1].id
             router.push(`/manga/read/${encodeURIComponent(prevId)}?mangaId=${mangaId}`)
         }
     }, [chapters, chapterId, mangaId, router])
@@ -274,12 +277,17 @@ function MangaReaderContent() {
     if (error) {
         return (
             <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-white px-4 text-center fixed inset-0 z-[100]">
-                <div className="bg-red-500/5 border border-red-500/10 p-8 rounded-3xl max-w-md shadow-2xl backdrop-blur-xl">
+                <div className="bg-red-500/5 border border-red-500/10 p-8 rounded-3xl max-w-md shadow-2xl backdrop-blur-xl space-y-4">
                     <h2 className="text-2xl font-black text-red-500 mb-2">Failed to Load</h2>
-                    <p className="text-muted-foreground mb-8 text-sm">{error}</p>
-                    <Button onClick={() => mangaId ? router.push(`/manga/${mangaId}`) : router.back()} variant="outline" className="w-full h-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 font-bold">
-                        <ArrowLeft className="h-4 w-4 mr-2" /> Return to Manga
-                    </Button>
+                    <p className="text-muted-foreground text-sm">{error}</p>
+                    <div className="flex flex-col gap-3 pt-2">
+                        <Button onClick={fetchPages} className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold">
+                            Retry
+                        </Button>
+                        <Button onClick={() => mangaId ? router.push(`/manga/${mangaId}`) : router.back()} variant="outline" className="w-full h-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 font-bold">
+                            <ArrowLeft className="h-4 w-4 mr-2" /> Return to Manga
+                        </Button>
+                    </div>
                 </div>
             </div>
         )

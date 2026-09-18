@@ -38,26 +38,39 @@ interface EmbedContext {
 
 interface Mirror {
     name: string
+    tag?: string
     buildUrl: (ctx: EmbedContext) => string | null
 }
 
 const MIRRORS: Mirror[] = [
     {
         name: 'AniStream',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp 
-            ? `https://vidlink.pro/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true` 
-            : `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`
+        tag: 'HD',
+        buildUrl: (ctx) => `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`
     },
     {
-        name: 'VidMaster',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp
-            ? `https://vidsrc.to/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
-            : `https://vidsrc.to/embed/tv/${ctx.anilistId}/1/1`
+        name: 'NineAnime',
+        tag: 'SUB',
+        buildUrl: (ctx) => `https://vidsrc.pm/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
+    },
+    {
+        name: 'GogoAnime',
+        tag: 'DUB',
+        buildUrl: (ctx) => `https://gogoanime3.co/ajax/load_episode?ep=${ctx.ep}&mal=${ctx.malId}`
+    },
+    {
+        name: 'AllAnime',
+        tag: 'ALT',
+        buildUrl: (ctx) => {
+            // allAnime embed via 2anime.xyz
+            return `https://2anime.xyz/embed/${ctx.anilistId}/${ctx.ep}?${ctx.subDub === 'dub' ? 'dub=1' : ''}`
+        }
     },
     {
         name: 'Multi',
+        tag: 'TMDB',
         buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp
-            ? `https://vidsrc.pm/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&ep=${ctx.tmdbEp}`
+            ? `https://vidsrc.to/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
             : `https://vidsrc.pm/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
     }
 ]
@@ -77,6 +90,7 @@ export function StreamingContainer({
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
     const [mirrorIndex, setMirrorIndex] = useState(0)
     const [iframeKey, setIframeKey] = useState(0) // Force iframe refresh
+    const [iframeError, setIframeError] = useState(false)
 
     const [resolvedAnilistId, setResolvedAnilistId] = useState<number | undefined>(anilistId)
     // AniZip mappings: Maps absolute episode number -> { season, tmdbEp, tmdbId }
@@ -131,7 +145,6 @@ export function StreamingContainer({
                     setEpisodes(prev => prev.map(p => {
                         const epData = data.episodes[String(p.number)]
                         if (epData) {
-                            // Extract title (prefer English, fallback to Romaji)
                             const title = epData.title?.en || epData.title?.['x-jat'] || epData.title?.ja || epData.title?.ro || p.title
                             return {
                                 ...p,
@@ -144,7 +157,6 @@ export function StreamingContainer({
                     }))
                 }
             })
-            .catch(err => console.error("AniZip fetch failed:", err))
             .catch(err => console.error("AniZip fetch failed:", err))
     }, [anilistId, realMalId, initialTmdbId])
 
@@ -162,7 +174,6 @@ export function StreamingContainer({
         tmdbEp: epMapping?.e
     }
 
-    // All mirrors now always build a URL — all 4 servers are always visible
     const availableMirrors = MIRRORS
 
     const prevEp = () => {
@@ -177,9 +188,18 @@ export function StreamingContainer({
     const selectMirror = (idx: number) => {
         setMirrorIndex(idx)
         setIframeKey(k => k + 1)
+        setIframeError(false)
     }
 
-    const reloadPlayer = () => setIframeKey(k => k + 1)
+    const reloadPlayer = () => {
+        setIframeKey(k => k + 1)
+        setIframeError(false)
+    }
+
+    const handleIframeError = () => {
+        setIframeError(true)
+    }
+
     const [isLightsOut, setIsLightsOut] = useState(false)
 
     if (!mounted) return null
@@ -230,13 +250,23 @@ export function StreamingContainer({
                         key={mirror.name}
                         onClick={() => selectMirror(idx)}
                         className={cn(
-                            'px-3 py-1 rounded-lg text-xs font-bold border transition-all',
+                            'px-3 py-1 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5',
                             idx === Math.min(mirrorIndex, availableMirrors.length - 1)
                                 ? 'bg-primary/20 border-primary/40 text-primary'
                                 : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10'
                         )}
                     >
                         {mirror.name}
+                        {mirror.tag && (
+                            <span className={cn(
+                                "text-[8px] font-black px-1 py-0.5 rounded uppercase tracking-wider",
+                                idx === Math.min(mirrorIndex, availableMirrors.length - 1)
+                                    ? 'bg-primary/30 text-primary'
+                                    : 'bg-white/10 text-white/30'
+                            )}>
+                                {mirror.tag}
+                            </span>
+                        )}
                     </button>
                 ))}
                 <button
@@ -267,14 +297,38 @@ export function StreamingContainer({
                 <div
                     className="relative bg-black rounded-xl md:rounded-3xl overflow-hidden border border-white/8 shadow-2xl shadow-black/60 w-full pb-[56.25%]"
                 >
-                    <iframe
-                        key={`${iframeKey}-${currentEpNumber}-${mirrorIndex}`}
-                        src={embedUrl}
-                        className="absolute top-0 left-0 w-full h-full border-0 bg-black"
-                        allowFullScreen={true}
-                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
-                        {...({ webkitallowfullscreen: "true", mozallowfullscreen: "true", playsInline: true } as any)}
-                    />
+                    {iframeError ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/90">
+                            <p className="text-white/60 text-sm font-medium">Player failed to load</p>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={reloadPlayer}
+                                    className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition-colors"
+                                >
+                                    Retry
+                                </button>
+                                {mirrorIndex < availableMirrors.length - 1 && (
+                                    <button
+                                        onClick={() => selectMirror(mirrorIndex + 1)}
+                                        className="px-4 py-2 bg-primary/20 hover:bg-primary/30 text-primary text-xs font-bold rounded-lg transition-colors"
+                                    >
+                                        Try Next Server
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <iframe
+                            key={`${iframeKey}-${currentEpNumber}-${mirrorIndex}`}
+                            src={embedUrl}
+                            className="absolute top-0 left-0 w-full h-full border-0 bg-black"
+                            allowFullScreen={true}
+                            allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            onError={handleIframeError}
+                            {...({ webkitallowfullscreen: "true", mozallowfullscreen: "true", playsInline: true } as any)}
+                        />
+                    )}
                 </div>
             </div>
 

@@ -306,14 +306,14 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                 className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mt-2"
                             >
                                 {chapters.length > 0 ? (
-                                    <Link href={`/manga/read/${encodeURIComponent(chapters[chapters.length - 1].id)}?mangaId=${manga.id}&type=${manga.type}`} className="block">
+                                    <Link href={`/manga/read/${encodeURIComponent(chapters[0].id)}?mangaId=${manga.id}&type=${manga.type}`} className="block">
                                         <Button 
                                             size="lg"
                                             style={{ backgroundColor: primaryColor, boxShadow: `0 0 30px -5px ${primaryColor}80` }}
                                             className="h-12 px-8 rounded-xl text-white font-black text-base group transition-all border-none hover:opacity-90"
                                         >
                                             <BookOpen className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
-                                            READ NOW
+                                            READ LATEST
                                         </Button>
                                     </Link>
                                 ) : (
@@ -587,10 +587,10 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                                         {(chapter.chapterNumber || chapter.chapter) ? `Ch. ${chapter.chapterNumber || chapter.chapter}` : 'Oneshot'}
                                                     </span>
                                                     <h3 className="font-bold text-foreground text-sm line-clamp-1 mb-1" title={chapter.title}>
-                                                        {chapter.title || `Chapter ${chapter.chapterNumber || chapter.chapter}`}
+                                                        {chapter.title || `Chapter ${chapter.chapterNumber || chapter.chapter || '?'}`}
                                                     </h3>
                                                     <span className="text-[10px] text-muted-foreground font-medium">
-                                                        {chapter.pages ? `${chapter.pages} Pages` : 'Read'}
+                                                        {chapter.pages ? `${chapter.pages}p` : chapter.scanlationGroup || 'Read'}
                                                     </span>
                                                 </div>
                                             </Link>
