@@ -55,6 +55,12 @@ export async function GET(request: NextRequest) {
                 current_page: pageInfo.currentPage || pageNum,
                 items: { count: mappedData.length, total: pageInfo.total || mappedData.length, per_page: limitNum },
             },
+        }, {
+            headers: {
+                'X-Content-Type-Options': 'nosniff',
+                'X-Frame-Options': 'DENY',
+                'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+            }
         })
     } catch (error: any) {
         console.warn('AniList search API unavailable:', error.message)
