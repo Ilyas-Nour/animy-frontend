@@ -65,19 +65,99 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => controller.abort(), 25000)
 
-                const res = await fetch(`/api/manga/${manga.id}/chapters`, {
+                const malId = manga.mal_id || manga.idMal || manga.id;
+
+                // 1. Fetch MALSync directly from browser to bypass Vercel IP blocks
+                const malSyncRes = await fetch(`https://api.malsync.moe/mal/manga/${malId}`, {
+                    headers: { 'Accept': 'application/json' },
                     signal: controller.signal
                 })
+
+                if (!malSyncRes.ok) {
+                    console.error('MALSync mapping not found for MAL ID:', malId)
+                    setChapters([])
+                    setChaptersLoading(false)
+                    clearTimeout(timeoutId)
+                    return
+                }
+
+                const malSyncJson = await malSyncRes.json()
+                const mangadexSites = malSyncJson?.Sites?.Mangadex
+                if (!mangadexSites) {
+                    setChapters([])
+                    setChaptersLoading(false)
+                    clearTimeout(timeoutId)
+                    return
+                }
+
+                // 2. Fetch from MangaDex directly
+                const mangadexId = Object.keys(mangadexSites)[0]
+                
+                let allChapters: any[] = []
+                let offset = 0
+                const pageLimit = 500
+                let hasMore = true
+
+                while (hasMore && offset < 2000) {
+                    const url = `https://api.mangadex.org/manga/${mangadexId}/feed?translatedLanguage[]=en&order[chapter]=desc&limit=${pageLimit}&offset=${offset}&includes[]=scanlation_group`
+                    const response = await fetch(url, {
+                        headers: { 'Accept': 'application/json' },
+                        signal: controller.signal
+                    })
+
+                    if (!response.ok) break
+
+                    const json = await response.json()
+                    const batch = json.data || []
+                    allChapters = allChapters.concat(batch)
+                    
+                    const total = json.total || 0
+                    offset += pageLimit
+                    hasMore = batch.length === pageLimit && allChapters.length < total
+                }
+                
                 clearTimeout(timeoutId)
 
-                if (res.ok) {
-                    const json = await res.json()
-                    const chaptersData = json.data?.chapters || json.chapters || []
-                    setChapters(Array.isArray(chaptersData) ? chaptersData : [])
-                } else {
-                    console.error('Backend returned error:', res.status)
-                    setChapters([])
+                // 3. Deduplicate
+                const chapterMap = new Map<string, any>()
+                for (const c of allChapters) {
+                    const chNum = c.attributes?.chapter ?? 'oneshot'
+                    const key = String(chNum)
+                    
+                    if (!chapterMap.has(key)) {
+                        chapterMap.set(key, c)
+                    } else {
+                        const existing = chapterMap.get(key)
+                        const existingHasTitle = !!existing.attributes?.title
+                        const newHasTitle = !!c.attributes?.title
+                        const newIsOfficial = c.relationships?.some((r: any) => 
+                            r.type === 'scanlation_group' && r.attributes?.name?.toLowerCase().includes('official')
+                        )
+                        const existingIsOfficial = existing.relationships?.some((r: any) => 
+                            r.type === 'scanlation_group' && r.attributes?.name?.toLowerCase().includes('official')
+                        )
+                        if ((newIsOfficial && !existingIsOfficial) || (!existingHasTitle && newHasTitle)) {
+                            chapterMap.set(key, c)
+                        }
+                    }
                 }
+
+                const deduplicated = Array.from(chapterMap.values()).sort((a, b) => {
+                    const aNum = parseFloat(a.attributes?.chapter ?? '0') || 0
+                    const bNum = parseFloat(b.attributes?.chapter ?? '0') || 0
+                    return bNum - aNum
+                })
+                
+                const finalChapters = deduplicated.map((c: any) => ({
+                    id: c.id,
+                    title: c.attributes?.title || null,
+                    chapterNumber: c.attributes?.chapter,
+                    pages: c.attributes?.pages,
+                    publishedAt: c.attributes?.publishAt,
+                    scanlationGroup: c.relationships?.find((r: any) => r.type === 'scanlation_group')?.attributes?.name
+                }))
+
+                setChapters(finalChapters)
             } catch (error: any) {
                 console.error('Failed to fetch chapters:', error)
                 setChapters([])
@@ -87,7 +167,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         }
 
         fetchChapters()
-    }, [manga.id, initialChapters])
+    }, [manga.id, manga.mal_id, manga.idMal, initialChapters])
 
     const checkStatus = useCallback(async () => {
         try {

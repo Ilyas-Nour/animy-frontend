@@ -44,33 +44,30 @@ interface Mirror {
 
 const MIRRORS: Mirror[] = [
     {
-        name: 'AniStream',
+        name: 'VidSrc PRO',
         tag: 'HD',
-        buildUrl: (ctx) => `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=6366f1&secondaryColor=4f46e5&iconColor=ffffff&autoplay=false&fallback=true`
-    },
-    {
-        name: 'NineAnime',
-        tag: 'SUB',
         buildUrl: (ctx) => `https://vidsrc.pm/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
     },
     {
-        name: 'GogoAnime',
-        tag: 'DUB',
-        buildUrl: (ctx) => `https://gogoanime3.co/ajax/load_episode?ep=${ctx.ep}&mal=${ctx.malId}`
+        name: 'VidSrc ME',
+        tag: 'SUB/DUB',
+        buildUrl: (ctx) => `https://vidsrc.me/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
     },
     {
-        name: 'AllAnime',
+        name: 'VidSrc NET',
         tag: 'ALT',
-        buildUrl: (ctx) => {
-            // allAnime embed via 2anime.xyz
-            return `https://2anime.xyz/embed/${ctx.anilistId}/${ctx.ep}?${ctx.subDub === 'dub' ? 'dub=1' : ''}`
-        }
+        buildUrl: (ctx) => `https://vidsrc.net/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
+    },
+    {
+        name: 'NineAnime',
+        tag: 'BACKUP',
+        buildUrl: (ctx) => `https://vidsrc.io/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
     },
     {
         name: 'Multi',
         tag: 'TMDB',
         buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp
-            ? `https://vidsrc.to/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
+            ? `https://vidsrc.pm/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
             : `https://vidsrc.pm/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
     }
 ]
