@@ -165,8 +165,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         }
 
         fetchChapters()
-    }, [manga.id, manga.mal_id, manga.idMal, initialChapters])
-
+    }, [manga.id, manga.mal_id, (manga as any).idMal, initialChapters])
     const checkStatus = useCallback(async () => {
         try {
             const [listRes, favRes] = await Promise.all([
