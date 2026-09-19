@@ -64,9 +64,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 setChaptersLoading(true)
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => controller.abort(), 25000)
-
-                const malId = manga.mal_id || manga.idMal || manga.id;
-
+                const malId = manga.mal_id || (manga as any).idMal || manga.id;
                 // 1. Fetch MALSync directly from browser to bypass Vercel IP blocks
                 const malSyncRes = await fetch(`https://api.malsync.moe/mal/manga/${malId}`, {
                     headers: { 'Accept': 'application/json' },
