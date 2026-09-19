@@ -186,7 +186,7 @@ export function GlobalSearch() {
       {/* Mobile overlay backdrop */}
       {isExpanded && (
         <div
-          className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-md md:hidden"
           onClick={handleClose}
           aria-hidden="true"
         />
@@ -194,25 +194,15 @@ export function GlobalSearch() {
 
       {/* Search container — full overlay on mobile, inline on desktop */}
       <div className={cn(
-        "fixed inset-x-0 top-0 z-50 flex justify-center pt-16 px-4 md:static md:pt-0 md:px-0 md:flex-1 md:max-w-xl md:z-auto md:block transition-all duration-200",
-        isExpanded ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto"
+        "fixed inset-x-0 top-0 z-[60] flex flex-col items-center pt-4 px-4 md:static md:pt-0 md:px-0 md:flex-1 md:max-w-xl md:z-auto md:block transition-all duration-200",
+        isExpanded ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none -translate-y-4 md:translate-y-0 md:opacity-100 md:pointer-events-auto"
       )}>
-        {/* Close button for mobile overlay */}
-        {isExpanded && (
-          <button
-            className="absolute top-4 right-4 md:hidden p-2 rounded-full hover:bg-accent/50 bg-background/80 border border-border/40 backdrop-blur-sm"
-            onClick={handleClose}
-            aria-label="Close search"
+        <div className="flex items-center gap-3 w-full relative">
+          <form
+            ref={formRef}
+            onSubmit={(e) => e.preventDefault()}
+            className="relative flex flex-col w-full transition-all duration-300"
           >
-            <X className="w-5 h-5 text-foreground" />
-          </button>
-        )}
-
-        <form
-          ref={formRef}
-          onSubmit={(e) => e.preventDefault()}
-          className="relative flex flex-col w-full md:w-full transition-all duration-300"
-        >
           {/* Input */}
           <div className="relative flex items-center w-full bg-secondary/60 hover:bg-secondary focus-within:bg-secondary border border-transparent focus-within:border-primary/30 rounded-full transition-all duration-300 z-10 shadow-lg md:shadow-none">
             <Search className="absolute left-4 w-4 h-4 text-muted-foreground stroke-[2.5] shrink-0" />
@@ -333,7 +323,19 @@ export function GlobalSearch() {
               )}
             </div>
           )}
-        </form>
+          </form>
+
+          {/* Close button for mobile next to input */}
+          {isExpanded && (
+            <button
+              type="button"
+              className="md:hidden shrink-0 text-sm font-semibold text-foreground/80 hover:text-foreground px-1 transition-colors"
+              onClick={handleClose}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </div>
     </>
   )
