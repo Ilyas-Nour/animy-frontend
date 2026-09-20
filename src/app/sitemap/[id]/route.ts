@@ -68,7 +68,7 @@ export async function GET(
   else if (shardId >= 1 && shardId <= 1000) {
     try {
       const page = shardId;
-      const animeRes = await fetch(`${apiUrl}/anime/popular?page=${page}`, { next: { revalidate: 3600 } });
+      const animeRes = await fetch(`${apiUrl}/anime/popular?page=${page}`, { cache: 'no-store' });
       if (animeRes.ok) {
         const animeData = await animeRes.json();
         const items = Array.isArray(animeData.data)
@@ -96,7 +96,7 @@ export async function GET(
   else if (shardId >= 1001 && shardId <= 2000) {
     try {
       const page = shardId - 1000;
-      const mangaRes = await fetch(`${apiUrl}/manga/top?filter=bypopularity&page=${page}`, { next: { revalidate: 3600 } });
+      const mangaRes = await fetch(`${apiUrl}/manga/top?filter=bypopularity&page=${page}`, { cache: 'no-store' });
       if (mangaRes.ok) {
         const mangaData = await mangaRes.json();
         const items = Array.isArray(mangaData.data)

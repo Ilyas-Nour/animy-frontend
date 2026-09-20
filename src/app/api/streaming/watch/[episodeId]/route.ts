@@ -29,7 +29,7 @@ export async function GET(
 
         const response = await fetch(url, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 0 }
+            cache: 'no-store'
         })
 
         if (!response.ok) {

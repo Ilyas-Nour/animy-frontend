@@ -16,7 +16,7 @@ export async function GET(
         // For AnimePahe IDs or similar, they are usually safe strings
         const response = await fetch(`${BACKEND_API}/streaming/anime/${encodeURIComponent(id)}`, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 0 }
+            cache: 'no-store'
         })
 
         if (!response.ok) {

@@ -3,7 +3,7 @@ import { Manga } from '@/types/manga'
 
 const ANILIST_API = 'https://graphql.anilist.co'
 
-export async function anilistFetch(query: string, variables: any = {}, timeout = 8000) {
+export async function anilistFetch(query: string, variables: any = {}, timeout = 12000) {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeout)
     
@@ -16,7 +16,10 @@ export async function anilistFetch(query: string, variables: any = {}, timeout =
             },
             body: JSON.stringify({ query, variables }),
             signal: controller.signal,
-            next: { revalidate: 3600 }
+            // NOTE: Do NOT use next: { revalidate } here — it's Vercel-specific and throws
+            // a TypeError on Cloudflare Workers edge runtime. Use Cache-Control headers
+            // on the NextResponse instead (Cloudflare natively supports those).
+            cache: 'no-store',
         })
         clearTimeout(timeoutId)
         

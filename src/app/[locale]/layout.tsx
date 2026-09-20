@@ -101,7 +101,7 @@ import { cookies } from 'next/headers';
 async function getSystemSettings() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'}/admin/settings`, {
-      next: { revalidate: 60 }
+      cache: 'no-store',
     });
     if (!res.ok) return {};
     return await res.json();

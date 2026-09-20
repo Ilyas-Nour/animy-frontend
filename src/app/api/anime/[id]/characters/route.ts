@@ -1,7 +1,8 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 
-const JIKAN_API = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
+// Use Jikan v4 directly — the HF backend can't be relied on (cold starts, timeouts)
+const JIKAN_API = 'https://api.jikan.moe/v4'
 
 export async function GET(
     request: NextRequest,
@@ -12,7 +13,7 @@ export async function GET(
     try {
         const response = await fetch(`${JIKAN_API}/anime/${id}/characters`, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 3600 }
+            cache: 'no-store',
         })
 
         if (!response.ok) {

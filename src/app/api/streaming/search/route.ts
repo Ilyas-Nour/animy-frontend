@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         // Call backend streaming search (defaults to AnimePahe)
         const response = await fetch(`${BACKEND_API}/streaming/search?query=${encodeURIComponent(query)}`, {
             headers: { 'Accept': 'application/json' },
-            next: { revalidate: 0 }
+            cache: 'no-store'
         })
 
         if (!response.ok) {

@@ -37,7 +37,7 @@ async function fetchViaJson(url: string) {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Animy/1.0',
                 'Accept': 'application/json'
             },
-            next: { revalidate: 60 } // Faster revalidate for debugging
+            cache: 'no-store', // next:{revalidate} is Vercel-only and throws on Cloudflare Workers
         })
 
         if (!response.ok) {
