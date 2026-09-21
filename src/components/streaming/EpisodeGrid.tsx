@@ -147,7 +147,7 @@ export function EpisodeGrid({ episodes, currentEpisode, onEpisodeSelect, fallbac
                                         "text-sm sm:text-base font-bold line-clamp-2 leading-tight transition-colors duration-300",
                                         isActive ? "text-primary" : "text-white/90 group-hover:text-white"
                                     )}>
-                                        {episode.title && episode.title.toLowerCase() !== `episode ${episode.number}` 
+                                        {episode.title && !/^(\d+|episode\s*\d+)$/i.test(episode.title)
                                             ? episode.title 
                                             : `Episode ${episode.number}`}
                                     </h4>

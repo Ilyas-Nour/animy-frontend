@@ -51,57 +51,50 @@ const MIRRORS: Mirror[] = [
     {
         name: 'VidSrc PRO',
         tag: 'HD',
-        // Requires real MAL ID — returns null if unavailable so player shows a message
         buildUrl: (ctx) => {
-            const mal = validId(ctx.malId)
-            if (!mal) return null
-            return `https://vidsrc.pm/embed/anime?mal=${mal}&ep=${ctx.ep}`
+            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
+                return `https://vidsrc.pm/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
+            }
+            return null
         }
     },
     {
         name: 'VidSrc ME',
         tag: 'SUB/DUB',
         buildUrl: (ctx) => {
-            const mal = validId(ctx.malId)
-            if (!mal) return null
-            return `https://vidsrc.me/embed/anime?mal=${mal}&ep=${ctx.ep}`
+            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
+                return `https://vidsrc.me/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&episode=${ctx.tmdbEp}`
+            }
+            return null
         }
     },
     {
         name: 'VidSrc NET',
         tag: 'ALT',
         buildUrl: (ctx) => {
-            const mal = validId(ctx.malId)
-            if (!mal) return null
-            return `https://vidsrc.net/embed/anime?mal=${mal}&ep=${ctx.ep}`
-        }
-    },
-    {
-        name: 'NineAnime',
-        tag: 'BACKUP',
-        // vidsrc.io supports AniList ID as well
-        buildUrl: (ctx) => {
-            const anilist = validId(ctx.anilistId)
-            const mal = validId(ctx.malId)
-            if (anilist) return `https://vidsrc.io/embed/anime?al=${anilist}&ep=${ctx.ep}`
-            if (mal) return `https://vidsrc.io/embed/anime?mal=${mal}&ep=${ctx.ep}`
+            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
+                return `https://vidsrc.net/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&episode=${ctx.tmdbEp}`
+            }
             return null
         }
     },
     {
-        name: 'Multi',
+        name: 'SuperEmbed',
+        tag: 'BACKUP',
+        buildUrl: (ctx) => {
+            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
+                return `https://multiembed.mov/directstream.php?video_id=${ctx.tmdbId}&tmdb=1&s=${ctx.season}&e=${ctx.tmdbEp}`
+            }
+            return null
+        }
+    },
+    {
+        name: 'AutoEmbed',
         tag: 'TMDB',
         buildUrl: (ctx) => {
-            // Best path: TMDB season/episode mapping
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://vidsrc.pm/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
+                return `https://player.autoembed.cc/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
             }
-            // Fallback: MAL ID
-            const mal = validId(ctx.malId)
-            if (mal) return `https://vidsrc.pm/embed/anime?mal=${mal}&ep=${ctx.ep}`
-            // Last resort: AniList ID
-            const anilist = validId(ctx.anilistId)
-            if (anilist) return `https://vidsrc.pm/embed/anime?al=${anilist}&ep=${ctx.ep}`
             return null
         }
     }

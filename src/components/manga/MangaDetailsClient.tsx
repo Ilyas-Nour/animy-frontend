@@ -66,7 +66,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 const timeoutId = setTimeout(() => controller.abort(), 25000)
                 const malId = manga.mal_id || (manga as any).idMal || manga.id;
                 // 1. Fetch MALSync directly from browser to bypass Vercel IP blocks
-                const malSyncRes = await fetch(`https://api.malsync.moe/mal/manga/${malId}`, {
+                const malSyncRes = await fetch(`/api/malsync/manga/${malId}`, {
                     headers: { 'Accept': 'application/json' },
                     signal: controller.signal
                 })
@@ -716,7 +716,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                                         <div key={i} className="flex flex-col p-5 bg-card rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
                                             <span className="text-[10px] uppercase font-black tracking-widest text-primary mb-3">{rel.relation}</span>
                                             <div className="flex flex-col gap-2">
-                                                {rel.entry.map((entry: any) => (
+                                                {rel.entry?.map((entry: any) => (
                                                     <Link 
                                                         key={entry.mal_id} 
                                                         href={`/${entry.type}/${entry.mal_id}`}
