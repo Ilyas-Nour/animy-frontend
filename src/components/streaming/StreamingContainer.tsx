@@ -25,6 +25,11 @@ interface StreamingContainerProps {
     tmdbId?: string | number
 }
 
+// Helper: returns null when a value is 0 or falsy (so mirrors can gracefully disable)
+function validId(id: number | undefined): number | null {
+    return id && id > 0 ? id : null
+}
+
 // ── Embed Context & Mirror Definitions ──────────────────────────────────────
 interface EmbedContext {
     malId: number
@@ -46,29 +51,59 @@ const MIRRORS: Mirror[] = [
     {
         name: 'VidSrc PRO',
         tag: 'HD',
-        buildUrl: (ctx) => `https://vidsrc.pm/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
+        // Requires real MAL ID — returns null if unavailable so player shows a message
+        buildUrl: (ctx) => {
+            const mal = validId(ctx.malId)
+            if (!mal) return null
+            return `https://vidsrc.pm/embed/anime?mal=${mal}&ep=${ctx.ep}`
+        }
     },
     {
         name: 'VidSrc ME',
         tag: 'SUB/DUB',
-        buildUrl: (ctx) => `https://vidsrc.me/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
+        buildUrl: (ctx) => {
+            const mal = validId(ctx.malId)
+            if (!mal) return null
+            return `https://vidsrc.me/embed/anime?mal=${mal}&ep=${ctx.ep}`
+        }
     },
     {
         name: 'VidSrc NET',
         tag: 'ALT',
-        buildUrl: (ctx) => `https://vidsrc.net/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
+        buildUrl: (ctx) => {
+            const mal = validId(ctx.malId)
+            if (!mal) return null
+            return `https://vidsrc.net/embed/anime?mal=${mal}&ep=${ctx.ep}`
+        }
     },
     {
         name: 'NineAnime',
         tag: 'BACKUP',
-        buildUrl: (ctx) => `https://vidsrc.io/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
+        // vidsrc.io supports AniList ID as well
+        buildUrl: (ctx) => {
+            const anilist = validId(ctx.anilistId)
+            const mal = validId(ctx.malId)
+            if (anilist) return `https://vidsrc.io/embed/anime?al=${anilist}&ep=${ctx.ep}`
+            if (mal) return `https://vidsrc.io/embed/anime?mal=${mal}&ep=${ctx.ep}`
+            return null
+        }
     },
     {
         name: 'Multi',
         tag: 'TMDB',
-        buildUrl: (ctx) => ctx.tmdbId && ctx.season && ctx.tmdbEp
-            ? `https://vidsrc.pm/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
-            : `https://vidsrc.pm/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}`
+        buildUrl: (ctx) => {
+            // Best path: TMDB season/episode mapping
+            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
+                return `https://vidsrc.pm/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
+            }
+            // Fallback: MAL ID
+            const mal = validId(ctx.malId)
+            if (mal) return `https://vidsrc.pm/embed/anime?mal=${mal}&ep=${ctx.ep}`
+            // Last resort: AniList ID
+            const anilist = validId(ctx.anilistId)
+            if (anilist) return `https://vidsrc.pm/embed/anime?al=${anilist}&ep=${ctx.ep}`
+            return null
+        }
     }
 ]
 
@@ -102,8 +137,10 @@ export function StreamingContainer({
     useEffect(() => {
         setMounted(true)
         const count = totalEpisodes && totalEpisodes > 0 ? totalEpisodes : 12
+        const animeKey = resolvedAnilistId || realMalId
         const virtualEpisodes: Episode[] = Array.from({ length: count }, (_, i) => ({
-            id: String(resolvedAnilistId || realMalId),
+            // Each episode gets a unique id: "ep{number}-{animeId}"
+            id: `ep${i + 1}-${animeKey}`,
             number: i + 1,
             title: `Episode ${i + 1}`,
         }))
@@ -142,7 +179,11 @@ export function StreamingContainer({
                     setEpisodes(prev => prev.map(p => {
                         const epData = data.episodes[String(p.number)]
                         if (epData) {
-                            const title = epData.title?.en || epData.title?.['x-jat'] || epData.title?.ja || epData.title?.ro || p.title
+                            const titleEn = epData.title?.en
+                            const titleRomaji = epData.title?.['x-jat'] || epData.title?.ro
+                            const titleJa = epData.title?.ja
+                            // Prefer English, fall back to romaji, then Japanese, then default
+                            const title = titleEn || titleRomaji || titleJa || p.title
                             return {
                                 ...p,
                                 title: title,
@@ -202,7 +243,7 @@ export function StreamingContainer({
     if (!mounted) return null
 
     const activeMirror = availableMirrors[Math.min(mirrorIndex, availableMirrors.length - 1)]
-    const embedUrl = activeMirror.buildUrl(currentContext) || ''
+    const embedUrl = activeMirror.buildUrl(currentContext) ?? ''
 
     return (
         <div className="space-y-5">
@@ -294,7 +335,26 @@ export function StreamingContainer({
                 <div
                     className="relative bg-black rounded-xl md:rounded-3xl overflow-hidden border border-white/8 shadow-2xl shadow-black/60 w-full pb-[56.25%]"
                 >
-                    {iframeError ? (
+                    {!embedUrl ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/90">
+                            <p className="text-white/40 text-sm font-medium">This server requires a MAL ID which is unavailable for this anime.</p>
+                            <div className="flex gap-2">
+                                {availableMirrors.map((m, idx) => {
+                                    const url = m.buildUrl(currentContext)
+                                    if (!url || idx === mirrorIndex) return null
+                                    return (
+                                        <button
+                                            key={m.name}
+                                            onClick={() => selectMirror(idx)}
+                                            className="px-4 py-2 bg-primary/20 hover:bg-primary/30 text-primary text-xs font-bold rounded-lg transition-colors"
+                                        >
+                                            Try {m.name}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    ) : iframeError ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/90">
                             <p className="text-white/60 text-sm font-medium">Player failed to load</p>
                             <div className="flex gap-2">
