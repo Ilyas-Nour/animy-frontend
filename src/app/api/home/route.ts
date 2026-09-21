@@ -140,7 +140,7 @@ export async function GET(_req: NextRequest) {
                 topManga,
                 publishingManga,
             },
-            _source: anilist ? 'anilist' : 'fallback',
+            _source: anilistAnime ? 'anilist' : 'fallback',
         },
         {
             headers: {
