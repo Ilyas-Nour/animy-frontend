@@ -1,6 +1,7 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
-import { anilistFetch, mapAniListToAnime } from '@/lib/anilist-client'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1';
 
 export async function GET(
     request: NextRequest,
@@ -9,46 +10,28 @@ export async function GET(
     const { id } = await params
 
     try {
-        const query = `
-            query($id: Int) {
-                Media(id: $id, type: ANIME) {
-                    id idMal title { english romaji native } coverImage { extraLarge large medium color }
-                    bannerImage format source episodes duration status meanScore popularity description
-                    seasonYear season genres trailer { id site }
-                    studios(isMain: true) { nodes { id name } }
-                    stats { scoreDistribution { score amount } }
-                    characters(sort: ROLE, perPage: 10) {
-                        edges {
-                            role
-                            node { id name { full } image { large } }
-                            voiceActors(language: JAPANESE) { id name { full } image { large } }
-                        }
-                    }
-                    relations {
-                        edges {
-                            relationType(version: 2)
-                            node { id idMal type status format title { romaji english } coverImage { large } }
-                        }
-                    }
-                    recommendations(perPage: 10, sort: RATING_DESC) {
-                        nodes {
-                            mediaRecommendation { id title { romaji english } coverImage { large } }
-                        }
-                    }
-                }
-            }
-        `
-        const data = await anilistFetch(query, { id: parseInt(id, 10) })
-        const mappedData = mapAniListToAnime(data.Media)
-        
-        // Populate additional arrays
-        mappedData.characters = data.Media?.characters?.edges || []
-        mappedData.relations = data.Media?.relations?.edges || []
-        mappedData.recommendations = data.Media?.recommendations?.nodes || []
+        const response = await fetch(`${API_URL}/anime/${id}`, {
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store'
+        })
 
-        return NextResponse.json({ success: true, data: { data: mappedData } })
+        if (!response.ok) {
+            return NextResponse.json({ success: false, error: 'Failed to fetch anime' }, { status: response.status })
+        }
+
+        const data = await response.json()
+        
+        // The backend returns { success: true, data: { id, title, etc } } or just the anime object
+        // The frontend expects { success: true, data: { data: animeObject } } based on previous structure
+        const animeData = data.data || data
+        
+        return NextResponse.json({ success: true, data: { data: animeData } }, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+            }
+        })
     } catch (error: any) {
-        console.error('AniList detail error:', error.message)
+        console.error('Anime detail error:', error.message)
         return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 }

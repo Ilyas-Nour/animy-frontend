@@ -14,53 +14,24 @@ import { anilistFetch, mapAniListToManga } from '@/lib/anilist-client'
 
 async function getMangaFull(id: string): Promise<any> {
   const numericId = parseInt(id, 10)
-
-  // 1. Static fallback
-  if (typeof TOP_MANGA_STATIC !== 'undefined') {
-    const staticHit = (TOP_MANGA_STATIC as any[]).find((m: any) => m.mal_id === numericId || m.id === numericId)
-    if (staticHit) return staticHit
-  }
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
   try {
-      const query = `
-          query($id: Int) {
-              Media(id: $id, type: MANGA) {
-                  id idMal title { english romaji native } coverImage { extraLarge large medium color }
-                  format chapters volumes status meanScore popularity description
-                  startDate { year month day } endDate { year month day } genres
-                  staff(sort: RELEVANCE) { nodes { id name { full } } }
-                  characters(sort: ROLE, perPage: 10) {
-                      edges {
-                          role
-                          node { id name { full } image { large } }
-                      }
-                  }
-                  relations {
-                      edges {
-                          relationType(version: 2)
-                          node { id idMal type status format title { romaji english } coverImage { large } }
-                      }
-                  }
-                  recommendations(perPage: 10, sort: RATING_DESC) {
-                      nodes {
-                          mediaRecommendation { id title { romaji english } coverImage { large } }
-                      }
-                  }
-              }
-          }
-      `
-      const data = await anilistFetch(query, { id: numericId })
-      if (!data.Media) return null
-      
-      const mappedData: any = mapAniListToManga(data.Media)
-      mappedData.characters = data.Media.characters?.edges || []
-      mappedData.relations = data.Media.relations?.edges || []
-      mappedData.recommendations = data.Media.recommendations?.nodes || []
-      
-      return mappedData
+      const response = await fetch(`${API_URL}/manga/${numericId}`, {
+          headers: { 'Accept': 'application/json' },
+          next: { revalidate: 3600 }
+      })
+
+      if (!response.ok) {
+          throw new Error(`Backend fetch failed: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data.data || data
   } catch (error) {
-      console.error('Manga detail AniList fetch failed:', error)
-      return null
+      console.error('Manga detail backend fetch failed:', error)
+      const staticHit = (TOP_MANGA_STATIC as any[]).find((m: any) => m.mal_id === numericId || m.id === numericId)
+      return staticHit || null
   }
 }
 

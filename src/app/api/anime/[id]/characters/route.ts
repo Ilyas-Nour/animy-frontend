@@ -1,29 +1,32 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 
-// Use Jikan v4 directly — the HF backend can't be relied on (cold starts, timeouts)
-const JIKAN_API = 'https://api.jikan.moe/v4'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1';
 
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params
-
+    
     try {
-        const response = await fetch(`${JIKAN_API}/anime/${id}/characters`, {
+        const response = await fetch(`${API_URL}/anime/${id}/characters`, {
             headers: { 'Accept': 'application/json' },
-            cache: 'no-store',
+            cache: 'no-store'
         })
-
+        
         if (!response.ok) {
-            return NextResponse.json({ data: [] })
+            return NextResponse.json({ data: [] }, { status: 200 })
         }
-
+        
         const data = await response.json()
-        return NextResponse.json({ data: data.data })
-    } catch (error: any) {
+        return NextResponse.json(data, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+            }
+        })
+    } catch (error) {
         console.error('Anime characters error:', error)
-        return NextResponse.json({ data: [] })
+        return NextResponse.json({ data: [] }, { status: 200 })
     }
 }

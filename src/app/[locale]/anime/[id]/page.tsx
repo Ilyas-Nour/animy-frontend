@@ -14,52 +14,24 @@ import { anilistFetch, mapAniListToAnime } from '@/lib/anilist-client'
 
 async function getAnimeFull(id: string): Promise<any> {
   const numericId = parseInt(id, 10)
-
-  // 1. First: check static cache (instant, no API needed)
-  const staticHit = [...TOP_ANIME_STATIC, ...TOP_MOVIES_STATIC, ...HERO_SPOTLIGHT_ANIME]
-    .find(a => (a as any).id === numericId || a.mal_id === numericId)
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
   try {
-      const query = `
-          query($id: Int) {
-              Media(id: $id, type: ANIME) {
-                  id idMal title { english romaji native } coverImage { extraLarge large medium color }
-                  bannerImage format source episodes duration status meanScore popularity description
-                  seasonYear season genres trailer { id site }
-                  studios(isMain: true) { nodes { id name } }
-                  stats { scoreDistribution { score amount } }
-                  characters(sort: ROLE, perPage: 10) {
-                      edges {
-                          role
-                          node { id name { full } image { large } }
-                          voiceActors(language: JAPANESE) { id name { full } image { large } }
-                      }
-                  }
-                  relations {
-                      edges {
-                          relationType(version: 2)
-                          node { id idMal type status format title { romaji english } coverImage { large } }
-                      }
-                  }
-                  recommendations(perPage: 10, sort: RATING_DESC) {
-                      nodes {
-                          mediaRecommendation { id title { romaji english } coverImage { large } }
-                      }
-                  }
-              }
-          }
-      `
-      const data = await anilistFetch(query, { id: numericId })
-      if (!data.Media) return staticHit || null
-      
-      const mappedData = mapAniListToAnime(data.Media)
-      mappedData.characters = data.Media.characters?.edges || []
-      mappedData.relations = data.Media.relations?.edges || []
-      mappedData.recommendations = data.Media.recommendations?.nodes || []
-      
-      return mappedData
+      const response = await fetch(`${API_URL}/anime/${numericId}`, {
+          headers: { 'Accept': 'application/json' },
+          next: { revalidate: 3600 }
+      })
+
+      if (!response.ok) {
+          throw new Error(`Backend fetch failed: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data.data || data
   } catch (error) {
-      console.error('Anime detail AniList fetch failed:', error)
+      console.error('Anime detail backend fetch failed:', error)
+      const staticHit = [...TOP_ANIME_STATIC, ...TOP_MOVIES_STATIC, ...HERO_SPOTLIGHT_ANIME]
+        .find(a => (a as any).id === numericId || a.mal_id === numericId)
       return staticHit || null
   }
 }

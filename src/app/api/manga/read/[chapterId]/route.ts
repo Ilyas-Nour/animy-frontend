@@ -1,7 +1,7 @@
 export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 
-const MANGADEX_API = 'https://api.mangadex.org'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1';
 
 export async function GET(
     request: NextRequest,
@@ -10,36 +10,24 @@ export async function GET(
     const { chapterId } = await params
 
     try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 10000)
-
-        const response = await fetch(`${MANGADEX_API}/at-home/server/${chapterId}`, {
+        const response = await fetch(`${API_URL}/manga/read/${chapterId}`, {
             headers: { 'Accept': 'application/json' },
-            cache: 'no-store',
-            signal: controller.signal
+            cache: 'no-store'
         })
 
-        clearTimeout(timeoutId)
-
         if (!response.ok) {
-            console.error(`MangaDex at-home status: ${response.status}`)
+            console.error(`Backend MangaDex read status: ${response.status}`)
             return NextResponse.json({ error: 'Failed to load chapter' }, { status: response.status })
         }
 
-        const json = await response.json()
-        const baseUrl = json.baseUrl
-        const hash = json.chapter.hash
-        const data = json.chapter.data
-
-        const pages = data.map((filename: string) => `${baseUrl}/data/${hash}/${filename}`)
-
+        const data = await response.json()
+        
+        // Ensure data format matches what the frontend expects { data: { pages: [...] } }
+        const pages = data.data?.pages || data.pages || data.data || []
+        
         return NextResponse.json({ data: { pages } })
     } catch (error: any) {
-        if (error.name === 'AbortError') {
-            console.warn('Manga read fetch timed out')
-        } else {
-            console.error('Manga read error:', error)
-        }
+        console.error('Manga read proxy error:', error)
         return NextResponse.json({ error: 'Failed to load chapter' }, { status: 500 })
     }
 }
