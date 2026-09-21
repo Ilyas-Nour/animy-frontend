@@ -47,23 +47,14 @@ async function fetchJikanCurrentSeason(limit = 20) {
 }
 
 export async function GET(_req: NextRequest) {
-    // Run AniList query and Jikan query in parallel — both can fail independently
-    const anilistQuery = `
+    // Run AniList queries in parallel smaller chunks to avoid timeouts
+    const animeQuery = `
       query {
         popularAnime: Page(page: 1, perPage: 20) {
           media(type: ANIME, sort: POPULARITY_DESC) { ...mediaFields }
         }
         trendingAnime: Page(page: 1, perPage: 10) {
           media(type: ANIME, sort: TRENDING_DESC) { ...mediaFields }
-        }
-        upcomingAnime: Page(page: 1, perPage: 20) {
-          media(type: ANIME, status: NOT_YET_RELEASED, sort: POPULARITY_DESC) { ...mediaFields }
-        }
-        topManga: Page(page: 1, perPage: 20) {
-          media(type: MANGA, sort: POPULARITY_DESC) { ...mediaFields }
-        }
-        publishingManga: Page(page: 1, perPage: 20) {
-          media(type: MANGA, status: RELEASING, sort: POPULARITY_DESC) { ...mediaFields }
         }
       }
       fragment mediaFields on Media {
@@ -73,27 +64,70 @@ export async function GET(_req: NextRequest) {
         studios(isMain: true) { nodes { id name } }
         chapters volumes startDate { year month day } endDate { year month day }
       }
-    `
+    `;
 
-    const [anilistData, jikanData] = await Promise.allSettled([
-        anilistFetch(anilistQuery),
+    const upcomingQuery = `
+      query {
+        upcomingAnime: Page(page: 1, perPage: 20) {
+          media(type: ANIME, status: NOT_YET_RELEASED, sort: POPULARITY_DESC) {
+            id idMal title { english romaji native } coverImage { extraLarge large medium color }
+            bannerImage format source episodes duration status meanScore popularity description
+            seasonYear season genres trailer { id site }
+            studios(isMain: true) { nodes { id name } }
+            chapters volumes startDate { year month day } endDate { year month day }
+          }
+        }
+      }
+    `;
+
+    const mangaQuery = `
+      query {
+        topManga: Page(page: 1, perPage: 20) {
+          media(type: MANGA, sort: POPULARITY_DESC) {
+            id idMal title { english romaji native } coverImage { extraLarge large medium color }
+            bannerImage format source episodes duration status meanScore popularity description
+            seasonYear season genres trailer { id site }
+            studios(isMain: true) { nodes { id name } }
+            chapters volumes startDate { year month day } endDate { year month day }
+          }
+        }
+        publishingManga: Page(page: 1, perPage: 20) {
+          media(type: MANGA, status: RELEASING, sort: POPULARITY_DESC) {
+            id idMal title { english romaji native } coverImage { extraLarge large medium color }
+            bannerImage format source episodes duration status meanScore popularity description
+            seasonYear season genres trailer { id site }
+            studios(isMain: true) { nodes { id name } }
+            chapters volumes startDate { year month day } endDate { year month day }
+          }
+        }
+      }
+    `;
+
+    const [animeData, upcomingData, mangaData, jikanData] = await Promise.allSettled([
+        anilistFetch(animeQuery),
+        anilistFetch(upcomingQuery),
+        anilistFetch(mangaQuery),
         fetchJikanCurrentSeason(20),
-    ])
+    ]);
 
-    const anilist = anilistData.status === 'fulfilled' ? anilistData.value : null
-    const jikanAiring = jikanData.status === 'fulfilled' ? jikanData.value : null
+    const anilistAnime = animeData.status === 'fulfilled' ? animeData.value : null;
+    const anilistUpcoming = upcomingData.status === 'fulfilled' ? upcomingData.value : null;
+    const anilistManga = mangaData.status === 'fulfilled' ? mangaData.value : null;
+    const jikanAiring = jikanData.status === 'fulfilled' ? jikanData.value : null;
 
-    if (anilistData.status === 'rejected') {
-        console.error('[/api/home] AniList failed:', (anilistData as PromiseRejectedResult).reason?.message)
-    }
+    if (animeData.status === 'rejected') console.error('[/api/home] AniList Anime failed:', animeData.reason?.message);
+    if (upcomingData.status === 'rejected') console.error('[/api/home] AniList Upcoming failed:', upcomingData.reason?.message);
+    if (mangaData.status === 'rejected') console.error('[/api/home] AniList Manga failed:', mangaData.reason?.message);
 
-    const popularAnime = anilist?.popularAnime?.media?.map(mapAniListToAnime) || TOP_ANIME_STATIC.slice(0, 20)
-    const trendingAnime = anilist?.trendingAnime?.media?.map(mapAniListToAnime) || TOP_ANIME_STATIC.slice(0, 10)
-    const upcomingAnime = anilist?.upcomingAnime?.media?.map(mapAniListToAnime) || []
-    // Use Jikan for real currently-airing seasonal anime (much more accurate)
-    const recentEpisodes = jikanAiring || anilist?.topManga?.media?.map(mapAniListToAnime) || TOP_ANIME_STATIC.slice(0, 20)
-    const topManga = anilist?.topManga?.media?.map(mapAniListToManga) || TOP_MANGA_STATIC.slice(0, 20)
-    const publishingManga = anilist?.publishingManga?.media?.map(mapAniListToManga) || TOP_MANGA_STATIC.slice(0, 20)
+    const popularAnime = anilistAnime?.popularAnime?.media?.map(mapAniListToAnime) || TOP_ANIME_STATIC.slice(0, 20);
+    const trendingAnime = anilistAnime?.trendingAnime?.media?.map(mapAniListToAnime) || TOP_ANIME_STATIC.slice(0, 10);
+    
+    // Add fallback for upcomingAnime to prevent "No anime found"
+    const upcomingAnime = anilistUpcoming?.upcomingAnime?.media?.map(mapAniListToAnime) || TOP_ANIME_STATIC.slice(10, 20);
+    
+    const recentEpisodes = jikanAiring || anilistAnime?.popularAnime?.media?.map(mapAniListToAnime) || TOP_ANIME_STATIC.slice(0, 20);
+    const topManga = anilistManga?.topManga?.media?.map(mapAniListToManga) || TOP_MANGA_STATIC.slice(0, 20);
+    const publishingManga = anilistManga?.publishingManga?.media?.map(mapAniListToManga) || TOP_MANGA_STATIC.slice(0, 20);
 
     return NextResponse.json(
         {
