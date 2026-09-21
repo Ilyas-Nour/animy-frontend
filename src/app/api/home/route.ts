@@ -18,7 +18,10 @@ export async function GET(_req: NextRequest) {
         const extractData = async (res: PromiseSettledResult<Response>) => {
             if (res.status === 'fulfilled' && res.value.ok) {
                 const json = await res.value.json();
-                return json.data || [];
+                if (json.data && Array.isArray(json.data.data)) {
+                    return json.data.data;
+                }
+                return Array.isArray(json.data) ? json.data : [];
             }
             return null;
         };

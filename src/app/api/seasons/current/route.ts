@@ -18,7 +18,12 @@ export async function GET(request: NextRequest) {
         }
 
         const data = await response.json()
-        const items = data.data || []
+        let items = []
+        if (data.data && Array.isArray(data.data.data)) {
+            items = data.data.data
+        } else if (Array.isArray(data.data)) {
+            items = data.data
+        }
 
         return NextResponse.json(
             { data: items },
