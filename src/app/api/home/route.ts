@@ -38,12 +38,12 @@ export async function GET(_req: NextRequest) {
         return NextResponse.json({
             success: true,
             data: {
-                popularAnime: popularAnime || TOP_ANIME_STATIC.slice(0, 20),
-                trendingAnime: trendingAnime || TOP_ANIME_STATIC.slice(0, 10),
-                upcomingAnime: upcomingAnime || TOP_ANIME_STATIC.slice(10, 20),
-                recentEpisodes: recentEpisodes || popularAnime || TOP_ANIME_STATIC.slice(0, 20),
-                topManga: topManga || TOP_MANGA_STATIC.slice(0, 20),
-                publishingManga: publishingManga || TOP_MANGA_STATIC.slice(0, 20),
+                popularAnime: popularAnime?.length ? popularAnime : TOP_ANIME_STATIC.slice(0, 20),
+                trendingAnime: trendingAnime?.length ? trendingAnime : TOP_ANIME_STATIC.slice(0, 10),
+                upcomingAnime: upcomingAnime?.length ? upcomingAnime : TOP_ANIME_STATIC.slice(10, 20),
+                recentEpisodes: recentEpisodes?.length ? recentEpisodes : (popularAnime?.length ? popularAnime : TOP_ANIME_STATIC.slice(0, 20)),
+                topManga: topManga?.length ? topManga : TOP_MANGA_STATIC.slice(0, 20),
+                publishingManga: publishingManga?.length ? publishingManga : TOP_MANGA_STATIC.slice(0, 20),
             },
             _source: 'backend',
         }, {
