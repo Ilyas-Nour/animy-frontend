@@ -42,8 +42,15 @@ async function getMangaFull(id: string): Promise<any> {
           return jikanData.data;
       });
 
-      // We wait for the fastest successful response
-      const manga = await Promise.any([fetchBackend, fetchJikan]);
+      const timeoutPromise = new Promise<any>((_, reject) => 
+          setTimeout(() => reject(new Error('Fetch timeout exceeded')), 8000)
+      );
+
+      // We wait for the fastest successful response, but strictly bound it to 8 seconds
+      const manga = await Promise.race([
+          Promise.any([fetchBackend, fetchJikan]),
+          timeoutPromise
+      ]);
       clearTimeout(timeoutId);
       return manga;
   } catch (error) {
