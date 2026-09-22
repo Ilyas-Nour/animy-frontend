@@ -1,11 +1,11 @@
 export const runtime = 'edge';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function GET(
-    req: NextRequest,
-    { params }: { params: { id: string } }
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = params;
+    const { id } = await params;
 
     try {
         const url = `https://api.malsync.moe/mal/anime/${id}`;
