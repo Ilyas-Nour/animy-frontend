@@ -1,4 +1,3 @@
-export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { TOP_MOVIES_STATIC } from '@/lib/static-anime-data'
 import { mapKitsuToAnime } from '@/lib/kitsu-mapper'
@@ -17,14 +16,12 @@ export async function GET(request: NextRequest) {
     try {
         const url = `${KITSU_API}/anime?filter[subtype]=movie&sort=-userCount&page[limit]=${limitNum}&page[offset]=${offset}&include=mappings`
 
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 10000)
+        const signal = AbortSignal.timeout(10000)
 
         const response = await fetch(url, {
             headers: { 'Accept': 'application/vnd.api+json' },
-            signal: controller.signal,
+            signal,
         })
-        clearTimeout(timeoutId)
 
         if (!response.ok) {
             throw new Error(`Kitsu API error: ${response.status}`)
