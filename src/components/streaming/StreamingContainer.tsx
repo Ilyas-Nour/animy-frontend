@@ -69,21 +69,21 @@ const MIRRORS: Mirror[] = [
         }
     },
     {
-        name: 'VidSrc NET',
+        name: 'SmashyStream',
         tag: 'ALT',
         buildUrl: (ctx) => {
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://vidsrc.net/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&episode=${ctx.tmdbEp}`
+                return `https://player.smashy.stream/tv/${ctx.tmdbId}?s=${ctx.season}&e=${ctx.tmdbEp}`
             }
             return null
         }
     },
     {
-        name: 'NineAnime',
+        name: 'VidBinge',
         tag: 'BACKUP',
         buildUrl: (ctx) => {
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://multiembed.mov/directstream.php?video_id=${ctx.tmdbId}&tmdb=1&s=${ctx.season}&e=${ctx.tmdbEp}`
+                return `https://vidbinge.dev/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
             }
             return null
         }
@@ -93,7 +93,17 @@ const MIRRORS: Mirror[] = [
         tag: 'TMDB',
         buildUrl: (ctx) => {
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://player.autoembed.cc/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
+                return `https://vidlink.pro/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
+            }
+            return null
+        }
+    },
+    {
+        name: 'EmbedSU',
+        tag: 'FAST',
+        buildUrl: (ctx) => {
+            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
+                return `https://embed.su/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
             }
             return null
         }
