@@ -13,7 +13,7 @@ export async function GET(
         
         const response = await fetch(`https://api.malsync.moe/${validProvider}/manga/${id}`, {
             headers: {
-                'User-Agent': 'Animy/1.0',
+                'User-Agent': 'curl/7.88.1',
                 'Accept': 'application/json',
             },
             next: { revalidate: 3600 }

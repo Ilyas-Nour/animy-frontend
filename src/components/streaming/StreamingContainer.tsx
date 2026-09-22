@@ -49,11 +49,22 @@ interface Mirror {
 
 const MIRRORS: Mirror[] = [
     {
+        name: 'Multi',
+        tag: 'TMDB',
+        buildUrl: (ctx) => {
+            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
+                // VidLink supports type=sub/dub and primaryColor
+                return `https://vidlink.pro/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}?primaryColor=f97316&autoplay=0&player=${ctx.subDub}&type=${ctx.subDub}`
+            }
+            return null
+        }
+    },
+    {
         name: 'VidSrc PRO',
         tag: 'HD',
         buildUrl: (ctx) => {
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://vidsrc.pm/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
+                return `https://vidsrc.pm/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}?sub=${ctx.subDub}`
             }
             return null
         }
@@ -63,7 +74,7 @@ const MIRRORS: Mirror[] = [
         tag: 'SUB/DUB',
         buildUrl: (ctx) => {
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://vidsrc.me/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&episode=${ctx.tmdbEp}`
+                return `https://vidsrc.me/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&episode=${ctx.tmdbEp}&sub=${ctx.subDub}`
             }
             return null
         }
@@ -73,17 +84,7 @@ const MIRRORS: Mirror[] = [
         tag: 'ALT',
         buildUrl: (ctx) => {
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://vidsrc.in/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
-            }
-            return null
-        }
-    },
-    {
-        name: '2Embed',
-        tag: 'BACKUP',
-        buildUrl: (ctx) => {
-            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://www.2embed.cc/embedtv/${ctx.tmdbId}&s=${ctx.season}&e=${ctx.tmdbEp}`
+                return `https://vidsrc.in/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}?sub=${ctx.subDub}`
             }
             return null
         }

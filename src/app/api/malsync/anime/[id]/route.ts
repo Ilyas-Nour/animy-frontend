@@ -12,7 +12,7 @@ export async function GET(
         
         const res = await fetch(url, {
             headers: {
-                'User-Agent': 'AnimyApp/1.0',
+                'User-Agent': 'curl/7.88.1',
                 'Accept': 'application/json',
             },
             next: { revalidate: 3600 }
