@@ -64,23 +64,26 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 setChaptersLoading(true)
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => controller.abort(), 25000)
-                const malId = manga.mal_id || (manga as any).idMal || manga.id;
+                const hasMalId = !!(manga.mal_id || (manga as any).idMal);
+                const syncId = manga.mal_id || (manga as any).idMal || manga.id;
+                const syncType = hasMalId ? 'mal' : 'anilist';
+                
                 // 1. Fetch MALSync directly from browser to bypass Vercel IP blocks
-                let malSyncRes = await fetch(`/api/malsync/manga/${malId}`, {
+                let malSyncRes = await fetch(`/api/malsync/manga/${syncId}?provider=${syncType}`, {
                     headers: { 'Accept': 'application/json' },
                     signal: controller.signal
                 }).catch(() => null);
 
                 if (!malSyncRes || !malSyncRes.ok) {
                     console.warn('Proxy failed, trying direct MalSync fetch...');
-                    malSyncRes = await fetch(`https://api.malsync.moe/mal/manga/${malId}`, {
+                    malSyncRes = await fetch(`https://api.malsync.moe/${syncType}/manga/${syncId}`, {
                         headers: { 'Accept': 'application/json' },
                         signal: controller.signal
                     }).catch(() => null);
                 }
 
                 if (!malSyncRes || !malSyncRes.ok) {
-                    console.error('MALSync mapping not found for MAL ID:', malId)
+                    console.error('MALSync mapping not found for ID:', syncId)
                     setChapters([])
                     setChaptersLoading(false)
                     clearTimeout(timeoutId)
