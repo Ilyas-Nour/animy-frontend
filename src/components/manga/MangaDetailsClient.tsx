@@ -64,28 +64,25 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 setChaptersLoading(true)
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => controller.abort(), 25000)
-                const hasMalId = !!(manga.mal_id || (manga as any).idMal);
-                let syncId = manga.mal_id || (manga as any).idMal || manga.id;
-                if (!hasMalId) {
-                    syncId = `anilist:${syncId}`;
-                }
+                const baseId = manga.mal_id || (manga as any).idMal || manga.id;
                 
-                // 1. Fetch MALSync directly from browser to bypass Vercel IP blocks
-                let malSyncRes = await fetch(`/api/malsync/manga/${syncId}`, {
+                // 1. Try standard ID (assuming it's a MAL ID)
+                let malSyncRes = await fetch(`/api/malsync/manga/${baseId}`, {
                     headers: { 'Accept': 'application/json' },
                     signal: controller.signal
                 }).catch(() => null);
 
+                // 2. If that fails, it might be an AniList ID that the backend shoved into mal_id
                 if (!malSyncRes || !malSyncRes.ok) {
-                    console.warn('Proxy failed, trying direct MalSync fetch...');
-                    malSyncRes = await fetch(`https://api.malsync.moe/mal/manga/${syncId}`, {
+                    console.warn('Proxy failed with standard ID, trying anilist: prefix...');
+                    malSyncRes = await fetch(`/api/malsync/manga/anilist:${baseId}`, {
                         headers: { 'Accept': 'application/json' },
                         signal: controller.signal
                     }).catch(() => null);
                 }
 
                 if (!malSyncRes || !malSyncRes.ok) {
-                    console.error('MALSync mapping not found for ID:', syncId)
+                    console.error('MALSync mapping not found for ID:', baseId)
                     setChapters([])
                     setChaptersLoading(false)
                     clearTimeout(timeoutId)
