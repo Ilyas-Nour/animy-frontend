@@ -66,8 +66,8 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 const timeoutId = setTimeout(() => controller.abort(), 25000)
                 const baseId = manga.mal_id || (manga as any).idMal || manga.id;
                 
-                // 1. Try standard ID (assuming it's a MAL ID)
-                let malSyncRes = await fetch(`/api/malsync/manga/${baseId}`, {
+                // 1. Try standard ID (assuming it's a MAL ID) via backend proxy
+                let malSyncRes = await fetch(`https://ilyvs-animy-backend.hf.space/api/v1/manga/malsync-proxy/${baseId}`, {
                     headers: { 'Accept': 'application/json' },
                     signal: controller.signal
                 }).catch(() => null);
@@ -75,7 +75,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 // 2. If that fails, it might be an AniList ID that the backend shoved into mal_id
                 if (!malSyncRes || !malSyncRes.ok) {
                     console.warn('Proxy failed with standard ID, trying anilist: prefix...');
-                    malSyncRes = await fetch(`/api/malsync/manga/anilist:${baseId}`, {
+                    malSyncRes = await fetch(`https://ilyvs-animy-backend.hf.space/api/v1/manga/malsync-proxy/anilist:${baseId}`, {
                         headers: { 'Accept': 'application/json' },
                         signal: controller.signal
                     }).catch(() => null);
