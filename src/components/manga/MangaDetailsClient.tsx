@@ -65,18 +65,20 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => controller.abort(), 25000)
                 const hasMalId = !!(manga.mal_id || (manga as any).idMal);
-                const syncId = manga.mal_id || (manga as any).idMal || manga.id;
-                const syncType = hasMalId ? 'mal' : 'anilist';
+                let syncId = manga.mal_id || (manga as any).idMal || manga.id;
+                if (!hasMalId) {
+                    syncId = `anilist:${syncId}`;
+                }
                 
                 // 1. Fetch MALSync directly from browser to bypass Vercel IP blocks
-                let malSyncRes = await fetch(`/api/malsync/manga/${syncId}?provider=${syncType}`, {
+                let malSyncRes = await fetch(`/api/malsync/manga/${syncId}`, {
                     headers: { 'Accept': 'application/json' },
                     signal: controller.signal
                 }).catch(() => null);
 
                 if (!malSyncRes || !malSyncRes.ok) {
                     console.warn('Proxy failed, trying direct MalSync fetch...');
-                    malSyncRes = await fetch(`https://api.malsync.moe/${syncType}/manga/${syncId}`, {
+                    malSyncRes = await fetch(`https://api.malsync.moe/mal/manga/${syncId}`, {
                         headers: { 'Accept': 'application/json' },
                         signal: controller.signal
                     }).catch(() => null);

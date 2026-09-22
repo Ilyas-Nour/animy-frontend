@@ -7,11 +7,8 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const url = new URL(request.url);
-        const provider = url.searchParams.get('provider') || 'mal';
-        const validProvider = ['mal', 'anilist'].includes(provider) ? provider : 'mal';
         
-        const response = await fetch(`https://api.malsync.moe/${validProvider}/manga/${id}`, {
+        const response = await fetch(`https://api.malsync.moe/mal/manga/${id}`, {
             headers: {
                 'User-Agent': 'curl/7.88.1',
                 'Accept': 'application/json',
