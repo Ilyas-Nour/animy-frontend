@@ -71,7 +71,8 @@ async function fetchWithInterceptor(url: string, options: RequestOptions = {}) {
   const timeoutId = setTimeout(() => controller.abort(), 120000);
 
   try {
-    const response = await fetch(finalUrl, { ...config, signal: controller.signal });
+    const fetchSignal = options.signal || controller.signal;
+    const response = await fetch(finalUrl, { ...config, signal: fetchSignal });
     clearTimeout(timeoutId);
 
   if (!response.ok) {

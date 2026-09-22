@@ -64,7 +64,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 setChaptersLoading(true)
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => controller.abort(), 25000)
-                const baseId = manga.mal_id || (manga as any).idMal || manga.id;
+                const baseId = (manga as any).anilistId || manga.id || (manga as any).idMal || manga.mal_id;
                 const response = await api.get(`/manga/${baseId}/read-chapters`, {
                     signal: controller.signal
                 });

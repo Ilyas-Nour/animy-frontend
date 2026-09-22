@@ -156,7 +156,7 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
       <AdBanner className="max-w-7xl mx-auto px-4" />
       <MangaDetailsClient
         manga={manga}
-        characters={[]}
+        characters={manga.characters || []}
       />
       <AdBanner className="max-w-7xl mx-auto px-4 mt-12" />
     </>
