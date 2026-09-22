@@ -123,12 +123,6 @@ function AnimeContent() {
             transition={{ duration: 0.5 }}
             className="max-w-2xl"
           >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-violet-700 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.4)]">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">Discover</span>
-            </div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground mb-2">
               Browse{' '}
               <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-blue-500 bg-clip-text text-transparent">
@@ -136,7 +130,7 @@ function AnimeContent() {
               </span>
             </h1>
             <p className="text-muted-foreground text-sm">
-              Discover thousands of anime titles. Search, filter, and find your next favorite.
+              Search, filter, and find your next favorite anime series.
             </p>
           </motion.div>
 

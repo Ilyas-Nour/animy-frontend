@@ -79,7 +79,7 @@ const MIRRORS: Mirror[] = [
         }
     },
     {
-        name: 'SuperEmbed',
+        name: 'NineAnime',
         tag: 'BACKUP',
         buildUrl: (ctx) => {
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
@@ -89,7 +89,7 @@ const MIRRORS: Mirror[] = [
         }
     },
     {
-        name: 'AutoEmbed',
+        name: 'Multi',
         tag: 'TMDB',
         buildUrl: (ctx) => {
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
@@ -145,51 +145,104 @@ export function StreamingContainer({
     useEffect(() => {
         if (!anilistId && !realMalId) return
         const query = anilistId ? `anilist_id=${anilistId}` : `mal_id=${realMalId}`
+        
         fetch(`https://api.ani.zip/mappings?${query}`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("AniZip not found")
+                return res.json()
+            })
             .then(data => {
                 if (data?.mappings?.anilist_id && !anilistId) {
                     setResolvedAnilistId(data.mappings.anilist_id)
                 }
-                if (data?.episodes) {
-                    const newMap: Record<number, { s: number, e: number, tId: string }> = {}
-                    const baseTmdbId = data.mappings?.themoviedb_id || initialTmdbId
-                    
-                    Object.keys(data.episodes).forEach(key => {
-                        const ep = data.episodes[key]
-                        const absNum = ep.absoluteEpisodeNumber || Number(key)
-                        if (ep.seasonNumber !== undefined && ep.episodeNumber !== undefined) {
-                            newMap[absNum] = {
-                                s: ep.seasonNumber,
-                                e: ep.episodeNumber,
-                                tId: String(baseTmdbId)
-                            }
-                        }
-                    })
-                    setAniZipMap(newMap)
+                
+                let baseTmdbId = data?.mappings?.themoviedb_id || initialTmdbId
 
-                    // Enrich virtual episodes with real titles, thumbnails, and filler status
-                    setEpisodes(prev => prev.map(p => {
-                        const epData = data.episodes[String(p.number)]
-                        if (epData) {
-                            const titleEn = epData.title?.en
-                            const titleRomaji = epData.title?.['x-jat'] || epData.title?.ro
-                            const titleJa = epData.title?.ja
-                            // Prefer English, fall back to romaji, then Japanese, then default
-                            const title = titleEn || titleRomaji || titleJa || p.title
-                            return {
-                                ...p,
-                                title: title,
-                                image: epData.image || p.image,
-                                isFiller: epData.isFiller || false
+                const processEpisodes = (tmdbIdToUse: string | number | undefined) => {
+                    if (data?.episodes) {
+                        const newMap: Record<number, { s: number, e: number, tId: string }> = {}
+                        
+                        Object.keys(data.episodes).forEach(key => {
+                            const ep = data.episodes[key]
+                            const absNum = ep.absoluteEpisodeNumber || Number(key)
+                            if (ep.seasonNumber !== undefined && ep.episodeNumber !== undefined) {
+                                newMap[absNum] = {
+                                    s: ep.seasonNumber,
+                                    e: ep.episodeNumber,
+                                    tId: String(tmdbIdToUse)
+                                }
                             }
-                        }
-                        return p;
-                    }))
+                        })
+                        setAniZipMap(newMap)
+
+                        // Enrich virtual episodes with real titles, thumbnails, and filler status
+                        setEpisodes(prev => prev.map(p => {
+                            const epData = data.episodes[String(p.number)]
+                            if (epData) {
+                                const titleEn = epData.title?.en
+                                const titleRomaji = epData.title?.['x-jat'] || epData.title?.ro
+                                const titleJa = epData.title?.ja
+                                const title = titleEn || titleRomaji || titleJa || p.title
+                                return {
+                                    ...p,
+                                    title: title,
+                                    image: epData.image || p.image,
+                                    isFiller: epData.isFiller || false
+                                }
+                            }
+                            return p;
+                        }))
+                    }
+                }
+
+                // If TMDB ID is missing, try MalSync as fallback
+                if (!baseTmdbId && realMalId) {
+                    fetch(`/api/malsync/anime/${realMalId}`)
+                        .then(res => res.json())
+                        .then(malSyncData => {
+                            const tmdbFromMalSync = malSyncData?.Sites?.Tmdb?.['0']?.identifier || 
+                                                  malSyncData?.Sites?.Tmdb?.['1']?.identifier
+                            if (tmdbFromMalSync) {
+                                baseTmdbId = tmdbFromMalSync
+                            }
+                            processEpisodes(baseTmdbId)
+                        })
+                        .catch(() => {
+                            processEpisodes(baseTmdbId)
+                        })
+                } else {
+                    processEpisodes(baseTmdbId)
                 }
             })
-            .catch(err => console.error("AniZip fetch failed:", err))
-    }, [anilistId, realMalId, initialTmdbId])
+            .catch(err => {
+                console.error("AniZip fetch failed:", err)
+                // If AniZip completely fails, at least try to get TMDB from MalSync
+                if (realMalId && !initialTmdbId) {
+                    fetch(`/api/malsync/anime/${realMalId}`)
+                        .then(res => res.json())
+                        .then(malSyncData => {
+                            const tmdbFromMalSync = malSyncData?.Sites?.Tmdb?.['0']?.identifier || 
+                                                  malSyncData?.Sites?.Tmdb?.['1']?.identifier
+                            if (tmdbFromMalSync) {
+                                // Provide a basic mapping assuming Season 1
+                                const newMap: Record<number, { s: number, e: number, tId: string }> = {}
+                                episodes.forEach(ep => {
+                                    newMap[ep.number] = { s: 1, e: ep.number, tId: String(tmdbFromMalSync) }
+                                })
+                                setAniZipMap(newMap)
+                            }
+                        })
+                        .catch(e => console.error("MalSync fallback failed", e))
+                } else if (initialTmdbId) {
+                    // Provide a basic mapping assuming Season 1 with the known initialTmdbId
+                    const newMap: Record<number, { s: number, e: number, tId: string }> = {}
+                    episodes.forEach(ep => {
+                        newMap[ep.number] = { s: 1, e: ep.number, tId: String(initialTmdbId) }
+                    })
+                    setAniZipMap(newMap)
+                }
+            })
+    }, [anilistId, realMalId, initialTmdbId, episodes.length])
 
     const currentEpNumber = selectedEp?.number ?? 1
     
