@@ -6,44 +6,34 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.
 
 export async function GET(_req: NextRequest) {
     try {
-        const [popularRes, trendingRes, upcomingRes, topMangaRes, pubMangaRes, recentRes] = await Promise.allSettled([
-            fetch(`${API_URL}/anime/popular`),
-            fetch(`${API_URL}/anime/trending`),
-            fetch(`${API_URL}/anime/upcoming`),
-            fetch(`${API_URL}/manga/top?filter=bypopularity`),
-            fetch(`${API_URL}/manga/top?filter=publishing`),
-            fetch(`${API_URL}/anime/schedule`)
-        ]);
+        const controller = new AbortController();
+        // Strict 2.5s timeout. If backend is asleep, fallback to static instantly so user doesn't wait.
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-        const extractData = async (res: PromiseSettledResult<Response>) => {
-            if (res.status === 'fulfilled' && res.value.ok) {
-                const json = await res.value.json();
-                if (json.data && Array.isArray(json.data.data)) {
-                    return json.data.data;
-                }
-                return Array.isArray(json.data) ? json.data : [];
-            }
-            return null;
-        };
+        const res = await fetch(`${API_URL}/home`, {
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' },
+            next: { revalidate: 300 }
+        });
+        
+        clearTimeout(timeoutId);
 
-        const [popularAnime, trendingAnime, upcomingAnime, topManga, publishingManga, recentEpisodes] = await Promise.all([
-            extractData(popularRes),
-            extractData(trendingRes),
-            extractData(upcomingRes),
-            extractData(topMangaRes),
-            extractData(pubMangaRes),
-            extractData(recentRes)
-        ]);
+        if (!res.ok) {
+            throw new Error(`Home backend returned ${res.status}`);
+        }
+
+        const json = await res.json();
+        const data = json.data || json;
 
         return NextResponse.json({
             success: true,
             data: {
-                popularAnime: popularAnime?.length ? popularAnime : TOP_ANIME_STATIC.slice(0, 20),
-                trendingAnime: trendingAnime?.length ? trendingAnime : TOP_ANIME_STATIC.slice(0, 10),
-                upcomingAnime: upcomingAnime?.length ? upcomingAnime : TOP_ANIME_STATIC.slice(10, 20),
-                recentEpisodes: recentEpisodes?.length ? recentEpisodes : (popularAnime?.length ? popularAnime : TOP_ANIME_STATIC.slice(0, 20)),
-                topManga: topManga?.length ? topManga : TOP_MANGA_STATIC.slice(0, 20),
-                publishingManga: publishingManga?.length ? publishingManga : TOP_MANGA_STATIC.slice(0, 20),
+                popularAnime: data.popularAnime?.length ? data.popularAnime : TOP_ANIME_STATIC.slice(0, 20),
+                trendingAnime: data.trendingAnime?.length ? data.trendingAnime : TOP_ANIME_STATIC.slice(0, 10),
+                upcomingAnime: data.upcomingAnime?.length ? data.upcomingAnime : TOP_ANIME_STATIC.slice(10, 20),
+                recentEpisodes: data.recentEpisodes?.length ? data.recentEpisodes : (data.popularAnime?.length ? data.popularAnime : TOP_ANIME_STATIC.slice(0, 20)),
+                topManga: data.topManga?.length ? data.topManga : TOP_MANGA_STATIC.slice(0, 20),
+                publishingManga: data.publishingManga?.length ? data.publishingManga : TOP_MANGA_STATIC.slice(0, 20),
             },
             _source: 'backend',
         }, {

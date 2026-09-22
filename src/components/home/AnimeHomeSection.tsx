@@ -28,7 +28,7 @@ export function AnimeHomeSection({ topAnime, upcomingAnime, recentEpisodes, topL
                 {recentLoading ? (
                     <AnimeGridSkeleton count={6} />
                 ) : (
-                    <AnimeGrid anime={recentEpisodes} />
+                    <AnimeGrid anime={recentEpisodes} showEpisode={true} />
                 )}
             </section>
             {/* Top Airing Anime */}

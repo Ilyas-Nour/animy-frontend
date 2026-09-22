@@ -17,19 +17,36 @@ async function getAnimeFull(id: string): Promise<any> {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
 
   try {
-      const response = await fetch(`${API_URL}/anime/${numericId}`, {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      // Race the backend API against Jikan directly. Whichever resolves first wins!
+      // This bypasses the 8s cold start completely since Jikan is usually fast.
+      const fetchBackend = fetch(`${API_URL}/anime/${numericId}`, {
           headers: { 'Accept': 'application/json' },
+          next: { revalidate: 3600 },
+          signal: controller.signal
+      }).then(async res => {
+          if (!res.ok) throw new Error(`Backend fetch failed: ${res.status}`);
+          const data = await res.json();
+          return data.data || data;
+      });
+
+      const fetchJikan = fetch(`https://api.jikan.moe/v4/anime/${numericId}/full`, {
           next: { revalidate: 3600 }
-      })
+      }).then(async res => {
+          if (!res.ok) throw new Error(`Jikan fetch failed: ${res.status}`);
+          const jikanData = await res.json();
+          if (!jikanData?.data) throw new Error('Jikan data empty');
+          return jikanData.data;
+      });
 
-      if (!response.ok) {
-          throw new Error(`Backend fetch failed: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return data.data || data
+      // We wait for the fastest successful response
+      const anime = await Promise.any([fetchBackend, fetchJikan]);
+      clearTimeout(timeoutId);
+      return anime;
   } catch (error) {
-      console.error('Anime detail backend fetch failed:', error)
+      console.error('Anime detail fetch failed for both providers:', error)
       const staticHit = [...TOP_ANIME_STATIC, ...TOP_MOVIES_STATIC, ...HERO_SPOTLIGHT_ANIME]
         .find(a => (a as any).id === numericId || a.mal_id === numericId)
       return staticHit || null

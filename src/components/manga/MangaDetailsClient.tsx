@@ -65,112 +65,22 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => controller.abort(), 25000)
                 const baseId = manga.mal_id || (manga as any).idMal || manga.id;
-                
-                // 1. Try standard ID (assuming it's a MAL ID) via backend proxy
-                let malSyncRes = await fetch(`https://ilyvs-animy-backend.hf.space/api/v1/manga/malsync-proxy/${baseId}`, {
-                    headers: { 'Accept': 'application/json' },
+                const response = await api.get(`/manga/${baseId}/read-chapters`, {
                     signal: controller.signal
-                }).catch(() => null);
-
-                // 2. If that fails, it might be an AniList ID that the backend shoved into mal_id
-                if (!malSyncRes || !malSyncRes.ok) {
-                    console.warn('Proxy failed with standard ID, trying anilist: prefix...');
-                    malSyncRes = await fetch(`https://ilyvs-animy-backend.hf.space/api/v1/manga/malsync-proxy/anilist:${baseId}`, {
-                        headers: { 'Accept': 'application/json' },
-                        signal: controller.signal
-                    }).catch(() => null);
-                }
-
-                if (!malSyncRes || !malSyncRes.ok) {
-                    console.error('MALSync mapping not found for ID:', baseId)
-                    setChapters([])
-                    setChaptersLoading(false)
-                    clearTimeout(timeoutId)
-                    return
-                }
-
-                const malSyncJson = await malSyncRes.json()
-                const mangadexSites = malSyncJson?.Sites?.Mangadex
-                if (!mangadexSites) {
-                    setChapters([])
-                    setChaptersLoading(false)
-                    clearTimeout(timeoutId)
-                    return
-                }
-
-                // 2. Fetch from MangaDex directly
-                const mangadexId = Object.keys(mangadexSites)[0]
+                });
                 
-                let allChapters: any[] = []
-                let offset = 0
-                const pageLimit = 500
-                let hasMore = true
+                clearTimeout(timeoutId);
 
-                while (hasMore && offset < 2000) {
-                    const url = `https://api.mangadex.org/manga/${mangadexId}/feed?translatedLanguage[]=en&order[chapter]=desc&limit=${pageLimit}&offset=${offset}&includes[]=scanlation_group`
-                    const response = await fetch(url, {
-                        headers: { 'Accept': 'application/json' },
-                        signal: controller.signal
-                    })
-
-                    if (!response.ok) break
-
-                    const json = await response.json()
-                    const batch = json.data || []
-                    allChapters = allChapters.concat(batch)
-                    
-                    const total = json.total || 0
-                    offset += pageLimit
-                    hasMore = batch.length === pageLimit && allChapters.length < total
+                if (response.data && response.data.chapters) {
+                    setChapters(response.data.chapters);
+                } else {
+                    setChapters([]);
                 }
-                
-                clearTimeout(timeoutId)
-
-                // 3. Deduplicate
-                const chapterMap = new Map<string, any>()
-                for (const c of allChapters) {
-                    const chNum = c.attributes?.chapter ?? 'oneshot'
-                    const key = String(chNum)
-                    
-                    if (!chapterMap.has(key)) {
-                        chapterMap.set(key, c)
-                    } else {
-                        const existing = chapterMap.get(key)
-                        const existingHasTitle = !!existing.attributes?.title
-                        const newHasTitle = !!c.attributes?.title
-                        const newIsOfficial = c.relationships?.some((r: any) => 
-                            r.type === 'scanlation_group' && r.attributes?.name?.toLowerCase().includes('official')
-                        )
-                        const existingIsOfficial = existing.relationships?.some((r: any) => 
-                            r.type === 'scanlation_group' && r.attributes?.name?.toLowerCase().includes('official')
-                        )
-                        if ((newIsOfficial && !existingIsOfficial) || (!existingHasTitle && newHasTitle)) {
-                            chapterMap.set(key, c)
-                        }
-                    }
-                }
-
-                const deduplicated = Array.from(chapterMap.values()).sort((a, b) => {
-                    const aNum = parseFloat(a.attributes?.chapter ?? '0') || 0
-                    const bNum = parseFloat(b.attributes?.chapter ?? '0') || 0
-                    return bNum - aNum
-                })
-                
-                const finalChapters = deduplicated.map((c: any) => ({
-                    id: c.id,
-                    title: c.attributes?.title || null,
-                    chapterNumber: c.attributes?.chapter,
-                    pages: c.attributes?.pages,
-                    publishedAt: c.attributes?.publishAt,
-                    scanlationGroup: c.relationships?.find((r: any) => r.type === 'scanlation_group')?.attributes?.name
-                }))
-
-                setChapters(finalChapters)
             } catch (error: any) {
-                console.error('Failed to fetch chapters:', error)
-                setChapters([])
+                console.error('Failed to fetch chapters:', error);
+                setChapters([]);
             } finally {
-                setChaptersLoading(false)
+                setChaptersLoading(false);
             }
         }
 

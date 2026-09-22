@@ -13,10 +13,12 @@ import * as HoverCard from '@radix-ui/react-hover-card'
 interface AnimeCardProps {
   anime: Anime
   index?: number
+  showEpisode?: boolean
 }
 
-function AnimeCardComponent({ anime, index = 0 }: AnimeCardProps) {
+function AnimeCardComponent({ anime, index = 0, showEpisode = false }: AnimeCardProps) {
   const isAiring = anime.status === 'Currently Airing'
+  const epNumber = (anime as any).recentEpisodeNumber || (anime as any).episodes
   
   return (
     <m.div
@@ -29,13 +31,26 @@ function AnimeCardComponent({ anime, index = 0 }: AnimeCardProps) {
           <Link href={`/anime/${anime.mal_id}`} className="group block relative rounded-2xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div className="relative aspect-[2/3] w-full overflow-hidden">
               {/* Status Badge */}
-              {isAiring && (
+              {isAiring && !showEpisode && (
                 <div className="absolute top-2 left-2 z-20 flex items-center gap-1.5 px-2 py-1 rounded-md bg-background/80 backdrop-blur-md border border-border">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                   </span>
                   <span className="text-[10px] font-bold text-foreground">Airing</span>
+                </div>
+              )}
+
+              {/* Just Dropped Episode Badge */}
+              {showEpisode && epNumber && (
+                <div className="absolute top-2 left-2 z-20 flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/90 backdrop-blur-md border border-primary text-primary-foreground shadow-lg">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                  </span>
+                  <span className="text-[11px] font-black uppercase tracking-wider">
+                    Ep {epNumber}
+                  </span>
                 </div>
               )}
 

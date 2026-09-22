@@ -449,7 +449,7 @@ function MangaReaderContent() {
                                 return preloadIndices.map(i => {
                                     const page = pages[i];
                                     const src = page?.img || page?.url || page;
-                                    return src ? <Image key={`preload-${i}`} src={src} alt="" width={0} height={0} sizes="10vw" unoptimized referrerPolicy="no-referrer" /> : null;
+                                    return src ? <Image key={`preload-${i}`} src={src} alt="" priority={true} width={1} height={1} className="opacity-0 absolute" sizes="10vw" unoptimized referrerPolicy="no-referrer" /> : null;
                                 });
                             })()}
                         </div>

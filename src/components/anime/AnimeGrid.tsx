@@ -7,9 +7,10 @@ import { Tv } from 'lucide-react'
 
 interface AnimeGridProps {
   anime: Anime[]
+  showEpisode?: boolean
 }
 
-export function AnimeGrid({ anime }: AnimeGridProps) {
+export function AnimeGrid({ anime, showEpisode = false }: AnimeGridProps) {
   if (!anime || anime.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -27,7 +28,7 @@ export function AnimeGrid({ anime }: AnimeGridProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 md:gap-4">
       {anime.map((item, index) => (
-        <AnimeCard key={item.mal_id} anime={item} index={index} />
+        <AnimeCard key={item.mal_id} anime={item} index={index} showEpisode={showEpisode} />
       ))}
     </div>
   )
