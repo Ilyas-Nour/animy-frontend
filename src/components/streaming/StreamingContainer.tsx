@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Subtitles, Mic, RefreshCw, Server } from 'lu
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { AdBanner } from '@/components/ads/AdBanner'
+import { StreamingPlayer } from './StreamingPlayer'
 
 interface Episode {
     id: string
@@ -45,9 +46,16 @@ interface Mirror {
     name: string
     tag?: string
     buildUrl: (ctx: EmbedContext) => string | null
+    isInternal?: boolean
 }
 
 const MIRRORS: Mirror[] = [
+    {
+        name: 'Internal',
+        tag: 'HIANIME',
+        buildUrl: () => null,
+        isInternal: true
+    },
     {
         name: 'Multi',
         tag: 'TMDB',
@@ -280,7 +288,7 @@ export function StreamingContainer({
     if (!mounted) return null
 
     const activeMirror = availableMirrors[Math.min(mirrorIndex, availableMirrors.length - 1)]
-    const embedUrl = activeMirror.buildUrl(currentContext) ?? ''
+    const embedUrl = activeMirror.isInternal ? 'internal' : (activeMirror.buildUrl(currentContext) ?? '')
 
     return (
         <div className="space-y-5">
@@ -374,7 +382,7 @@ export function StreamingContainer({
                 >
                     {!embedUrl ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/90">
-                            <p className="text-white/40 text-sm font-medium">This server requires a MAL ID which is unavailable for this anime.</p>
+                            <p className="text-white/40 text-sm font-medium">This server requires a TMDB ID which is unavailable for this anime.</p>
                             <div className="flex gap-2">
                                 {availableMirrors.map((m, idx) => {
                                     const url = m.buildUrl(currentContext)
@@ -410,6 +418,15 @@ export function StreamingContainer({
                                     </button>
                                 )}
                             </div>
+                        </div>
+                    ) : activeMirror.isInternal ? (
+                        <div className="absolute inset-0">
+                            <StreamingPlayer
+                                episodeId={`ep${currentEpNumber}-${realMalId}`}
+                                episodeNumber={currentEpNumber}
+                                poster={animePoster}
+                                malId={realMalId}
+                            />
                         </div>
                     ) : (
                         <iframe

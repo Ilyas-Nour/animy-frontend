@@ -33,7 +33,8 @@ async function getAnimeFull(id: string): Promise<any> {
       });
 
       const fetchJikan = fetch(`https://api.jikan.moe/v4/anime/${numericId}/full`, {
-          next: { revalidate: 3600 }
+          next: { revalidate: 3600 },
+          signal: controller.signal
       }).then(async res => {
           if (!res.ok) throw new Error(`Jikan fetch failed: ${res.status}`);
           const jikanData = await res.json();
