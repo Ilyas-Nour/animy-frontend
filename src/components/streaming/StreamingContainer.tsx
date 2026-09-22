@@ -69,41 +69,21 @@ const MIRRORS: Mirror[] = [
         }
     },
     {
-        name: 'SmashyStream',
+        name: 'VidSrc IN',
         tag: 'ALT',
         buildUrl: (ctx) => {
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://player.smashy.stream/tv/${ctx.tmdbId}?s=${ctx.season}&e=${ctx.tmdbEp}`
+                return `https://vidsrc.in/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
             }
             return null
         }
     },
     {
-        name: 'VidBinge',
+        name: '2Embed',
         tag: 'BACKUP',
         buildUrl: (ctx) => {
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://vidbinge.dev/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
-            }
-            return null
-        }
-    },
-    {
-        name: 'Multi',
-        tag: 'TMDB',
-        buildUrl: (ctx) => {
-            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://vidlink.pro/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
-            }
-            return null
-        }
-    },
-    {
-        name: 'EmbedSU',
-        tag: 'FAST',
-        buildUrl: (ctx) => {
-            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://embed.su/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
+                return `https://www.2embed.cc/embedtv/${ctx.tmdbId}&s=${ctx.season}&e=${ctx.tmdbEp}`
             }
             return null
         }
