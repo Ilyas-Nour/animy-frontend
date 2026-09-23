@@ -279,7 +279,7 @@ export function mapAniListToAnime(data: any): Anime {
       title: data.title?.romaji || data.title?.english || data.title?.native,
       title_english: data.title?.english,
       title_japanese: data.title?.native,
-      url: \`https://anilist.co/anime/\${data.id}\`,
+      url: `https://anilist.co/anime/${data.id}`,
       synopsis: data.description ? data.description : "No synopsis available.",
       type: data.format,
       episodes: data.episodes,
@@ -289,14 +289,14 @@ export function mapAniListToAnime(data: any): Anime {
       popularity: data.popularity,
       members: data.popularity,
       favorites: data.favourites,
-      duration: data.duration ? \`\${data.duration} min per ep\` : undefined,
+      duration: data.duration ? `${data.duration} min per ep` : undefined,
       source: data.source,
       bannerImage: data.bannerImage,
       color: data.coverImage?.color,
       airing: data.status === "RELEASING",
       aired: {
         from: data.startDate?.year
-          ? \`\${data.startDate.year}-\${String(data.startDate.month || 1).padStart(2, "0")}-\${String(data.startDate.day || 1).padStart(2, "0")}\`
+          ? `${data.startDate.year}-${String(data.startDate.month || 1).padStart(2, "0")}-${String(data.startDate.day || 1).padStart(2, "0")}`
           : undefined,
       },
       images: {
@@ -314,20 +314,20 @@ export function mapAniListToAnime(data: any): Anime {
       trailer: {
         url:
           data.trailer?.site === "youtube"
-            ? \`https://www.youtube.com/watch?v=\${data.trailer.id}\`
+            ? `https://www.youtube.com/watch?v=${data.trailer.id}`
             : data.trailer?.site === "dailymotion"
-              ? \`https://www.dailymotion.com/video/\${data.trailer.id}\`
+              ? `https://www.dailymotion.com/video/${data.trailer.id}`
               : data.trailer?.id
-                ? \`https://www.youtube.com/watch?v=\${data.trailer.id}\`
+                ? `https://www.youtube.com/watch?v=${data.trailer.id}`
                 : undefined,
         youtube_id: data.trailer?.site === "youtube" ? data.trailer.id : undefined,
         embed_url:
           data.trailer?.site === "youtube"
-            ? \`https://www.youtube.com/embed/\${data.trailer.id}\`
+            ? `https://www.youtube.com/embed/${data.trailer.id}`
             : data.trailer?.site === "dailymotion"
-              ? \`https://www.dailymotion.com/embed/video/\${data.trailer.id}\`
+              ? `https://www.dailymotion.com/embed/video/${data.trailer.id}`
               : data.trailer?.id
-                ? \`https://www.youtube.com/embed/\${data.trailer.id}\`
+                ? `https://www.youtube.com/embed/${data.trailer.id}`
                 : undefined,
         thumbnail: data.trailer?.thumbnail,
       } as any,
@@ -359,7 +359,7 @@ export function mapAniListToManga(data: any): Manga {
     return {
       id: data.id,
       mal_id: data.idMal || data.id,
-      url: \`https://anilist.co/manga/\${data.id}\`,
+      url: `https://anilist.co/manga/${data.id}`,
       title: data.title?.romaji || data.title?.english || data.title?.native,
       title_english: data.title?.english,
       title_japanese: data.title?.native,
@@ -381,8 +381,8 @@ export function mapAniListToManga(data: any): Manga {
       status: data.status === 'FINISHED' ? 'Finished' : data.status === 'RELEASING' ? 'Publishing' : data.status,
       publishing: data.status === 'RELEASING',
       published: {
-        from: data.startDate?.year ? \`\${data.startDate.year}-\${data.startDate.month}-\${data.startDate.day}\` : '',
-        to: data.endDate?.year ? \`\${data.endDate.year}-\${data.endDate.month}-\${data.endDate.day}\` : '',
+        from: data.startDate?.year ? `${data.startDate.year}-${data.startDate.month}-${data.startDate.day}` : '',
+        to: data.endDate?.year ? `${data.endDate.year}-${data.endDate.month}-${data.endDate.day}` : '',
         string: data.startDate?.year ? String(data.startDate.year) : ''
       },
       score: data.averageScore ? (data.averageScore / 10) : undefined,
