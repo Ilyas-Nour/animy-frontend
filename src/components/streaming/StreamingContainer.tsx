@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { EpisodeGrid } from './EpisodeGrid'
 import { ChevronLeft, ChevronRight, Subtitles, Mic, RefreshCw, Server } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -115,6 +116,9 @@ export function StreamingContainer({
     const [mirrorIndex, setMirrorIndex] = useState(0)
     const [iframeKey, setIframeKey] = useState(0) // Force iframe refresh
     const [iframeError, setIframeError] = useState(false)
+    
+    const searchParams = useSearchParams()
+    const epParam = searchParams.get('ep')
 
     const [resolvedAnilistId, setResolvedAnilistId] = useState<number | undefined>(anilistId)
     // AniZip mappings: Maps absolute episode number -> { season, tmdbEp, tmdbId }
@@ -137,8 +141,19 @@ export function StreamingContainer({
             title: `Episode ${i + 1}`,
         }))
         setEpisodes(virtualEpisodes)
-        setSelectedEp(virtualEpisodes[0])
-    }, [totalEpisodes, resolvedAnilistId, realMalId])
+        
+        if (epParam) {
+            const num = parseInt(epParam, 10)
+            const target = virtualEpisodes.find(e => e.number === num) || virtualEpisodes[0]
+            setSelectedEp(target)
+            // Scroll to player when linking to a specific episode
+            setTimeout(() => {
+                document.getElementById('streaming-section')?.scrollIntoView({ behavior: 'smooth' })
+            }, 800)
+        } else {
+            setSelectedEp(virtualEpisodes[0])
+        }
+    }, [totalEpisodes, resolvedAnilistId, realMalId, epParam])
 
     // Fetch AniZip mapping dynamically
     useEffect(() => {
@@ -422,10 +437,11 @@ export function StreamingContainer({
                     ) : activeMirror.isInternal ? (
                         <div className="absolute inset-0">
                             <StreamingPlayer
-                                episodeId={`ep${currentEpNumber}-${realMalId}`}
+                                episodeId={`ep${currentEpNumber}-${animeKey}`}
                                 episodeNumber={currentEpNumber}
                                 poster={animePoster}
-                                malId={realMalId}
+                                malId={animeKey}
+                                title={animeTitle}
                             />
                         </div>
                     ) : (

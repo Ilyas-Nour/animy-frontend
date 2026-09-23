@@ -12,11 +12,12 @@ interface StreamingPlayerProps {
     poster?: string
     provider?: string
     malId?: number
+    title?: string
 }
 
 type ServerType = 'hianime' | 'vidlink'
 
-export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, malId }: StreamingPlayerProps) {
+export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, malId, title }: StreamingPlayerProps) {
     const [sources, setSources] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -34,6 +35,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             let queryParams = `?provider=hianime`
             if (malId) queryParams += `&malId=${malId}`
             if (episodeNumber) queryParams += `&ep=${episodeNumber}`
+            if (title) queryParams += `&title=${encodeURIComponent(title)}`
 
             const res = await fetch(`/api/streaming/watch/${encodeURIComponent(episodeId)}${queryParams}`)
 

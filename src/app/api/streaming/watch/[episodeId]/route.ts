@@ -12,6 +12,7 @@ export async function GET(
     const provider = request.nextUrl.searchParams.get('provider')
     const malId = request.nextUrl.searchParams.get('malId')
     const ep = request.nextUrl.searchParams.get('ep')
+    const title = request.nextUrl.searchParams.get('title')
 
     try {
         // Calculate the frontend proxy URL (Cloudflare Edge)
@@ -23,6 +24,7 @@ export async function GET(
         let queryParams = `?provider=${encodeURIComponent(provider || 'hianime')}`
         if (malId) queryParams += `&malId=${encodeURIComponent(malId)}`
         if (ep) queryParams += `&ep=${encodeURIComponent(ep)}`
+        if (title) queryParams += `&title=${encodeURIComponent(title)}`
         queryParams += `&proxyBaseUrl=${encodeURIComponent(frontendProxy)}`
 
         const url = `${BACKEND_API}/streaming/episode/${encodeURIComponent(episodeId)}${queryParams}`

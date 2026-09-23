@@ -20,6 +20,11 @@ function AnimeCardComponent({ anime, index = 0, showEpisode = false }: AnimeCard
   const isAiring = anime.status === 'Currently Airing'
   const epNumber = (anime as any).recentEpisodeNumber || (anime as any).episodes
   
+  const idToUse = anime.mal_id || anime.id || (anime as any).anilistId;
+  const href = showEpisode && epNumber 
+    ? `/anime/${idToUse}?ep=${epNumber}` 
+    : `/anime/${idToUse}`;
+
   return (
     <m.div
       initial={{ opacity: 0, y: 20 }}
@@ -28,7 +33,7 @@ function AnimeCardComponent({ anime, index = 0, showEpisode = false }: AnimeCard
     >
       <HoverCard.Root openDelay={400} closeDelay={100}>
         <HoverCard.Trigger asChild>
-          <Link href={`/anime/${anime.mal_id}`} className="group block relative rounded-2xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+          <Link href={href} className="group block relative rounded-2xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div className="relative aspect-[2/3] w-full overflow-hidden">
               {/* Status Badge */}
               {isAiring && !showEpisode && (
@@ -170,7 +175,7 @@ function AnimeCardComponent({ anime, index = 0, showEpisode = false }: AnimeCard
 
               {/* Action Button */}
               <div className="mt-2 flex gap-2">
-                <Link href={`/anime/${anime.mal_id}`} className="flex-1">
+                <Link href={href} className="flex-1">
                   <button className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-lg flex items-center justify-center gap-2 transition-colors">
                     <Play className="w-4 h-4 fill-current" /> Watch Now
                   </button>
