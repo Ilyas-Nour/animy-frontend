@@ -443,6 +443,7 @@ export function StreamingContainer({
                                 poster={animePoster}
                                 malId={animeKey}
                                 title={animeTitle}
+                                tmdbId={currentContext.tmdbId}
                             />
                         </div>
                     ) : (
