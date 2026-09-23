@@ -18,7 +18,7 @@ async function getMangaFull(id: string): Promise<any> {
 
   try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
       // Race the backend API against Jikan directly. Whichever resolves first wins!
       // This bypasses the 8s cold start completely since Jikan is usually fast.
@@ -43,7 +43,7 @@ async function getMangaFull(id: string): Promise<any> {
       });
 
       const timeoutPromise = new Promise<any>((_, reject) => 
-          setTimeout(() => reject(new Error('Fetch timeout exceeded')), 8000)
+          setTimeout(() => reject(new Error('Fetch timeout exceeded')), 15000)
       );
 
       // We wait for the fastest successful response, but strictly bound it to 8 seconds
