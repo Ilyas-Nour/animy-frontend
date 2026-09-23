@@ -124,8 +124,10 @@ export function StreamingContainer({
     // AniZip mappings: Maps absolute episode number -> { season, tmdbEp, tmdbId }
     const [aniZipMap, setAniZipMap] = useState<Record<number, { s: number, e: number, tId: string }>>({})
 
-    const realMalId = malId
-
+    // Determine the actual MAL ID to use, fallback to Anilist ID if no MAL ID
+    // 0 is usually the fallback for "not found" in MAL
+    const realMalId = malId && malId !== 0 ? malId : (anilistId || 0)
+    const animeKey = resolvedAnilistId || realMalId
     const sortedEpisodes = sortOrder === 'asc'
         ? episodes
         : [...episodes].reverse()
@@ -133,7 +135,6 @@ export function StreamingContainer({
     useEffect(() => {
         setMounted(true)
         const count = totalEpisodes && totalEpisodes > 0 ? totalEpisodes : 12
-        const animeKey = resolvedAnilistId || realMalId
         const virtualEpisodes: Episode[] = Array.from({ length: count }, (_, i) => ({
             // Each episode gets a unique id: "ep{number}-{animeId}"
             id: `ep${i + 1}-${animeKey}`,
@@ -153,7 +154,7 @@ export function StreamingContainer({
         } else {
             setSelectedEp(virtualEpisodes[0])
         }
-    }, [totalEpisodes, resolvedAnilistId, realMalId, epParam])
+    }, [totalEpisodes, resolvedAnilistId, realMalId, epParam, animeKey])
 
     // Fetch AniZip mapping dynamically
     useEffect(() => {
@@ -437,10 +438,10 @@ export function StreamingContainer({
                     ) : activeMirror.isInternal ? (
                         <div className="absolute inset-0">
                             <StreamingPlayer
-                                episodeId={`ep${currentEpNumber}-${realMalId}`}
+                                episodeId={`ep${currentEpNumber}-${animeKey}`}
                                 episodeNumber={currentEpNumber}
                                 poster={animePoster}
-                                malId={realMalId}
+                                malId={animeKey}
                                 title={animeTitle}
                             />
                         </div>
