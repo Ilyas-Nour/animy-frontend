@@ -52,6 +52,8 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         setIsMounted(true)
     }, [])
 
+    const baseId = (manga as any).anilistId || manga.id || (manga as any).idMal || manga.mal_id;
+
     useEffect(() => {
         const fetchChapters = async () => {
             if (initialChapters && initialChapters.length > 0) {
@@ -64,7 +66,6 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                 setChaptersLoading(true)
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => controller.abort(), 35000)
-                const baseId = (manga as any).anilistId || manga.id || (manga as any).idMal || manga.mal_id;
                 const response = await api.get(`/manga/${baseId}/read-chapters`, {
                     signal: controller.signal
                 });
@@ -85,7 +86,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         }
 
         fetchChapters()
-    }, [manga.id, manga.mal_id, (manga as any).idMal, initialChapters])
+    }, [baseId, initialChapters])
     const checkStatus = useCallback(async () => {
         try {
             const [listRes, favRes] = await Promise.all([

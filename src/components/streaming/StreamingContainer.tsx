@@ -256,7 +256,7 @@ export function StreamingContainer({
                     setAniZipMap(newMap)
                 }
             })
-    }, [anilistId, realMalId, initialTmdbId, episodes.length])
+    }, [anilistId, realMalId, initialTmdbId, episodes])
 
     const currentEpNumber = selectedEp?.number ?? 1
     
@@ -437,10 +437,10 @@ export function StreamingContainer({
                     ) : activeMirror.isInternal ? (
                         <div className="absolute inset-0">
                             <StreamingPlayer
-                                episodeId={`ep${currentEpNumber}-${animeKey}`}
+                                episodeId={`ep${currentEpNumber}-${realMalId}`}
                                 episodeNumber={currentEpNumber}
                                 poster={animePoster}
-                                malId={animeKey}
+                                malId={realMalId}
                                 title={animeTitle}
                             />
                         </div>

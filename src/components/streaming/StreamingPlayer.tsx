@@ -61,7 +61,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
         } finally {
             setLoading(false)
         }
-    }, [episodeId, episodeNumber, malId])
+    }, [episodeId, episodeNumber, malId, title])
 
     const handleServerFailover = useCallback(() => {
         if (!activeServer || availableServers.length <= 1) {
