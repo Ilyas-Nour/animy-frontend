@@ -10,7 +10,7 @@ import { constructMetadata } from '@/lib/seo-utils'
 
 import { TOP_ANIME_STATIC, TOP_MOVIES_STATIC, HERO_SPOTLIGHT_ANIME } from '@/lib/static-anime-data'
 
-import { anilistFetch, mapAniListToAnime } from '@/lib/anilist-client'
+import { anilistFetch, mapAniListToAnime, fetchAnilistAnimeFull } from '@/lib/anilist-client'
 
 async function getAnimeFull(id: string): Promise<any> {
   const numericId = parseInt(id, 10)
@@ -43,6 +43,11 @@ async function getAnimeFull(id: string): Promise<any> {
           return jikanData.data;
       });
 
+      const fetchAnilist = fetchAnilistAnimeFull(numericId).then(anime => {
+          if (!anime) throw new Error('Anilist fetch failed or empty');
+          return anime;
+      });
+
       const timeoutPromise = new Promise<any>((_, reject) => 
           fetchTimeout = setTimeout(() => reject(new Error('Fetch timeout exceeded')), 30000)
       );
@@ -50,7 +55,7 @@ async function getAnimeFull(id: string): Promise<any> {
 
       // We wait for the fastest successful response, but strictly bound it to 8 seconds
       const anime = await Promise.race([
-          Promise.any([fetchBackend, fetchJikan]),
+          Promise.any([fetchBackend, fetchJikan, fetchAnilist]),
           timeoutPromise
       ]);
       clearTimeout(timeoutId);
