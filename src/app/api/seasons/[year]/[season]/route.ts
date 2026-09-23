@@ -1,4 +1,4 @@
-
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { TOP_ANIME_STATIC } from '@/lib/static-anime-data'
 import { anilistFetch, mapAniListToAnime } from '@/lib/anilist-client'

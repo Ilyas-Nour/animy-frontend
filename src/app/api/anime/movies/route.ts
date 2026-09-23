@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { TOP_MOVIES_STATIC } from '@/lib/static-anime-data'
 import { mapKitsuToAnime } from '@/lib/kitsu-mapper'
