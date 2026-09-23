@@ -18,7 +18,8 @@ async function getMangaFull(id: string): Promise<any> {
 
   try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      let fetchTimeout: NodeJS.Timeout;
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       // Race the backend API against Jikan directly. Whichever resolves first wins!
       // This bypasses the 8s cold start completely since Jikan is usually fast.
@@ -43,8 +44,9 @@ async function getMangaFull(id: string): Promise<any> {
       });
 
       const timeoutPromise = new Promise<any>((_, reject) => 
-          setTimeout(() => reject(new Error('Fetch timeout exceeded')), 15000)
+          fetchTimeout = setTimeout(() => reject(new Error('Fetch timeout exceeded')), 30000)
       );
+      timeoutPromise.catch(() => {}); // Prevent unhandled rejection
 
       // We wait for the fastest successful response, but strictly bound it to 8 seconds
       const manga = await Promise.race([
@@ -52,6 +54,7 @@ async function getMangaFull(id: string): Promise<any> {
           timeoutPromise
       ]);
       clearTimeout(timeoutId);
+      clearTimeout(fetchTimeout!);
       return manga;
   } catch (error) {
       console.error('Manga detail fetch failed for both providers:', error)
