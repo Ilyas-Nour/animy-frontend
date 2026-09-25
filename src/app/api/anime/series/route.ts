@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
             query($page: Int, $perPage: Int) {
                 Page(page: $page, perPage: $perPage) {
                     pageInfo { total perPage currentPage lastPage hasNextPage }
-                    media(type: ANIME, format: TV, sort: POPULARITY_DESC) {
+                    media(type: ANIME, format: TV, sort: [POPULARITY_DESC]) {
                         id idMal title { english romaji native } coverImage { extraLarge large medium color }
                         format source episodes duration status meanScore popularity description
                         seasonYear season genres trailer { id site }

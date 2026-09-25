@@ -7,8 +7,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.
 export async function GET(_req: NextRequest) {
     try {
         const controller = new AbortController();
-        // 5s timeout. If backend is asleep, fallback to static.
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        // 15s timeout. If backend is asleep, fallback to static.
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         const res = await fetch(`${API_URL}/home`, {
             signal: controller.signal,

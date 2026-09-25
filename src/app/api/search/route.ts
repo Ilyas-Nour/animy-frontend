@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         const query = `
             query($search: String, $limit: Int) {
                 anime: Page(page: 1, perPage: $limit) {
-                    media(type: ANIME, search: $search, sort: POPULARITY_DESC) {
+                    media(type: ANIME, search: $search, sort: [POPULARITY_DESC]) {
                         id idMal title { english romaji native } coverImage { extraLarge large medium color }
                         format source episodes duration status meanScore popularity description
                         seasonYear season genres trailer { id site }
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
                     }
                 }
                 manga: Page(page: 1, perPage: $limit) {
-                    media(type: MANGA, search: $search, sort: POPULARITY_DESC) {
+                    media(type: MANGA, search: $search, sort: [POPULARITY_DESC]) {
                         id idMal title { english romaji native } coverImage { extraLarge large medium color }
                         format chapters volumes status meanScore popularity description
                         startDate { year month day } endDate { year month day } genres
