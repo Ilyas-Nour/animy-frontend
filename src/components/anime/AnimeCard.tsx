@@ -70,6 +70,8 @@ function AnimeCardComponent({ anime, index = 0, showEpisode = false }: AnimeCard
                 fill
                 className="object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                referrerPolicy="no-referrer"
+                unoptimized
               />
               
               {/* Gradient Overlay */}

@@ -19,7 +19,7 @@ async function getAnimeFull(id: string): Promise<any> {
   try {
       const controller = new AbortController();
       let fetchTimeout: NodeJS.Timeout;
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       // Race the backend API against Jikan directly. Whichever resolves first wins!
       // This bypasses the 8s cold start completely since Jikan is usually fast.
@@ -49,7 +49,7 @@ async function getAnimeFull(id: string): Promise<any> {
       });
 
       const timeoutPromise = new Promise<any>((_, reject) => 
-          fetchTimeout = setTimeout(() => reject(new Error('Fetch timeout exceeded')), 30000)
+          fetchTimeout = setTimeout(() => reject(new Error('Fetch timeout exceeded')), 8000)
       );
       timeoutPromise.catch(() => {}); // Prevent unhandled rejection
 

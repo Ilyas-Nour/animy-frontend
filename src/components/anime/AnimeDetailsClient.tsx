@@ -257,6 +257,8 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                             className="object-cover object-top opacity-50 dark:opacity-30 mix-blend-luminosity"
                             priority
                             quality={100}
+                            referrerPolicy="no-referrer"
+                            unoptimized
                         />
                     </motion.div>
                 )}
@@ -284,6 +286,8 @@ export function AnimeDetailsClient({ anime }: AnimeDetailsClientProps) {
                                         fill
                                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                                         priority
+                                        referrerPolicy="no-referrer"
+                                        unoptimized
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">No Image</div>

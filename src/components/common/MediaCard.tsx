@@ -67,6 +67,8 @@ export function MediaCard({ item, type, index = 0 }: MediaCardProps) {
                             fill
                             className="object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
                             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                            referrerPolicy="no-referrer"
+                            unoptimized
                         />
                     ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/30">
