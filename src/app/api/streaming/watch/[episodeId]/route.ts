@@ -14,6 +14,7 @@ export async function GET(
     const ep = request.nextUrl.searchParams.get('ep')
     const title = request.nextUrl.searchParams.get('title')
     const tmdbId = request.nextUrl.searchParams.get('tmdbId')
+    const subDub = request.nextUrl.searchParams.get('subDub') || 'sub'
 
     try {
         // Calculate the frontend proxy URL (Cloudflare Edge)
@@ -27,6 +28,7 @@ export async function GET(
         if (ep) queryParams += `&ep=${encodeURIComponent(ep)}`
         if (title) queryParams += `&title=${encodeURIComponent(title)}`
         if (tmdbId) queryParams += `&tmdbId=${encodeURIComponent(tmdbId)}`
+        if (subDub) queryParams += `&subDub=${encodeURIComponent(subDub)}`
         queryParams += `&proxyBaseUrl=${encodeURIComponent(frontendProxy)}`
 
         const url = `${BACKEND_API}/streaming/episode/${encodeURIComponent(episodeId)}${queryParams}`
