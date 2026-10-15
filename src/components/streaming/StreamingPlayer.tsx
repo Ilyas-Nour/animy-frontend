@@ -14,11 +14,12 @@ interface StreamingPlayerProps {
     malId?: number
     title?: string
     tmdbId?: string
+    subDub?: 'sub' | 'dub'
 }
 
 type ServerType = 'hianime' | 'vidlink'
 
-export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, malId, title, tmdbId }: StreamingPlayerProps) {
+export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, malId, title, tmdbId, subDub = 'sub' }: StreamingPlayerProps) {
     const [sources, setSources] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -38,6 +39,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             if (episodeNumber) queryParams += `&ep=${episodeNumber}`
             if (title) queryParams += `&title=${encodeURIComponent(title)}`
             if (tmdbId) queryParams += `&tmdbId=${encodeURIComponent(tmdbId)}`
+            if (subDub) queryParams += `&subDub=${encodeURIComponent(subDub)}`
 
             const res = await fetch(`/api/streaming/watch/${encodeURIComponent(episodeId)}${queryParams}`)
 
@@ -47,15 +49,22 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
             }
 
             const data = await res.json()
-            const sourcesData = data.data?.sources ? data.data : data
-            
-            setSources(sourcesData)
-            
-            if (sourcesData.servers && sourcesData.servers.length > 0) {
-                setAvailableServers(sourcesData.servers)
+            const resData = data.data || data
+            const serverList = (Array.isArray(resData.servers) && resData.servers.length > 0)
+                ? resData.servers
+                : (Array.isArray(resData.sources) && resData.sources.length > 0)
+                    ? resData.sources
+                    : (Array.isArray(data.servers) ? data.servers : [])
+
+            setSources(resData)
+
+            if (serverList.length > 0) {
+                setAvailableServers(serverList)
                 // Set first native server as default if available, otherwise first server
-                const defaultServer = sourcesData.servers.find((s: any) => s.isNative) || sourcesData.servers[0]
+                const defaultServer = serverList.find((s: any) => s.isNative) || serverList[0]
                 setActiveServer(defaultServer)
+            } else {
+                setError('No compatible server found')
             }
         } catch (err: any) {
             console.error('Error fetching sources:', err)
@@ -63,7 +72,7 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
         } finally {
             setLoading(false)
         }
-    }, [episodeId, episodeNumber, malId, title, tmdbId])
+    }, [episodeId, episodeNumber, malId, title, tmdbId, subDub])
 
     const handleServerFailover = useCallback(() => {
         if (!activeServer || availableServers.length <= 1) {
@@ -141,17 +150,17 @@ export function StreamingPlayer({ episodeId, episodeNumber, poster, provider, ma
     }, [activeServer, retryCount, handleServerFailover])
 
     useEffect(() => {
-        // Reset state when episode changes
+        // Reset state when episode or audio track (sub/dub) changes
         setSources(null)
         setAvailableServers([])
         setActiveServer(null)
-    }, [episodeId])
+    }, [episodeId, subDub])
 
     useEffect(() => {
         if (!sources) {
             fetchSources()
         }
-    }, [episodeId, sources, fetchSources])
+    }, [episodeId, subDub, sources, fetchSources])
 
     useEffect(() => {
         if (!activeServer || !activeServer.isNative || !videoRef.current) return
