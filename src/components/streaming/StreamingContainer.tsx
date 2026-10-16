@@ -53,19 +53,41 @@ interface Mirror {
 const MIRRORS: Mirror[] = [
     {
         name: 'Internal',
-        tag: 'HIANIME',
+        tag: 'DIRECT',
         buildUrl: () => null,
         isInternal: true
     },
     {
-        name: 'Multi',
-        tag: 'TMDB',
+        name: 'VidLink',
+        tag: 'FAST HD',
         buildUrl: (ctx) => {
+            // VidLink supports anime direct via MAL ID (gold standard for anime sub/dub)
+            if (ctx.malId && ctx.malId !== 0) {
+                return `https://vidlink.pro/anime/${ctx.malId}/${ctx.ep}/${ctx.subDub}?primaryColor=f97316&autoplay=0`
+            }
+            if (ctx.anilistId) {
+                return `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=f97316&autoplay=0`
+            }
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                // VidLink supports type=sub/dub and primaryColor
                 return `https://vidlink.pro/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}?primaryColor=f97316&autoplay=0&player=${ctx.subDub}&type=${ctx.subDub}`
             }
-            return null
+            return `https://vidlink.pro/anime/${ctx.ep}/${ctx.subDub}?primaryColor=f97316&autoplay=0`
+        }
+    },
+    {
+        name: 'VidSrc ME',
+        tag: 'SUB/DUB',
+        buildUrl: (ctx) => {
+            if (ctx.malId && ctx.malId !== 0) {
+                return `https://vidsrc.me/embed/anime?mal=${ctx.malId}&ep=${ctx.ep}&sub=${ctx.subDub}`
+            }
+            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
+                return `https://vidsrc.me/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&episode=${ctx.tmdbEp}&sub=${ctx.subDub}`
+            }
+            if (ctx.anilistId) {
+                return `https://vidsrc.me/embed/anime?mal=${ctx.anilistId}&ep=${ctx.ep}&sub=${ctx.subDub}`
+            }
+            return `https://vidsrc.me/embed/anime?ep=${ctx.ep}&sub=${ctx.subDub}`
         }
     },
     {
@@ -75,27 +97,42 @@ const MIRRORS: Mirror[] = [
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
                 return `https://vidsrc.pm/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}?sub=${ctx.subDub}`
             }
-            return null
-        }
-    },
-    {
-        name: 'VidSrc ME',
-        tag: 'SUB/DUB',
-        buildUrl: (ctx) => {
-            if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://vidsrc.me/embed/tv?tmdb=${ctx.tmdbId}&season=${ctx.season}&episode=${ctx.tmdbEp}&sub=${ctx.subDub}`
+            if (ctx.malId && ctx.malId !== 0) {
+                return `https://vidsrc.su/embed/anime/${ctx.malId}/${ctx.ep}`
+            }
+            if (ctx.anilistId) {
+                return `https://vidlink.pro/anime/${ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=f97316&autoplay=0`
             }
             return null
         }
     },
     {
-        name: 'VidSrc IN',
-        tag: 'ALT',
+        name: 'VidSrc SU',
+        tag: 'MULTI',
         buildUrl: (ctx) => {
+            if (ctx.malId && ctx.malId !== 0) {
+                return `https://vidsrc.su/embed/anime/${ctx.malId}/${ctx.ep}`
+            }
             if (ctx.tmdbId && ctx.season && ctx.tmdbEp) {
-                return `https://vidsrc.in/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}?sub=${ctx.subDub}`
+                return `https://vidsrc.su/embed/tv/${ctx.tmdbId}/${ctx.season}/${ctx.tmdbEp}`
+            }
+            if (ctx.anilistId) {
+                return `https://vidsrc.su/embed/anime/${ctx.anilistId}/${ctx.ep}`
             }
             return null
+        }
+    },
+    {
+        name: '2Embed',
+        tag: 'BACKUP',
+        buildUrl: (ctx) => {
+            if (ctx.tmdbId) {
+                return `https://www.2embed.skin/embedtv/${ctx.tmdbId}&s=${ctx.season || 1}&e=${ctx.tmdbEp || ctx.ep}`
+            }
+            if (ctx.malId && ctx.malId !== 0) {
+                return `https://autoembed.co/tv/tmdb/${ctx.malId}-${ctx.season || 1}-${ctx.tmdbEp || ctx.ep}`
+            }
+            return `https://vidlink.pro/anime/${ctx.malId || ctx.anilistId}/${ctx.ep}/${ctx.subDub}?primaryColor=f97316&autoplay=0`
         }
     }
 ]
@@ -121,13 +158,15 @@ export function StreamingContainer({
     const epParam = searchParams.get('ep')
 
     const [resolvedAnilistId, setResolvedAnilistId] = useState<number | undefined>(anilistId)
-    // AniZip mappings: Maps absolute episode number -> { season, tmdbEp, tmdbId }
+    const [resolvedMalId, setResolvedMalId] = useState<number | undefined>(malId && malId !== 0 ? malId : undefined)
+    const [resolvedTmdbId, setResolvedTmdbId] = useState<string | undefined>(initialTmdbId ? String(initialTmdbId) : undefined)
+    const [detectedSeason, setDetectedSeason] = useState<number>(1)
+    // AniZip mappings: Maps episode number -> { season, tmdbEp, tmdbId }
     const [aniZipMap, setAniZipMap] = useState<Record<number, { s: number, e: number, tId: string }>>({})
 
     // Determine the actual MAL ID to use, fallback to Anilist ID if no MAL ID
-    // 0 is usually the fallback for "not found" in MAL
-    const realMalId = malId && malId !== 0 ? malId : (anilistId || 0)
-    const animeKey = resolvedAnilistId || realMalId
+    const realMalId = resolvedMalId || (malId && malId !== 0 ? malId : (anilistId || 0))
+    const animeKey = resolvedAnilistId || anilistId || realMalId
     const sortedEpisodes = sortOrder === 'asc'
         ? episodes
         : [...episodes].reverse()
@@ -168,27 +207,47 @@ export function StreamingContainer({
             })
             .then(data => {
                 if (data?.mappings?.anilist_id && !anilistId) {
-                    setResolvedAnilistId(data.mappings.anilist_id)
+                    setResolvedAnilistId(Number(data.mappings.anilist_id))
+                }
+                if (data?.mappings?.mal_id && (!malId || malId === 0)) {
+                    setResolvedMalId(Number(data.mappings.mal_id))
                 }
                 
-                let baseTmdbId = data?.mappings?.themoviedb_id || initialTmdbId
+                const foundTmdbId = data?.mappings?.themoviedb_id 
+                    ? String(data.mappings.themoviedb_id) 
+                    : (initialTmdbId ? String(initialTmdbId) : undefined)
+                if (foundTmdbId) {
+                    setResolvedTmdbId(foundTmdbId)
+                }
 
-                const processEpisodes = (tmdbIdToUse: string | number | undefined) => {
+                let sNum = 1
+                if (data?.episodes) {
+                    const firstWithSeason = Object.values(data.episodes).find((ep: any) => ep.seasonNumber !== undefined) as any
+                    if (firstWithSeason?.seasonNumber) {
+                        sNum = firstWithSeason.seasonNumber
+                        setDetectedSeason(sNum)
+                    }
+                }
+
+                const processEpisodes = (tmdbIdToUse: string | number | undefined, seasonToUse: number) => {
+                    const newMap: Record<number, { s: number, e: number, tId: string }> = {}
+
                     if (data?.episodes) {
-                        const newMap: Record<number, { s: number, e: number, tId: string }> = {}
-                        
                         Object.keys(data.episodes).forEach(key => {
                             const ep = data.episodes[key]
-                            const absNum = ep.absoluteEpisodeNumber || Number(key)
-                            if (ep.seasonNumber !== undefined && ep.episodeNumber !== undefined) {
-                                newMap[absNum] = {
-                                    s: ep.seasonNumber,
-                                    e: ep.episodeNumber,
-                                    tId: String(tmdbIdToUse)
-                                }
+                            const s = ep.seasonNumber !== undefined ? ep.seasonNumber : seasonToUse
+                            const e = ep.episodeNumber !== undefined ? ep.episodeNumber : Number(key)
+                            const mappingObj = {
+                                s,
+                                e,
+                                tId: String(tmdbIdToUse || foundTmdbId || '')
+                            }
+                            newMap[Number(key)] = mappingObj
+                            newMap[e] = mappingObj
+                            if (ep.absoluteEpisodeNumber) {
+                                newMap[ep.absoluteEpisodeNumber] = mappingObj
                             }
                         })
-                        setAniZipMap(newMap)
 
                         // Enrich virtual episodes with real titles, thumbnails, and filler status
                         setEpisodes(prev => prev.map(p => {
@@ -208,69 +267,74 @@ export function StreamingContainer({
                             return p;
                         }))
                     }
+
+                    setAniZipMap(newMap)
                 }
 
                 // If TMDB ID is missing, try MalSync as fallback
-                if (!baseTmdbId && realMalId) {
-                    fetch(`/api/malsync/anime/${realMalId}`)
+                if (!foundTmdbId && (realMalId || anilistId)) {
+                    const malSyncParam = realMalId ? `${realMalId}` : (anilistId ? `anilist:${anilistId}` : '')
+                    fetch(`/api/malsync/anime/${malSyncParam}`)
                         .then(res => res.json())
                         .then(malSyncData => {
                             const tmdbFromMalSync = malSyncData?.Sites?.Tmdb?.['0']?.identifier || 
                                                   malSyncData?.Sites?.Tmdb?.['1']?.identifier
                             if (tmdbFromMalSync) {
-                                baseTmdbId = tmdbFromMalSync
+                                setResolvedTmdbId(String(tmdbFromMalSync))
+                                processEpisodes(tmdbFromMalSync, sNum)
+                            } else {
+                                processEpisodes(foundTmdbId, sNum)
                             }
-                            processEpisodes(baseTmdbId)
+                            if (malSyncData?.malId && (!malId || malId === 0)) {
+                                setResolvedMalId(Number(malSyncData.malId))
+                            }
                         })
                         .catch(() => {
-                            processEpisodes(baseTmdbId)
+                            processEpisodes(foundTmdbId, sNum)
                         })
                 } else {
-                    processEpisodes(baseTmdbId)
+                    processEpisodes(foundTmdbId, sNum)
                 }
             })
             .catch(err => {
                 console.error("AniZip fetch failed:", err)
-                // If AniZip completely fails, at least try to get TMDB from MalSync
-                if (realMalId && !initialTmdbId) {
-                    fetch(`/api/malsync/anime/${realMalId}`)
+                // If AniZip completely fails, fallback to MalSync
+                const malSyncParam = realMalId ? `${realMalId}` : (anilistId ? `anilist:${anilistId}` : '')
+                if (malSyncParam && !initialTmdbId) {
+                    fetch(`/api/malsync/anime/${malSyncParam}`)
                         .then(res => res.json())
                         .then(malSyncData => {
                             const tmdbFromMalSync = malSyncData?.Sites?.Tmdb?.['0']?.identifier || 
                                                   malSyncData?.Sites?.Tmdb?.['1']?.identifier
                             if (tmdbFromMalSync) {
-                                // Provide a basic mapping assuming Season 1
-                                const newMap: Record<number, { s: number, e: number, tId: string }> = {}
-                                episodes.forEach(ep => {
-                                    newMap[ep.number] = { s: 1, e: ep.number, tId: String(tmdbFromMalSync) }
-                                })
-                                setAniZipMap(newMap)
+                                setResolvedTmdbId(String(tmdbFromMalSync))
+                            }
+                            if (malSyncData?.malId && (!malId || malId === 0)) {
+                                setResolvedMalId(Number(malSyncData.malId))
                             }
                         })
                         .catch(e => console.error("MalSync fallback failed", e))
-                } else if (initialTmdbId) {
-                    // Provide a basic mapping assuming Season 1 with the known initialTmdbId
-                    const newMap: Record<number, { s: number, e: number, tId: string }> = {}
-                    episodes.forEach(ep => {
-                        newMap[ep.number] = { s: 1, e: ep.number, tId: String(initialTmdbId) }
-                    })
-                    setAniZipMap(newMap)
                 }
             })
-    }, [anilistId, realMalId, initialTmdbId, episodes])
+    }, [anilistId, realMalId, initialTmdbId, malId])
 
     const currentEpNumber = selectedEp?.number ?? 1
     
-    // Build the current context
+    // Build the current context with intelligent interpolation
     const epMapping = aniZipMap[currentEpNumber]
+    const effectiveTmdbId = epMapping?.tId || resolvedTmdbId || (initialTmdbId ? String(initialTmdbId) : undefined)
+    const effectiveSeason = epMapping?.s ?? detectedSeason ?? 1
+    const effectiveTmdbEp = epMapping?.e ?? currentEpNumber
+    const effectiveMalId = resolvedMalId || (malId && malId !== 0 ? malId : (anilistId || 0))
+
     const currentContext: EmbedContext = {
-        malId: realMalId,
-        anilistId: resolvedAnilistId || realMalId,
+        malId: effectiveMalId,
+        anilistId: resolvedAnilistId || anilistId || effectiveMalId,
         ep: currentEpNumber,
         subDub,
-        tmdbId: epMapping?.tId || (initialTmdbId ? String(initialTmdbId) : undefined),
-        season: epMapping?.s,
-        tmdbEp: epMapping?.e
+        tmdbId: effectiveTmdbId,
+        season: effectiveSeason,
+        tmdbEp: effectiveTmdbEp
     }
 
     const availableMirrors = MIRRORS
@@ -398,11 +462,11 @@ export function StreamingContainer({
                 >
                     {!embedUrl ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/90">
-                            <p className="text-white/40 text-sm font-medium">This server requires a TMDB ID which is unavailable for this anime.</p>
-                            <div className="flex gap-2">
+                            <p className="text-white/50 text-sm font-medium">Switching streaming frequency. Choose another server below:</p>
+                            <div className="flex flex-wrap gap-2 justify-center px-4">
                                 {availableMirrors.map((m, idx) => {
                                     const url = m.buildUrl(currentContext)
-                                    if (!url || idx === mirrorIndex) return null
+                                    if (idx === mirrorIndex) return null
                                     return (
                                         <button
                                             key={m.name}
@@ -441,9 +505,10 @@ export function StreamingContainer({
                                 episodeId={`ep${currentEpNumber}-${animeKey}`}
                                 episodeNumber={currentEpNumber}
                                 poster={animePoster}
-                                malId={animeKey}
+                                malId={effectiveMalId}
                                 title={animeTitle}
                                 tmdbId={currentContext.tmdbId}
+                                subDub={subDub}
                             />
                         </div>
                     ) : (
