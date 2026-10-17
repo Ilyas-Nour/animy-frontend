@@ -1,9 +1,10 @@
 'use client'
 export const runtime = 'edge';
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useRouter } from '@/i18n/routing'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Mail, Lock, ArrowRight, Sparkles, Eye, EyeOff, Rocket } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Sparkles, Eye, EyeOff, Rocket, ShieldCheck } from 'lucide-react'
 import { FaGoogle } from 'react-icons/fa'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -17,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { toast } from 'sonner'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -27,11 +29,14 @@ type LoginForm = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectParam = searchParams?.get('redirect')
   const { login } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [turnstileToken, setTurnstileToken] = useState<string>('')
+  const turnstileRef = useRef<any>(null)
 
   const {
     register,
@@ -47,24 +52,31 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     if (!turnstileToken) {
-      setError('Please complete the security check.')
+      setError('Please click and complete the "Verify you are human" check.')
       return
     }
     try {
       setIsLoading(true)
       setError(null)
-      // Don't reset verification state here immediately to avoid flickering if it fails again
       const payload = { ...data, 'cf-turnstile-response': turnstileToken }
       const response = await authService.login(payload)
       login(response.access_token, response.user)
+      toast.success('Signed in successfully!')
 
-      // If no interests selected, first time login -> Discovery
-      if (!response.user.interests || response.user.interests.length === 0) {
+      // Redirect safely if valid internal path
+      if (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')) {
+        router.push(redirectParam)
+      } else if (!response.user.interests || response.user.interests.length === 0) {
+        // If no interests selected, first time login -> Discovery
         router.push('/discovery')
       } else {
         router.push('/')
       }
     } catch (err: any) {
+      // Tokens can only be verified once; reset widget for fresh challenge
+      turnstileRef.current?.reset?.()
+      setTurnstileToken('')
+
       let msg = 'Login failed.'
       if (err.response?.data?.message) {
         const m = err.response.data.message
@@ -96,17 +108,12 @@ export default function LoginPage() {
     try {
       setIsLoading(true)
       await api.post('/auth/resend-verification', { email: emailForVerification })
-      setError(null) // Clear error
-      setNeedsVerification(false) // Close modal
-      // Optionally show success toast or message. using alert for now as rudimentary feedback or just close it.
-      // Better: we can change the modal state to "Sent!" but closing is fine for now as per user request "show window... button".
-      // Let's add a temporary success message to the error field to give feedback on main form or rely on email arrival.
-      alert(`Verification email sent to ${emailForVerification}. Check your inbox!`)
-
+      setError(null)
+      setNeedsVerification(false)
+      toast.success(`Verification email sent to ${emailForVerification}. Please check your inbox!`)
     } catch (err: any) {
       const errMsg = err.response?.data?.message || 'Failed to resend verification email.'
-      // Keep modal open but show error inside it? Or just alert.
-      alert(errMsg)
+      toast.error(errMsg)
     } finally {
       setIsLoading(false)
     }
@@ -188,8 +195,8 @@ export default function LoginPage() {
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
                     <Link
-                      href="#"
-                      className="text-sm text-primary hover:underline"
+                      href="/auth/forgot-password"
+                      className="text-sm text-primary hover:underline font-medium"
                     >
                       Forgot password?
                     </Link>
@@ -231,19 +238,36 @@ export default function LoginPage() {
                   </motion.div>
                 )}
 
-                <div className="cf-turnstile flex justify-center" data-action="turnstile-spin-v2">
+                <div className="cf-turnstile flex flex-col items-center justify-center gap-2 pt-1" data-action="turnstile-spin-v2">
                   <Turnstile
+                    ref={turnstileRef}
                     siteKey="0x4AAAAAAD8ZNK3FygnkC7vj"
                     options={{ action: "turnstile-spin-v2" }}
-                    onSuccess={(token) => setTurnstileToken(token)}
-                    onError={() => setError('Security check failed. Please try again.')}
+                    onSuccess={(token) => {
+                      setTurnstileToken(token)
+                      setError(null)
+                    }}
+                    onExpire={() => {
+                      setTurnstileToken('')
+                      turnstileRef.current?.reset?.()
+                    }}
+                    onError={() => {
+                      setTurnstileToken('')
+                      setError('Security check failed. Please click verify again.')
+                    }}
                   />
+                  {!turnstileToken && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium animate-pulse">
+                      <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+                      Please click &quot;Verify you are human&quot; above to enable sign in
+                    </p>
+                  )}
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full h-11 text-base font-medium group"
-                  disabled={isLoading}
+                  className="w-full h-11 text-base font-medium group shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading || !turnstileToken}
                 >
                   {isLoading ? (
                     <>
@@ -275,7 +299,8 @@ export default function LoginPage() {
                 variant="outline"
                 className="w-full h-11 text-base font-medium border-white/10 hover:bg-white/5"
                 onClick={() => {
-                  window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1';
+                  window.location.href = `${apiUrl}/auth/google`;
                 }}
               >
                 <FaGoogle className="mr-2 h-4 w-4" />

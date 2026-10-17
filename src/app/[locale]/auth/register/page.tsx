@@ -1,6 +1,6 @@
 'use client'
 export const runtime = 'edge';
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useRouter } from '@/i18n/routing'
 import { motion } from 'framer-motion'
 import { Mail, Lock, User, UserPlus, ArrowRight, Sparkles, Shield, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
@@ -53,6 +53,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [turnstileToken, setTurnstileToken] = useState<string>('')
+  const turnstileRef = useRef<any>(null)
   const [successModalOpen, setSuccessModalOpen] = useState(false)
 
   const {
@@ -71,7 +72,7 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterForm) => {
     if (!turnstileToken) {
-      setError('Please complete the security check.')
+      setError('Please click and complete the "Verify you are human" check.')
       return
     }
     try {
@@ -79,12 +80,26 @@ export default function RegisterPage() {
       setError(null)
       setSuccess(null)
       const { confirmPassword, acceptedTerms, ...registerData } = data
-      const payload = { ...registerData, 'cf-turnstile-response': turnstileToken }
-      const response = await authService.register(payload)
+      
+      // Sanitize payload: avoid sending empty strings for optional fields
+      const payload: any = {
+        email: registerData.email.trim().toLowerCase(),
+        password: registerData.password,
+        'cf-turnstile-response': turnstileToken,
+      }
+      if (registerData.username?.trim()) payload.username = registerData.username.trim()
+      if (registerData.firstName?.trim()) payload.firstName = registerData.firstName.trim()
+      if (registerData.lastName?.trim()) payload.lastName = registerData.lastName.trim()
+
+      await authService.register(payload)
 
       // Registration successful, show modal
       setSuccessModalOpen(true)
     } catch (err: any) {
+      // Tokens can only be verified once; reset widget for fresh challenge
+      turnstileRef.current?.reset?.()
+      setTurnstileToken('')
+
       console.error('Registration Error:', err)
       let msg = 'Registration failed. Please try again.'
 
@@ -356,19 +371,36 @@ export default function RegisterPage() {
                   </motion.div>
                 )}
 
-                <div className="cf-turnstile flex justify-center" data-action="turnstile-spin-v2">
+                <div className="cf-turnstile flex flex-col items-center justify-center gap-2 pt-1" data-action="turnstile-spin-v2">
                   <Turnstile
+                    ref={turnstileRef}
                     siteKey="0x4AAAAAAD8ZNK3FygnkC7vj"
                     options={{ action: "turnstile-spin-v2" }}
-                    onSuccess={(token) => setTurnstileToken(token)}
-                    onError={() => setError('Security check failed. Please try again.')}
+                    onSuccess={(token) => {
+                      setTurnstileToken(token)
+                      setError(null)
+                    }}
+                    onExpire={() => {
+                      setTurnstileToken('')
+                      turnstileRef.current?.reset?.()
+                    }}
+                    onError={() => {
+                      setTurnstileToken('')
+                      setError('Security check failed. Please click verify again.')
+                    }}
                   />
+                  {!turnstileToken && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium animate-pulse">
+                      <Shield className="w-3.5 h-3.5 text-primary" />
+                      Please click &quot;Verify you are human&quot; above to enable account creation
+                    </p>
+                  )}
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full h-11 text-base font-medium group"
-                  disabled={isLoading}
+                  className="w-full h-11 text-base font-medium group shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading || !turnstileToken}
                 >
                   {isLoading ? (
                     <>
@@ -400,7 +432,8 @@ export default function RegisterPage() {
                 variant="outline"
                 className="w-full h-11 text-base font-medium border-white/10 hover:bg-white/5"
                 onClick={() => {
-                  window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1';
+                  window.location.href = `${apiUrl}/auth/google`;
                 }}
               >
                 <FaGoogle className="mr-2 h-4 w-4" />

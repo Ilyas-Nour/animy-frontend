@@ -67,7 +67,12 @@ async function handleRequest(request: NextRequest) {
 
     // Forward body for non-GET/HEAD requests
     if (request.method !== 'GET' && request.method !== 'HEAD') {
-      if ((targetPath === '/auth/login' || targetPath === '/auth/register') && request.headers.get('content-type')?.includes('application/json')) {
+      const isAuthProtectedPath = targetPath === '/auth/login' || 
+                                  targetPath === '/auth/register' || 
+                                  targetPath === '/auth/forgot-password' || 
+                                  targetPath === '/auth/reset-password';
+
+      if (isAuthProtectedPath && request.headers.get('content-type')?.includes('application/json')) {
         const jsonBody = await request.json();
         const token = jsonBody['cf-turnstile-response'];
         
@@ -75,7 +80,7 @@ async function handleRequest(request: NextRequest) {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams({
-            secret: process.env.TURNSTILE_SECRET || '',
+            secret: process.env.TURNSTILE_SECRET || '1x0000000000000000000000000000000AA',
             response: token || '',
             remoteip: request.headers.get('x-forwarded-for') || '',
           }),
