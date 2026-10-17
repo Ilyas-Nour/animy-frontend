@@ -54,6 +54,7 @@ export async function GET(
       { path: '/profile/shrine', changefreq: 'weekly', priority: '0.6' },
       { path: '/auth/login', changefreq: 'monthly', priority: '0.5' },
       { path: '/auth/register', changefreq: 'monthly', priority: '0.5' },
+      { path: '/auth/forgot-password', changefreq: 'monthly', priority: '0.4' },
       { path: '/privacy', changefreq: 'monthly', priority: '0.3' },
       { path: '/terms', changefreq: 'monthly', priority: '0.3' },
       { path: '/contact', changefreq: 'monthly', priority: '0.5' },

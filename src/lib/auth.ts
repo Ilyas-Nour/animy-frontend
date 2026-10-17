@@ -37,6 +37,23 @@ export const authService = {
     return response.data.data
   },
 
+  forgotPassword: async (email: string, turnstileToken?: string): Promise<any> => {
+    const payload: any = { email }
+    if (turnstileToken) payload['cf-turnstile-response'] = turnstileToken
+    const response = await api.post('/auth/forgot-password', payload)
+    return response.data
+  },
+
+  verifyResetToken: async (token: string): Promise<any> => {
+    const response = await api.get('/auth/verify-reset-token', { params: { token } })
+    return response.data
+  },
+
+  resetPassword: async (data: { token: string; password: string; 'cf-turnstile-response'?: string }): Promise<any> => {
+    const response = await api.post('/auth/reset-password', data)
+    return response.data
+  },
+
   logout: () => {
     localStorage.removeItem('token')
     window.location.href = '/auth/login'
