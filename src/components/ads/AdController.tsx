@@ -16,20 +16,21 @@ export function AdController() {
   const [mounted, setMounted] = useState(false);
 
   // Disable pop-under ads on auth and discovery pages
-  const isAuthPage = pathname?.includes('/auth/login') || pathname?.includes('/auth/register');
+  const isAuthPage = pathname?.includes('/auth/') || pathname?.endsWith('/login') || pathname?.endsWith('/register');
   const isDiscoveryPage = pathname?.includes('/discovery');
 
   useEffect(() => {
     setMounted(true);
-    // If we navigate to a no-ad page, but ads are already loaded in memory (SPA navigation),
-    // force a hard reload to completely clear them from the browser.
+    // If we navigate to a no-ad page, safely clean up any ad scripts and iframes
+    // without triggering a disruptive hard window reload.
     if (isAuthPage || isDiscoveryPage) {
-      const adScriptsExist = document.querySelector(`script[src*="${D1}"]`) || 
-                             document.querySelector(`script[src*="${D2}"]`) || 
-                             document.querySelector(`script[src*="${D3}"]`);
-      
-      if (adScriptsExist) {
-        window.location.reload();
+      try {
+        const adElements = document.querySelectorAll(
+          `script[src*="${D1}"], script[src*="${D2}"], script[src*="${D3}"], iframe[src*="${D1}"], iframe[src*="${D2}"], iframe[src*="${D3}"]`
+        );
+        adElements.forEach((el) => el.remove());
+      } catch (e) {
+        // Safe fallback if DOM query fails
       }
     }
   }, [isAuthPage, isDiscoveryPage]);
