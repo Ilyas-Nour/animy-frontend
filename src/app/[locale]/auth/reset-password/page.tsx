@@ -136,10 +136,6 @@ export default function ResetPasswordPage() {
           className="hidden md:flex flex-col justify-center space-y-6 p-8"
         >
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              <KeyRound className="h-4 w-4" />
-              Credentials Update
-            </div>
             <h1 className="text-4xl font-black tracking-tight leading-tight">
               Create a Strong
               <br />
@@ -183,8 +179,6 @@ export default function ResetPasswordPage() {
           className="flex items-center"
         >
           <Card className="w-full shadow-2xl border-border/50 bg-card/95 backdrop-blur-xl rounded-2xl overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-purple-500 to-pink-500" />
-
             <CardHeader className="space-y-2 pb-6 pt-6">
               <CardTitle className="text-2xl font-bold tracking-tight">Reset Password</CardTitle>
               <CardDescription className="text-sm">
