@@ -210,18 +210,31 @@ export const anilistMangaDetailsQuery = `
           }
         }
       }
-      characters(sort: ROLE, page: 1, perPage: 10) {
+      characters(sort: ROLE, page: 1, perPage: 12) {
+        edges {
+          role
+          node {
+            id
+            name {
+              full
+              native
+            }
+            image {
+              large
+              medium
+            }
+          }
+        }
         nodes {
           id
           name {
             full
+            native
           }
           image {
             large
+            medium
           }
-        }
-        edges {
-          role
         }
       }
       recommendations(sort: RATING_DESC, page: 1, perPage: 10) {
@@ -395,7 +408,33 @@ export function mapAniListToManga(data: any): Manga {
       explicit_genres: [],
       themes: [],
       demographics: [],
-      characters: data.characters?.nodes?.map((n: any) => ({ node: n, role: 'Main' })) || [], // simplified mapping
+      characters: (data.characters?.edges?.length > 0
+        ? data.characters.edges.map((e: any, index: number) => {
+            const node = e.node || data.characters?.nodes?.[index];
+            return {
+              role: e.role || 'Main',
+              character: {
+                mal_id: node?.id,
+                name: node?.name?.full || node?.name?.native || 'Unknown',
+                images: {
+                  jpg: { image_url: node?.image?.large || node?.image?.medium || '' },
+                  webp: { image_url: node?.image?.large || node?.image?.medium || '' },
+                }
+              }
+            };
+          })
+        : data.characters?.nodes?.map((n: any) => ({
+            role: 'Main',
+            character: {
+              mal_id: n.id,
+              name: n.name?.full || n.name?.native || 'Unknown',
+              images: {
+                jpg: { image_url: n.image?.large || n.image?.medium || '' },
+                webp: { image_url: n.image?.large || n.image?.medium || '' },
+              }
+            }
+          })) || []
+      ).filter((c: any) => c?.character?.name && c?.character?.mal_id),
       recommendations: data.recommendations?.nodes?.map((r: any) => r.mediaRecommendation) || []
     } as any;
 }
