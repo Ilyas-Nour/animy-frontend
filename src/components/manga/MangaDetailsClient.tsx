@@ -20,7 +20,7 @@ import { useAuth } from '@/context/AuthContext'
 import api from '@/lib/api'
 import { cn } from '@/lib/utils'
 
-const CharacterCard = dynamic(() => import('@/components/characters/CharacterCard').then(mod => mod.CharacterCard), { ssr: false })
+import { CharacterCard } from '@/components/characters/CharacterCard'
 
 interface MangaDetailsClientProps {
     manga: Manga
@@ -41,6 +41,7 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
     const primaryColor = manga.color || '#f97316'
     const [chapters, setChapters] = useState<any[]>(initialChapters)
     const [chaptersLoading, setChaptersLoading] = useState(initialChapters.length === 0)
+    const [characterList, setCharacterList] = useState<any[]>(characters || [])
     const [isMounted, setIsMounted] = useState(false)
     const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
 
@@ -65,18 +66,45 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
             try {
                 setChaptersLoading(true)
                 const controller = new AbortController()
-                const timeoutId = setTimeout(() => controller.abort(), 35000)
-                const response = await api.get(`/manga/${baseId}/read-chapters`, {
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
+                const timeoutId = setTimeout(() => controller.abort(), 20000)
+                let resolvedChapters: any[] = []
 
-                if (response.data && response.data.chapters) {
-                    setChapters(response.data.chapters);
-                } else {
-                    setChapters([]);
+                try {
+                    const response = await api.get(`/manga/${baseId}/read-chapters`, {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    const list = response.data?.data?.chapters ||
+                        response.data?.chapters ||
+                        (Array.isArray(response.data?.data) ? response.data.data : null) ||
+                        (Array.isArray(response.data) ? response.data : null);
+
+                    if (Array.isArray(list) && list.length > 0) {
+                        resolvedChapters = list;
+                    }
+                } catch (apiErr) {
+                    clearTimeout(timeoutId);
+                    console.warn('Backend direct chapter fetch failed, trying Next.js route fallback...', apiErr);
                 }
+
+                // If direct backend was empty or failed, fetch via Next.js proxy route with direct MangaPill fallback
+                if (!resolvedChapters || resolvedChapters.length === 0) {
+                    try {
+                        const fallbackRes = await fetch(`/api/manga/${baseId}/chapters?title=${encodeURIComponent(manga.title || '')}`);
+                        if (fallbackRes.ok) {
+                            const fallbackData = await fallbackRes.json();
+                            const fallbackList = fallbackData.data?.chapters || fallbackData.chapters || fallbackData.data || [];
+                            if (Array.isArray(fallbackList) && fallbackList.length > 0) {
+                                resolvedChapters = fallbackList;
+                            }
+                        }
+                    } catch (fbErr) {
+                        console.error('Next.js API fallback chapter fetch failed:', fbErr);
+                    }
+                }
+
+                setChapters(resolvedChapters || []);
             } catch (error: any) {
                 console.error('Failed to fetch chapters:', error);
                 setChapters([]);
@@ -86,7 +114,32 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         }
 
         fetchChapters()
-    }, [baseId, initialChapters])
+    }, [baseId, initialChapters, manga.title])
+
+    useEffect(() => {
+        if (characters && characters.length > 0 && characters.some((c: any) => c?.character?.name || c?.name)) {
+            setCharacterList(characters);
+            return;
+        }
+
+        let isMounted = true;
+        const fetchFallbackCharacters = async () => {
+            try {
+                const res = await fetch(`/api/manga/${baseId}/characters`);
+                if (res.ok) {
+                    const json = await res.json();
+                    const list = json.data || (Array.isArray(json) ? json : []);
+                    if (isMounted && Array.isArray(list) && list.length > 0) {
+                        setCharacterList(list);
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to fetch fallback characters:', e);
+            }
+        };
+        fetchFallbackCharacters();
+        return () => { isMounted = false; };
+    }, [baseId, characters])
     const checkStatus = useCallback(async () => {
         try {
             const [listRes, favRes] = await Promise.all([
@@ -199,8 +252,6 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
         { value: 'DROPPED', label: 'Dropped' },
         { value: 'PLAN_TO_READ', label: 'Plan to Read' },
     ]
-
-    if (!isMounted) return null
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 pb-20">
@@ -573,26 +624,35 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                             ) : chapters.length > 0 ? (
                                 <div className="p-2 md:p-6 lg:p-8">
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                                        {sortedChapters.map((chapter) => (
-                                            <Link 
-                                                key={chapter.id} 
-                                                href={`/manga/read/${encodeURIComponent(chapter.id)}?mangaId=${manga.id}&type=${manga.type}`}
-                                                className="flex flex-col p-4 bg-card rounded-2xl border border-white/5 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 group relative overflow-hidden"
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                <div className="relative z-10 flex flex-col items-center text-center">
-                                                    <span className="text-xs font-black uppercase tracking-widest text-primary mb-1">
-                                                        {(chapter.chapterNumber || chapter.chapter) ? `Ch. ${chapter.chapterNumber || chapter.chapter}` : 'Oneshot'}
-                                                    </span>
-                                                    <h3 className="font-bold text-foreground text-sm line-clamp-1 mb-1" title={chapter.title}>
-                                                        {chapter.title || `Chapter ${chapter.chapterNumber || chapter.chapter || '?'}`}
-                                                    </h3>
-                                                    <span className="text-[10px] text-muted-foreground font-medium">
-                                                        {chapter.pages ? `${chapter.pages}p` : chapter.scanlationGroup || 'Read'}
-                                                    </span>
-                                                </div>
-                                            </Link>
-                                        ))}
+                                        {sortedChapters.map((chapter) => {
+                                            const chNum = (chapter.chapterNumber && chapter.chapterNumber !== '0')
+                                                ? chapter.chapterNumber
+                                                : (chapter.chapter && chapter.chapter !== '0')
+                                                    ? chapter.chapter
+                                                    : (chapter.number && chapter.number !== '0')
+                                                        ? chapter.number
+                                                        : '';
+                                            return (
+                                                <Link 
+                                                    key={chapter.id} 
+                                                    href={`/manga/read/${encodeURIComponent(chapter.id)}?mangaId=${manga.id}&type=${manga.type}`}
+                                                    className="flex flex-col p-4 bg-card rounded-2xl border border-white/5 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 group relative overflow-hidden"
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <div className="relative z-10 flex flex-col items-center text-center">
+                                                        <span className="text-xs font-black uppercase tracking-widest text-primary mb-1">
+                                                            {chNum ? `Ch. ${chNum}` : 'Oneshot'}
+                                                        </span>
+                                                        <h3 className="font-bold text-foreground text-sm line-clamp-1 mb-1" title={chapter.title}>
+                                                            {chapter.title || (chNum ? `Chapter ${chNum}` : 'Chapter')}
+                                                        </h3>
+                                                        <span className="text-[10px] text-muted-foreground font-medium">
+                                                            {chapter.pages ? `${chapter.pages}p` : chapter.scanlationGroup || 'Read'}
+                                                        </span>
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             ) : (
@@ -607,23 +667,61 @@ export default function MangaDetailsClient({ manga, characters, initialChapters 
                         </section>
 
                         {/* Characters */}
-                        {characters && characters.length > 0 && (
-                            <section>
-                                <h2 className="text-2xl font-black mb-6 flex items-center gap-3">
-                                    <span className="w-1.5 h-8 bg-primary rounded-full" />
-                                    Characters
-                                </h2>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
-                                    {characters.slice(0, 12).map((char: any) => (
-                                        <CharacterCard
-                                            key={char.character?.mal_id || char.id}
-                                            character={char.character}
-                                            role={char.role}
-                                        />
-                                    ))}
-                                </div>
-                            </section>
-                        )}
+                        {(() => {
+                            const normalizedCharacters = (characterList || [])
+                                .map((raw: any) => {
+                                    if (!raw) return null;
+                                    const base = raw.character || raw.node || raw;
+                                    const id = base.mal_id || base.id || raw.mal_id || raw.id;
+                                    const name = typeof base.name === 'string'
+                                        ? base.name
+                                        : (base.name?.full || base.name?.userPreferred || base.name?.native || '');
+                                    const imageUrl =
+                                        base.images?.webp?.image_url ||
+                                        base.images?.jpg?.image_url ||
+                                        base.image?.large ||
+                                        base.image?.medium ||
+                                        base.imageUrl ||
+                                        raw.imageUrl ||
+                                        '';
+                                    const role = raw.role || base.role || 'Main';
+
+                                    if (!id || !name || name === 'Unknown') return null;
+
+                                    return {
+                                        role,
+                                        character: {
+                                            mal_id: id,
+                                            name,
+                                            images: {
+                                                jpg: { image_url: imageUrl },
+                                                webp: { image_url: imageUrl }
+                                            }
+                                        }
+                                    };
+                                })
+                                .filter((c): c is NonNullable<typeof c> => c !== null && !!c.character?.name && c.character.name !== 'Unknown');
+
+                            if (normalizedCharacters.length === 0) return null;
+
+                            return (
+                                <section>
+                                    <h2 className="text-2xl font-black mb-6 flex items-center gap-3">
+                                        <span className="w-1.5 h-8 bg-primary rounded-full" />
+                                        Characters
+                                    </h2>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {normalizedCharacters.slice(0, 12).map((char: any) => (
+                                            <CharacterCard
+                                                key={char.character.mal_id || char.character.name}
+                                                character={char.character}
+                                                role={char.role}
+                                            />
+                                        ))}
+                                    </div>
+                                </section>
+                            );
+                        })()}
 
                         {/* Relations */}
                         {manga.relations && manga.relations.length > 0 && (
