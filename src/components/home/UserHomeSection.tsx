@@ -15,6 +15,7 @@ import { DashboardNews } from './DashboardNews'
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
 import { toast } from 'sonner'
+import confetti from 'canvas-confetti'
 import { getAvatarUrl } from '@/lib/utils'
 
 interface UserHomeSectionProps {
@@ -45,8 +46,21 @@ export function UserHomeSection({ trending }: UserHomeSectionProps) {
         if (alreadyClaimed || claiming) return
         setClaiming(true)
         try {
-            await api.post('/users/daily-reward')
-            toast.success('Daily Reward Claimed! +50 XP')
+            const res = await api.post('/users/daily-reward')
+            const xpAwarded = res?.data?.xpAwarded || 50
+            toast.success('Daily Reward Claimed!', {
+                description: `+${xpAwarded} XP added to your balance`
+            })
+            try {
+                confetti({
+                    particleCount: 75,
+                    spread: 60,
+                    origin: { y: 0.15 },
+                    colors: ['#a855f7', '#3b82f6', '#10b981', '#f59e0b']
+                })
+            } catch {
+                // ignore confetti error if unsupported in context
+            }
             setAlreadyClaimed(true)
 
             // Refresh user profile to get new XP

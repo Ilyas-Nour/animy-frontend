@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { SocketProvider } from '@/contexts/SocketContext'
-import { Toaster } from 'sonner'
+import { Toaster } from '@/components/ui/sonner'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { LazyMotion, domAnimation } from 'framer-motion'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
@@ -65,7 +65,7 @@ export default function ClientLayoutWrapper({ children }: { children: ReactNode 
           <LazyMotion features={domAnimation}>
             <InnerLayout>{children}</InnerLayout>
             <MobileNav />
-            <Toaster position="top-right" richColors />
+            <Toaster />
           </LazyMotion>
         </ThemeProvider>
       </SocketProvider>
