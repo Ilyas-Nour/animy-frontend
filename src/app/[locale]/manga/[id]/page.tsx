@@ -12,6 +12,95 @@ import { TOP_MANGA_STATIC } from '@/lib/static-anime-data'
 
 import { anilistFetch, mapAniListToManga, fetchAnilistMangaFull } from '@/lib/anilist-client'
 
+async function getMangaCharacters(id: string, malId?: number): Promise<any[]> {
+  const numericId = parseInt(id, 10);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1';
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    const characterQuery = `
+      query ($id: Int) {
+        Media(id: $id, type: MANGA) {
+          characters(sort: ROLE, page: 1, perPage: 16) {
+            edges {
+              role
+              node {
+                id
+                name {
+                  full
+                  native
+                }
+                image {
+                  large
+                  medium
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    // 1. AniList GraphQL
+    const fetchAnilist = anilistFetch(characterQuery, { id: numericId })
+      .then(data => {
+        const edges = data?.Media?.characters?.edges || [];
+        if (edges.length > 0) {
+          return edges.map((e: any) => ({
+            role: e.role || 'Main',
+            character: {
+              mal_id: e.node?.id,
+              name: e.node?.name?.full || e.node?.name?.native || 'Unknown',
+              images: {
+                jpg: { image_url: e.node?.image?.large || e.node?.image?.medium || '' },
+                webp: { image_url: e.node?.image?.large || e.node?.image?.medium || '' }
+              }
+            }
+          }));
+        }
+        throw new Error('No characters in AniList');
+      });
+
+    // 2. Backend characters
+    const fetchBackend = fetch(`${API_URL}/manga/${numericId}/characters`, {
+      headers: { 'Accept': 'application/json' },
+      next: { revalidate: 3600 },
+      signal: controller.signal
+    }).then(async res => {
+      if (!res.ok) throw new Error('Backend failed');
+      const json = await res.json();
+      const list = json.data || (Array.isArray(json) ? json : []);
+      if (Array.isArray(list) && list.length > 0 && list.some((c: any) => c?.character?.name || c?.name)) {
+        return list;
+      }
+      throw new Error('Empty backend characters');
+    });
+
+    // 3. Jikan characters
+    const targetMalId = malId || numericId;
+    const fetchJikan = fetch(`https://api.jikan.moe/v4/manga/${targetMalId}/characters`, {
+      next: { revalidate: 3600 },
+      signal: controller.signal
+    }).then(async res => {
+      if (!res.ok) throw new Error('Jikan failed');
+      const json = await res.json();
+      if (Array.isArray(json?.data) && json.data.length > 0) {
+        return json.data;
+      }
+      throw new Error('Empty Jikan characters');
+    });
+
+    const characters = await Promise.any([fetchAnilist, fetchBackend, fetchJikan]);
+    clearTimeout(timeoutId);
+    return characters;
+  } catch (e) {
+    console.warn(`Failed to fetch characters for manga ${id}:`, e);
+    return [];
+  }
+}
+
 async function getMangaFull(id: string): Promise<any> {
   const numericId = parseInt(id, 10)
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ilyvs-animy-backend.hf.space/api/v1'
@@ -112,8 +201,14 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
     notFound()
   }
 
+  let characters = rawManga.characters || [];
+  if (!Array.isArray(characters) || characters.length === 0 || !characters.some((c: any) => c?.character?.name || c?.name)) {
+    characters = await getMangaCharacters(id, rawManga.mal_id || rawManga.idMal);
+  }
+
   const manga = {
     ...rawManga,
+    characters: characters || [],
     relations: rawManga.relations || [],
     recommendations: rawManga.recommendations || [],
     external: rawManga.external || []
@@ -171,7 +266,7 @@ export default async function MangaDetailPage({ params }: { params: Promise<{ id
       <AdBanner className="max-w-7xl mx-auto px-4" />
       <MangaDetailsClient
         manga={manga}
-        characters={manga.characters || []}
+        characters={characters || []}
       />
       <AdBanner className="max-w-7xl mx-auto px-4 mt-12" />
     </>
