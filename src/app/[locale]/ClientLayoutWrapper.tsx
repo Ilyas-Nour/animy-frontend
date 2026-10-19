@@ -50,22 +50,14 @@ export default function ClientLayoutWrapper({ children }: { children: ReactNode 
     return () => clearInterval(interval)
   }, [])
 
-  if (!mounted) {
-    return (
-      <div className="flex flex-col min-h-screen bg-background">
-        <div className="flex-1" />
-      </div>
-    )
-  }
-
   return (
     <AuthProvider>
       <SocketProvider>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <LazyMotion features={domAnimation}>
             <InnerLayout>{children}</InnerLayout>
-            <MobileNav />
-            <Toaster />
+            {mounted && <MobileNav />}
+            {mounted && <Toaster />}
           </LazyMotion>
         </ThemeProvider>
       </SocketProvider>
