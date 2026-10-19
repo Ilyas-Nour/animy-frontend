@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
 import { StructuredData, generateOrganizationSchema, generateWebSiteSchema } from '@/components/seo/StructuredData'
 import { AdBanner } from '@/components/ads/AdBanner'
+import { TOP_ANIME_STATIC, TOP_MANGA_STATIC } from '@/lib/static-anime-data'
 
 // Modular Components
 import { HeroSpotlight } from '@/components/home/HeroSpotlight'
@@ -29,22 +30,22 @@ export default function HomePage() {
   const router = useRouter()
   const { isAuthenticated, login } = useAuth()
   const [hasMounted, setHasMounted] = useState(false)
-  const [topAnime, setTopAnime] = useState<Anime[]>(globalHomeCache?.popularAnime || [])
-  const [trendingHighlight, setTrendingHighlight] = useState<Anime[]>(globalHomeCache?.trendingAnime || [])
-  const [upcomingAnime, setUpcomingAnime] = useState<Anime[]>(globalHomeCache?.upcomingAnime || [])
-  const [recentEpisodes, setRecentEpisodes] = useState<Anime[]>(globalHomeCache?.recentEpisodes || [])
-  const [heroAnime, setHeroAnime] = useState<Anime[]>(globalHomeCache?.popularAnime?.slice(0, 5) || [])
-  const [topManga, setTopManga] = useState<Manga[]>(globalHomeCache?.topManga || [])
-  const [publishingManga, setPublishingManga] = useState<Manga[]>(globalHomeCache?.publishingManga || [])
+  const [topAnime, setTopAnime] = useState<Anime[]>(globalHomeCache?.popularAnime || (TOP_ANIME_STATIC.slice(0, 20) as any))
+  const [trendingHighlight, setTrendingHighlight] = useState<Anime[]>(globalHomeCache?.trendingAnime || (TOP_ANIME_STATIC.slice(0, 10) as any))
+  const [upcomingAnime, setUpcomingAnime] = useState<Anime[]>(globalHomeCache?.upcomingAnime || (TOP_ANIME_STATIC.slice(10, 20) as any))
+  const [recentEpisodes, setRecentEpisodes] = useState<Anime[]>(globalHomeCache?.recentEpisodes || (TOP_ANIME_STATIC.slice(0, 12) as any))
+  const [heroAnime, setHeroAnime] = useState<Anime[]>(globalHomeCache?.popularAnime?.slice(0, 6) || (TOP_ANIME_STATIC.slice(0, 6) as any))
+  const [topManga, setTopManga] = useState<Manga[]>(globalHomeCache?.topManga || (TOP_MANGA_STATIC.slice(0, 15) as any))
+  const [publishingManga, setPublishingManga] = useState<Manga[]>(globalHomeCache?.publishingManga || (TOP_MANGA_STATIC.slice(0, 15) as any))
   const [activeCategory, setActiveCategory] = useState<'anime' | 'manga' | 'social'>('anime')
 
   // Fine-grained loading states
-  const [heroLoading, setHeroLoading] = useState(!globalHomeCache)
-  const [topAnimeLoading, setTopAnimeLoading] = useState(!globalHomeCache)
-  const [upcomingLoading, setUpcomingLoading] = useState(!globalHomeCache)
-  const [recentLoading, setRecentLoading] = useState(!globalHomeCache)
-  const [topMangaLoading, setTopMangaLoading] = useState(!globalHomeCache)
-  const [pubMangaLoading, setPubMangaLoading] = useState(!globalHomeCache)
+  const [heroLoading, setHeroLoading] = useState(false)
+  const [topAnimeLoading, setTopAnimeLoading] = useState(false)
+  const [upcomingLoading, setUpcomingLoading] = useState(false)
+  const [recentLoading, setRecentLoading] = useState(false)
+  const [topMangaLoading, setTopMangaLoading] = useState(false)
+  const [pubMangaLoading, setPubMangaLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -78,33 +79,145 @@ export default function HomePage() {
     let isMounted = true;
     
     const loadAllData = async () => {
+      let data: any = null;
+
       try {
-        // Use our Kitsu-backed home endpoint (bypasses broken backend)
-        const res = await fetch('/api/home')
-        if (!res.ok) throw new Error('Failed to fetch home data')
+        // 1. Try /api/home with a strict 6-second timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
         
-        const json = await res.json()
-        const data = json.data || json;
+        try {
+          const res = await fetch('/api/home', { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const json = await res.json();
+            data = json.data || json;
+          }
+        } catch (fetchErr) {
+          clearTimeout(timeoutId);
+          console.warn('Primary /api/home call timed out or failed, trying direct AniList fallback...', fetchErr);
+        }
+
+        // 2. Client-side AniList fallback if /api/home failed or was empty
+        if (!data || (!data.popularAnime?.length && !data.topManga?.length)) {
+          try {
+            const query = `
+              query {
+                trendingAnime: Page(page: 1, perPage: 15) {
+                  media(type: ANIME, sort: TRENDING_DESC, isAdult: false) {
+                    id
+                    title { english romaji native }
+                    coverImage { extraLarge large medium color }
+                    bannerImage
+                    description
+                    averageScore
+                    format
+                    episodes
+                    status
+                    genres
+                  }
+                }
+                popularAnime: Page(page: 1, perPage: 20) {
+                  media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) {
+                    id
+                    title { english romaji native }
+                    coverImage { extraLarge large medium color }
+                    bannerImage
+                    description
+                    averageScore
+                    format
+                    episodes
+                    status
+                    genres
+                  }
+                }
+                topManga: Page(page: 1, perPage: 15) {
+                  media(type: MANGA, sort: POPULARITY_DESC, isAdult: false) {
+                    id
+                    title { english romaji native }
+                    coverImage { extraLarge large medium color }
+                    description
+                    averageScore
+                    format
+                    chapters
+                    status
+                    genres
+                  }
+                }
+              }
+            `;
+            const alRes = await fetch('https://graphql.anilist.co', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query })
+            });
+
+            if (alRes.ok) {
+              const alJson = await alRes.json();
+              const alData = alJson.data;
+              const mapMedia = (m: any) => ({
+                id: m.id,
+                mal_id: m.id,
+                title: m.title?.english || m.title?.romaji || m.title?.native,
+                title_english: m.title?.english,
+                title_japanese: m.title?.native,
+                images: {
+                  jpg: { image_url: m.coverImage?.large, large_image_url: m.coverImage?.extraLarge || m.coverImage?.large },
+                  webp: { image_url: m.coverImage?.large, large_image_url: m.coverImage?.extraLarge || m.coverImage?.large }
+                },
+                bannerImage: m.bannerImage,
+                synopsis: m.description ? m.description.replace(/<[^>]*>?/gm, '') : '',
+                score: m.averageScore ? m.averageScore / 10 : undefined,
+                type: m.format,
+                episodes: m.episodes,
+                chapters: m.chapters,
+                status: m.status,
+                genres: m.genres?.map((g: string, i: number) => ({ mal_id: i, name: g })) || []
+              });
+
+              data = {
+                popularAnime: alData.popularAnime?.media?.map(mapMedia) || [],
+                trendingAnime: alData.trendingAnime?.media?.map(mapMedia) || [],
+                upcomingAnime: alData.trendingAnime?.media?.map(mapMedia) || [],
+                recentEpisodes: alData.trendingAnime?.media?.map(mapMedia) || [],
+                topManga: alData.topManga?.media?.map(mapMedia) || [],
+                publishingManga: alData.topManga?.media?.map(mapMedia) || []
+              };
+            }
+          } catch (alErr) {
+            console.warn('Client AniList fallback failed, using static data...', alErr);
+          }
+        }
+
+        // 3. Static fallback guarantee
+        if (!data || (!data.popularAnime?.length && !data.topManga?.length)) {
+          data = {
+            popularAnime: TOP_ANIME_STATIC.slice(0, 20),
+            trendingAnime: TOP_ANIME_STATIC.slice(0, 10),
+            upcomingAnime: TOP_ANIME_STATIC.slice(10, 20),
+            recentEpisodes: TOP_ANIME_STATIC.slice(0, 20),
+            topManga: TOP_MANGA_STATIC.slice(0, 20),
+            publishingManga: TOP_MANGA_STATIC.slice(0, 20),
+          };
+        }
 
         if (data && isMounted) {
           // Update global cache
           globalHomeCache = data;
 
           // Update local state
-          setTopAnime(data.popularAnime || [])
+          if (data.popularAnime?.length) setTopAnime(data.popularAnime)
           
-          // Use our backend pool for hero section so it loads instantly with the rest of the page.
+          // Use pool for hero section
           const heroPool = [...(data.trendingAnime || []), ...(data.popularAnime || [])]
           const uniquePool = Array.from(new Map(heroPool.map(item => [item.mal_id || item.id, item])).values())
           
-          // Deduplicate franchises (e.g. Attack on Titan Season 1, 2, 3)
+          // Deduplicate franchises
           const uniqueAnime: Anime[] = [];
           for (const anime of uniquePool) {
             const title = (anime.title_english || anime.title || '').toLowerCase();
-            // Check if this title is a sequel or part of an already added franchise
             const isDuplicate = uniqueAnime.some(existing => {
               const existingTitle = (existing.title_english || existing.title || '').toLowerCase();
-              // If one title is a prefix of another (up to a colon or " Season"), consider it the same franchise
               const baseExisting = existingTitle.split(/[:\s-]*season|[:\s-]*part|:/i)[0].trim();
               const baseCurrent = title.split(/[:\s-]*season|[:\s-]*part|:/i)[0].trim();
               return baseExisting === baseCurrent || title.startsWith(existingTitle) || existingTitle.startsWith(title);
@@ -113,27 +226,26 @@ export default function HomePage() {
               uniqueAnime.push(anime as Anime);
             }
           }
-          if (isMounted) setHeroAnime(uniqueAnime.slice(0, 15))
+          if (isMounted && uniqueAnime.length > 0) {
+            setHeroAnime(uniqueAnime.slice(0, 15))
+          }
 
-          setTrendingHighlight(data.trendingAnime || [])
-          setUpcomingAnime(data.upcomingAnime || [])
-          setRecentEpisodes(data.recentEpisodes || [])
-          setTopManga(data.topManga || [])
-          setPublishingManga(data.publishingManga || [])
+          if (data.trendingAnime?.length) setTrendingHighlight(data.trendingAnime)
+          if (data.upcomingAnime?.length) setUpcomingAnime(data.upcomingAnime)
+          if (data.recentEpisodes?.length) setRecentEpisodes(data.recentEpisodes)
+          if (data.topManga?.length) setTopManga(data.topManga)
+          if (data.publishingManga?.length) setPublishingManga(data.publishingManga)
         }
       } catch (err) {
-        console.error('Home load error:', err)
-        if (!globalHomeCache && isMounted) {
-           setError('Failed to load portal content. Please try again.')
-        }
+        console.error('Home load error caught, fallback content remains active:', err);
       } finally {
         if (isMounted) {
-            setHeroLoading(false)
-            setTopAnimeLoading(false)
-            setUpcomingLoading(false)
-            setRecentLoading(false)
-            setTopMangaLoading(false)
-            setPubMangaLoading(false)
+          setHeroLoading(false)
+          setTopAnimeLoading(false)
+          setUpcomingLoading(false)
+          setRecentLoading(false)
+          setTopMangaLoading(false)
+          setPubMangaLoading(false)
         }
       }
     }
@@ -142,8 +254,7 @@ export default function HomePage() {
     return () => { isMounted = false }
   }, [login, router])
 
-
-  if (error) return <ErrorMessage message={error} />
+  if (error && topAnime.length === 0 && topManga.length === 0) return <ErrorMessage message={error} />
 
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://animy-frontend.pages.dev'
 
